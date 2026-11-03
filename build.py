@@ -14,7 +14,7 @@ CONFIG = {
     # โดเมนจริงของคุณ ไม่มี / ท้าย เช่น https://www.khaptor.com
     "DOMAIN": "https://khaptor.com",
     # Google Analytics 4 Measurement ID เช่น G-AB12CD34EF  (ว่างไว้ = ยังไม่เปิด)
-    "GA4_ID": "",
+    "GA4_ID": "G-BQV73C8MX1",
     # Google AdSense: แนะนำให้ตั้งในหน้าแอดมิน khaptor.com/admin.html แทน (ใส่ตรงนี้เฉพาะถ้าไม่ใช้แอดมิน)
     "ADSENSE_CLIENT": "",
     # รหัสหน่วยโฆษณา (ad unit / data-ad-slot) จาก AdSense แต่ละตำแหน่ง ว่างไว้ = ใช้ Auto ads อย่างเดียว
