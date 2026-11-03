@@ -12,7 +12,7 @@ from pathlib import Path
 CONFIG = {
     "SITE_NAME": "ขับต่อ",
     # โดเมนจริงของคุณ ไม่มี / ท้าย เช่น https://www.khaptor.com
-    "DOMAIN": "https://www.YOUR-DOMAIN.com",
+    "DOMAIN": "https://khaptor.com",
     # Google Analytics 4 Measurement ID เช่น G-AB12CD34EF  (ว่างไว้ = ยังไม่เปิด)
     "GA4_ID": "",
     # Google AdSense publisher ID เช่น ca-pub-1234567890123456  (ว่างไว้ = ยังไม่เปิด)
@@ -23,7 +23,7 @@ CONFIG = {
     "SHOW_AD_PLACEHOLDERS": True,
     # Google Search Console: ค่า content ของ meta tag ยืนยัน (ถ้ายืนยันผ่าน DNS ไม่ต้องใส่)
     "GSC_VERIFICATION": "",
-    "CONTACT_EMAIL": "hello@YOUR-DOMAIN.com",
+    "CONTACT_EMAIL": "hello@khaptor.com",
     "CONTACT_PHONE": "02-000-0000",
 }
 # ====================================================================

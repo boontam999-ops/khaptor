@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /404.html
 
-Sitemap: https://www.YOUR-DOMAIN.com/sitemap.xml
+Sitemap: https://khaptor.com/sitemap.xml
