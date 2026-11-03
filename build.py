@@ -15,11 +15,11 @@ CONFIG = {
     "DOMAIN": "https://khaptor.com",
     # Google Analytics 4 Measurement ID เช่น G-AB12CD34EF  (ว่างไว้ = ยังไม่เปิด)
     "GA4_ID": "",
-    # Google AdSense publisher ID เช่น ca-pub-1234567890123456  (ว่างไว้ = ยังไม่เปิด)
+    # Google AdSense: แนะนำให้ตั้งในหน้าแอดมิน khaptor.com/admin.html แทน (ใส่ตรงนี้เฉพาะถ้าไม่ใช้แอดมิน)
     "ADSENSE_CLIENT": "",
     # รหัสหน่วยโฆษณา (ad unit / data-ad-slot) จาก AdSense แต่ละตำแหน่ง ว่างไว้ = ใช้ Auto ads อย่างเดียว
     "ADSENSE_SLOTS": {"leaderboard": "", "sidebar": "", "infeed": "", "article": ""},
-    # แสดงกรอบ "พื้นที่โฆษณา" ตอนยังไม่มีรหัส AdSense (ตั้ง False ก่อนขึ้นเว็บจริง)
+    # กรอบ "พื้นที่โฆษณา" ตอนดูไฟล์ในเครื่อง (บนเว็บจริงตั้งได้ในหน้าแอดมิน)
     "SHOW_AD_PLACEHOLDERS": True,
     # Google Search Console: ค่า content ของ meta tag ยืนยัน (ถ้ายืนยันผ่าน DNS ไม่ต้องใส่)
     "GSC_VERIFICATION": "",
@@ -292,6 +292,7 @@ def build():
     shutil.copy(SRC / "style.css", DIST / "assets/style.css")
     shutil.copy(SRC / "site.js", DIST / "assets/site.js")
     shutil.copy(SRC / "app.js", DIST / "assets/app.js")
+    shutil.copy(SRC / "admin.html", DIST / "admin.html")
     if (SRC / "og").exists():
         shutil.copytree(SRC / "og", DIST / "og")
     POSTS = load_articles()
@@ -505,7 +506,7 @@ def build():
     sm += [f"  <url><loc>{u}</loc><lastmod>{d.isoformat()}</lastmod><changefreq>{f}</changefreq><priority>{p}</priority></url>" for u, d, f, p in urls]
     sm.append("</urlset>")
     (DIST / "sitemap.xml").write_text("\n".join(sm) + "\n", encoding="utf-8")
-    (DIST / "robots.txt").write_text(f"User-agent: *\nAllow: /\nDisallow: /404.html\n\nSitemap: {D}/sitemap.xml\n", encoding="utf-8")
+    (DIST / "robots.txt").write_text(f"User-agent: *\nAllow: /\nDisallow: /404.html\nDisallow: /admin.html\nDisallow: /api/\n\nSitemap: {D}/sitemap.xml\n", encoding="utf-8")
     pub = C["ADSENSE_CLIENT"].replace("ca-", "").strip()
     (DIST / "ads.txt").write_text((f"google.com, {pub}, DIRECT, f08c47fec0942fa0\n" if pub else
                                    "# ใส่ ADSENSE_CLIENT ใน build.py แล้วรันใหม่ ไฟล์นี้จะมีบรรทัดของ Google ให้อัตโนมัติ\n"), encoding="utf-8")

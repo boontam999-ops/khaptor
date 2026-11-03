@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>แอดมิน ขับต่อ</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3f5f8;--surface:#fff;--ink:#14202e;--muted:#5d6b7c;--line:#dde3ea;--road:#163a63;--road-2:#0f2b4b;--amber:#f2a516;--amber-ink:#3a2700;--good:#1f8a4c;--bad:#c0303a;
+  --display:"Bai Jamjuree","IBM Plex Sans Thai",system-ui,sans-serif;--body:"IBM Plex Sans Thai",system-ui,sans-serif;color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 var(--body)}
+h1,h2{font-family:var(--display);margin:0}
+header{background:var(--road-2);color:#fff;padding:14px clamp(16px,3vw,40px);display:flex;align-items:center;gap:12px}
+header h1{font-size:19px;flex:1}
+header a{color:#fff;opacity:.85;font-size:14px}
+main{max-width:860px;margin:28px auto;padding:0 16px;display:grid;gap:18px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px}
+.card h2{font-size:18px;margin-bottom:4px}
+.muted{color:var(--muted);font-size:14px;margin:0 0 14px}
+label.f{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px;font-weight:500}
+input[type=text],input[type=password]{width:100%;height:42px;border:1px solid var(--line);border-radius:8px;padding:0 12px;background:var(--bg);font:inherit;color:inherit}
+input:focus-visible,button:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.btn{border:0;border-radius:8px;padding:10px 18px;font:600 15px var(--body);cursor:pointer}
+.btn-amber{background:var(--amber);color:var(--amber-ink)}
+.btn-line{background:var(--surface);border:1px solid var(--line);color:var(--ink)}
+.btn:disabled{opacity:.5;cursor:wait}
+.row{display:grid;grid-template-columns:auto 1fr 220px;gap:14px;align-items:center;padding:14px 0;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0}
+.row b{display:block}
+.row small{color:var(--muted)}
+.master{display:flex;align-items:center;gap:16px;padding:16px;border-radius:10px;background:var(--bg)}
+.master b{font-size:17px}
+.state{font-weight:600}
+.state.on{color:var(--good)}.state.off{color:var(--bad)}
+/* switch */
+.sw{position:relative;width:52px;height:30px;flex:none}
+.sw input{opacity:0;width:0;height:0;position:absolute}
+.sw span{position:absolute;inset:0;background:#c5ccd5;border-radius:99px;transition:.2s;cursor:pointer}
+.sw span::before{content:"";position:absolute;width:24px;height:24px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.sw input:checked+span{background:var(--good)}
+.sw input:checked+span::before{transform:translateX(22px)}
+.sw input:focus-visible+span{outline:3px solid var(--amber);outline-offset:2px}
+.disabled-group{opacity:.45;pointer-events:none}
+.msg{padding:10px 14px;border-radius:8px;font-weight:500;display:none}
+.msg.ok{display:block;background:#e3f4ea;color:var(--good)}
+.msg.err{display:block;background:#fbe6e8;color:var(--bad)}
+.msg.warn{display:block;background:#fff4dc;color:#7a5200}
+.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.bar .muted{margin:0}
+.hidden{display:none}
+@media (max-width:640px){.row{grid-template-columns:auto 1fr}.row input[type=text]{grid-column:1/-1}}
+@media (prefers-reduced-motion:reduce){.sw span,.sw span::before{transition:none}}
+</style>
+</head>
+<body>
+<header><h1>แอดมิน ขับต่อ · จัดการโฆษณา</h1><a href="/">ดูหน้าเว็บ</a></header>
+<main>
+  <section class="card" id="loginCard">
+    <h2>เข้าสู่ระบบ</h2>
+    <p class="muted">ใส่รหัสผ่านแอดมินที่ตั้งไว้ใน Cloudflare (ตัวแปร ADMIN_PASSWORD)</p>
+    <form id="loginForm" class="bar">
+      <input type="password" id="pw" autocomplete="current-password" placeholder="รหัสผ่าน" style="flex:1;min-width:220px" required>
+      <button class="btn btn-amber" id="loginBtn" type="submit">เข้าสู่ระบบ</button>
+    </form>
+    <div class="msg" id="loginMsg" style="margin-top:12px"></div>
+  </section>
+
+  <div id="panel" class="hidden" style="display:grid;gap:18px">
+    <div class="msg" id="kvWarn"></div>
+
+    <section class="card">
+      <div class="master">
+        <label class="sw"><input type="checkbox" id="adsOn"><span></span></label>
+        <div style="flex:1"><b>โฆษณาทั้งเว็บ</b><span class="state" id="adsState"></span></div>
+      </div>
+      <p class="muted" style="margin:10px 0 0">ปิดสวิตช์นี้แล้วโฆษณาจะหายจากทุกหน้า รวมถึง Auto ads เพราะระบบจะไม่โหลดสคริปต์ AdSense เลย</p>
+    </section>
+
+    <section class="card" id="cfgCard">
+      <h2>รหัส Google AdSense</h2>
+      <p class="muted">ดูได้ที่ AdSense > บัญชี > ข้อมูลบัญชี ใส่แล้วระบบจะอัปเดตไฟล์ ads.txt ให้เอง</p>
+      <label class="f" for="client">Publisher ID</label>
+      <input type="text" id="client" placeholder="ca-pub-1234567890123456" inputmode="text" autocomplete="off">
+
+      <h2 style="margin-top:22px">ตำแหน่งโฆษณา</h2>
+      <p class="muted">เปิดหรือปิดได้ทีละตำแหน่ง ใส่รหัสหน่วยโฆษณา (data-ad-slot) จาก AdSense > โฆษณา > ตามหน่วยโฆษณา ถ้าไม่ใส่ ตำแหน่งนั้นจะไม่แสดง (Auto ads ยังทำงานตามที่ตั้งใน AdSense)</p>
+      <div id="positions"></div>
+
+      <div class="row" style="border-top:1px solid var(--line)">
+        <label class="sw"><input type="checkbox" id="ph"><span></span></label>
+        <div><b>แสดงกรอบ "พื้นที่โฆษณา"</b><small>ใช้ดูตำแหน่งตอนยังไม่มีรหัส AdSense กรอบจะหายเองเมื่อใส่รหัสแล้ว</small></div>
+        <span></span>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="bar">
+        <button class="btn btn-amber" id="saveBtn" type="button">บันทึกการตั้งค่า</button>
+        <button class="btn btn-line" id="logoutBtn" type="button">ออกจากระบบ</button>
+        <p class="muted" id="updated"></p>
+      </div>
+      <div class="msg" id="saveMsg" style="margin-top:12px"></div>
+      <p class="muted" style="margin:12px 0 0">หน้าเว็บอาจใช้เวลาราว 30 วินาทีถึง 1 นาทีกว่าจะเห็นค่าที่เปลี่ยน</p>
+    </section>
+  </div>
+</main>
+
+<script>
+var POS=[
+  ["leaderboard","แบนเนอร์ใต้แถบยี่ห้อ","หน้าแรก หน้ายี่ห้อ และหน้าจังหวัด"],
+  ["sidebar","ใต้ตัวกรอง","คอลัมน์ซ้ายของหน้าแรก"],
+  ["infeed","ในรายการรถ","แทรกหลังรถคันที่ 6"],
+  ["article","ในบทความและหน้ารถ","หลังย่อหน้าที่ 2 ของบทความ และข้างสเปกรถ"]
+];
+var $=function(id){return document.getElementById(id)};
+var pw="";
+try{pw=sessionStorage.getItem("kt-admin")||""}catch(e){}
+
+$("positions").innerHTML=POS.map(function(p){
+  return '<div class="row"><label class="sw"><input type="checkbox" id="on-'+p[0]+'" aria-label="เปิดตำแหน่ง '+p[1]+'"><span></span></label>'+
+    '<div><b>'+p[1]+'</b><small>'+p[2]+'</small></div>'+
+    '<input type="text" id="slot-'+p[0]+'" placeholder="รหัสหน่วยโฆษณา" inputmode="numeric" aria-label="รหัสหน่วยโฆษณา '+p[1]+'"></div>';
+}).join("");
+
+function show(el,cls,text){el.className="msg "+cls;el.textContent=text}
+function hide(el){el.className="msg"}
+
+function api(body){
+  return fetch("/api/settings",{method:"POST",headers:{"content-type":"application/json","x-admin-password":pw},body:JSON.stringify(body)})
+    .then(function(r){return r.json().catch(function(){return{ok:false,error:"เซิร์ฟเวอร์ตอบกลับผิดรูปแบบ (HTTP "+r.status+")"}})})
+    .catch(function(){return{ok:false,error:"เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง"}});
+}
+
+function fill(s,kv){
+  $("adsOn").checked=s.ads_enabled;
+  $("client").value=s.adsense_client||"";
+  $("ph").checked=!!s.placeholders;
+  POS.forEach(function(p){var v=s.positions[p[0]]||{};$("on-"+p[0]).checked=v.on!==false;$("slot-"+p[0]).value=v.slot||""});
+  $("updated").textContent=s.updated_at?"บันทึกล่าสุด "+new Date(s.updated_at).toLocaleString("th-TH"):"ยังไม่เคยบันทึก (ใช้ค่าเริ่มต้น)";
+  if(!kv)show($("kvWarn"),"warn","ยังไม่ได้ผูก KV ชื่อ SETTINGS กับโปรเจกต์ใน Cloudflare จึงยังบันทึกไม่ได้ ดูวิธีตั้งค่าใน README");
+  else hide($("kvWarn"));
+  sync();
+}
+function sync(){
+  var on=$("adsOn").checked;
+  $("adsState").textContent=on?" · เปิดอยู่":" · ปิดอยู่";
+  $("adsState").className="state "+(on?"on":"off");
+  $("cfgCard").classList.toggle("disabled-group",!on);
+}
+$("adsOn").addEventListener("change",sync);
+
+function enter(res){
+  $("loginCard").classList.add("hidden");
+  $("panel").classList.remove("hidden");
+  fill(res.settings,res.kv);
+}
+
+$("loginForm").addEventListener("submit",function(e){
+  e.preventDefault();
+  pw=$("pw").value;$("loginBtn").disabled=true;hide($("loginMsg"));
+  api({action:"login"}).then(function(r){
+    $("loginBtn").disabled=false;
+    if(!r.ok){show($("loginMsg"),"err",r.error||"เข้าสู่ระบบไม่สำเร็จ");return}
+    try{sessionStorage.setItem("kt-admin",pw)}catch(e){}
+    enter(r);
+  });
+});
+
+$("saveBtn").addEventListener("click",function(){
+  var s={ads_enabled:$("adsOn").checked,adsense_client:$("client").value.trim(),placeholders:$("ph").checked,positions:{}};
+  POS.forEach(function(p){s.positions[p[0]]={on:$("on-"+p[0]).checked,slot:$("slot-"+p[0]).value.trim()}});
+  $("saveBtn").disabled=true;hide($("saveMsg"));
+  api({action:"save",settings:s}).then(function(r){
+    $("saveBtn").disabled=false;
+    if(!r.ok){show($("saveMsg"),"err",r.error||"บันทึกไม่สำเร็จ");return}
+    fill(r.settings,r.kv);
+    show($("saveMsg"),"ok",r.settings.ads_enabled?"บันทึกแล้ว โฆษณาเปิดอยู่":"บันทึกแล้ว ปิดโฆษณาทั้งเว็บแล้ว");
+  });
+});
+
+$("logoutBtn").addEventListener("click",function(){
+  try{sessionStorage.removeItem("kt-admin")}catch(e){}
+  pw="";location.reload();
+});
+
+if(pw){api({action:"login"}).then(function(r){if(r.ok)enter(r);else{try{sessionStorage.removeItem("kt-admin")}catch(e){}pw=""}})}
+</script>
+</body>
+</html>

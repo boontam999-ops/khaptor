@@ -1,5 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /404.html
+Disallow: /admin.html
+Disallow: /api/
 
 Sitemap: https://khaptor.com/sitemap.xml

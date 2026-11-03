@@ -28,16 +28,26 @@
   }
   document.addEventListener("click",function(e){var t=e.target.closest&&e.target.closest("[data-consent-open]");if(t){e.preventDefault();banner()}});
 
-  /* ---- ad slots ---- */
+  /* ---- ad slots ----
+     ค่าจากหน้าแอดมินมาทาง window.KT_ADS (ใส่โดย Cloudflare middleware)
+     ถ้าไม่มี (เปิดไฟล์ในเครื่อง) จะใช้ค่าใน build.py แทน */
+  function adCfg(){
+    var A=window.KT_ADS;
+    if(A&&A.positions)return{on:A.ads_enabled!==false,client:A.adsense_client||"",placeholders:!!A.placeholders,pos:A.positions};
+    var pos={};var sl=C.slots||{};for(var k in sl)pos[k]={on:true,slot:sl[k]};
+    return{on:true,client:C.adsense||"",placeholders:!!C.placeholders,pos:pos};
+  }
   window.ktFillAds=function(){
+    var A=adCfg();
     var slots=document.querySelectorAll(".ad-slot:not([data-done])");
     for(var i=0;i<slots.length;i++){
-      var el=slots[i],name=el.getAttribute("data-ad"),id=(C.slots||{})[name];
+      var el=slots[i],name=el.getAttribute("data-ad"),p=A.pos[name]||{on:true,slot:""};
       el.setAttribute("data-done","1");
-      if(C.adsense&&id){
-        el.innerHTML='<span class="ad-label">โฆษณา</span><ins class="adsbygoogle" style="display:block" data-ad-client="'+C.adsense+'" data-ad-slot="'+id+'" data-ad-format="auto" data-full-width-responsive="true"></ins>';
+      if(!A.on||p.on===false){el.parentNode.removeChild(el);continue}
+      if(A.client&&p.slot){
+        el.innerHTML='<span class="ad-label">โฆษณา</span><ins class="adsbygoogle" style="display:block" data-ad-client="'+A.client+'" data-ad-slot="'+p.slot+'" data-ad-format="auto" data-full-width-responsive="true"></ins>';
         try{(window.adsbygoogle=window.adsbygoogle||[]).push({})}catch(err){}
-      }else if(C.placeholders){
+      }else if(A.placeholders&&!A.client){
         el.innerHTML='<span class="ad-ph">พื้นที่โฆษณา · '+name+'</span>';
       }else{
         el.parentNode.removeChild(el);

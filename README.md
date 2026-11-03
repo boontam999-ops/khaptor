@@ -7,7 +7,8 @@
 | `build.py` | ตัวสร้างเว็บ แก้ค่าในส่วน `CONFIG` แล้วรัน `python3 build.py` |
 | `content/articles/` | บทความ (ไฟล์ .md) ใส่วันที่ล่วงหน้าได้ ระบบจะเผยแพร่เมื่อถึงวัน |
 | `AUTO_ARTICLES.md` | คู่มือสำหรับงานเขียนบทความอัตโนมัติ จันทร์ พุธ ศุกร์ |
-| `src/` | โค้ดต้นฉบับ (CSS, JS, เทมเพลต, รูปแชร์) |
+| `src/` | โค้ดต้นฉบับ (CSS, JS, เทมเพลต, รูปแชร์, หน้าแอดมิน) |
+| `functions/`, `lib/` | โค้ดฝั่ง Cloudflare สำหรับหน้าแอดมินและการตั้งค่าโฆษณา |
 | `make_images.py` | สร้างรูปแชร์ Facebook/LINE ใหม่ เมื่อมีรถเพิ่ม |
 
 ## สิ่งที่ทำ SEO ไว้แล้ว
@@ -38,12 +39,24 @@
 2. Event ที่ส่งให้อัตโนมัติ: `search`, `filter`, `view_item`, `generate_lead` (กดดูเบอร์ผู้ขาย), `add_to_wishlist`, `use_loan_calculator`, `submit_listing`
 3. ใน GA4 ให้ตั้ง `generate_lead` และ `submit_listing` เป็น Key event เพื่อวัดผล
 
+## หน้าแอดมินโฆษณา (khaptor.com/admin.html)
+เปิดปิดโฆษณาทั้งเว็บหรือทีละตำแหน่ง และใส่รหัส AdSense ได้เองโดยไม่ต้องแก้โค้ด ต้องตั้งค่าใน Cloudflare ครั้งเดียว:
+1. Cloudflare > **Storage & databases** > **Workers KV** > **Create** ตั้งชื่อ `khaptor-settings`
+2. **Workers & Pages** > **khaptor** > **Settings** > **Bindings** > **Add** > **KV namespace**
+   ช่อง Variable name ใส่ `SETTINGS` และเลือก namespace `khaptor-settings`
+3. ในหน้า Settings เดียวกัน ไปที่ **Variables and Secrets** > **Add** เลือก Type เป็น **Secret**
+   ตั้งชื่อ `ADMIN_PASSWORD` แล้วใส่รหัสผ่านยาว 12 ตัวอักษรขึ้นไป
+4. ไปที่แท็บ **Deployments** กด **...** ที่รายการล่าสุด แล้วกด **Retry deployment** เพื่อให้ค่าใหม่มีผล
+
+การทำงาน: ไฟล์ `functions/_middleware.js` อ่านค่าจาก KV แล้วใส่สคริปต์ AdSense ลงทุกหน้า ถ้าปิดโฆษณา สคริปต์จะไม่ถูกโหลดเลย (Auto ads ก็จะหายไปด้วย)
+ส่วน `functions/ads.txt.js` สร้างไฟล์ ads.txt จากรหัสที่ใส่ในหน้าแอดมิน
+แพ็กเกจฟรีของ Cloudflare เรียกใช้ Functions ได้ 100,000 ครั้งต่อวัน และอ่าน KV ได้ 100,000 ครั้งต่อวัน พอสำหรับเว็บที่เพิ่งเริ่ม
+
 ## Google AdSense
-1. สมัครที่ adsense.google.com โดยใช้โดเมนของคุณ แล้วใส่ `ca-pub-...` ใน `ADSENSE_CLIENT` และ build ใหม่
+1. สมัครที่ adsense.google.com โดยใช้โดเมนของคุณ แล้วใส่ `ca-pub-...` ในหน้าแอดมิน
    ระบบจะใส่ meta tag ยืนยัน สคริปต์ AdSense และไฟล์ `ads.txt` ให้เอง
 2. ช่องโฆษณาที่เตรียมไว้: `leaderboard` (ใต้แถบยี่ห้อ), `sidebar` (ใต้ตัวกรอง), `infeed` (ในรายการรถ) และ `article` (ในบทความกับหน้ารถ)
-   สร้าง Display ad unit ใน AdSense แล้วนำเลข data-ad-slot มาใส่ใน `ADSENSE_SLOTS` หรือจะเปิด Auto ads อย่างเดียวก็ได้
-3. ตั้ง `SHOW_AD_PLACEHOLDERS` เป็น `False` ก่อนขึ้นเว็บจริง
+   สร้าง Display ad unit ใน AdSense แล้วนำเลข data-ad-slot มาใส่ในหน้าแอดมิน หรือจะเปิด Auto ads อย่างเดียวก็ได้
 
 **สำคัญ:** AdSense ไม่อนุมัติเว็บที่มีข้อมูลสมมติหรือเนื้อหาน้อย ก่อนสมัครควรทำสิ่งเหล่านี้
 - เปลี่ยนรถตัวอย่าง 24 คันเป็นประกาศจริง (แก้ `RAW` ใน `src/app.js`) และเปลี่ยนเบอร์โทรตัวอย่าง
