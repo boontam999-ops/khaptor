@@ -1,0 +1,137 @@
+
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="#top" aria-label="ขับต่อ หน้าแรก">
+      <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="8" fill="#f2a516"/><circle cx="17" cy="17" r="9" fill="none" stroke="#3a2700" stroke-width="3"/><circle cx="17" cy="17" r="2.6" fill="#3a2700"/><path d="M17 8v6M17 20v6M8 17h6M20 17h6" stroke="#3a2700" stroke-width="2"/></svg>
+      <span>ขับต่อ<small>ตลาดรถมือสองทั่วไทย</small></span>
+    </a>
+    <nav class="main" aria-label="เมนูหลัก">
+      <a href="#buy" class="on">ซื้อรถ</a>
+      <a href="#sell">ขายรถ</a>
+      <a href="#dealers">ดีลเลอร์</a>
+      <a href="#loan">คำนวณสินเชื่อ</a>
+    </nav>
+    <div class="top-actions">
+      <button class="btn btn-ghost" id="favBtn" type="button">รถที่ถูกใจ <span id="favCount">0</span></button>
+      <a class="btn btn-amber" href="#sell">ลงขายรถฟรี</a>
+    </div>
+  </div>
+</header>
+
+<div class="hero" id="top">
+  <div class="wrap">
+    <h1>หารถมือสองคันถัดไปของคุณ</h1>
+    <p>รถจากเต็นท์และเจ้าของขายเองทั่วประเทศ เทียบราคา ดูสเปก และคำนวณค่างวดได้ในที่เดียว</p>
+    <form class="searchbox" id="searchForm">
+      <div class="field"><label for="sBrand">ยี่ห้อ</label><select id="sBrand"><option value="">ทุกยี่ห้อ</option></select></div>
+      <div class="field"><label for="sModel">รุ่น</label><select id="sModel"><option value="">ทุกรุ่น</option></select></div>
+      <div class="field"><label for="sMaxPrice">ราคาไม่เกิน</label><select id="sMaxPrice">
+        <option value="">ไม่จำกัด</option><option value="300000">300,000 บาท</option><option value="500000">500,000 บาท</option><option value="800000">800,000 บาท</option><option value="1200000">1,200,000 บาท</option><option value="2000000">2,000,000 บาท</option>
+      </select></div>
+      <div class="field"><label for="sYear">ปีตั้งแต่</label><select id="sYear"><option value="">ทุกปี</option></select></div>
+      <div class="field"><label for="sProv">จังหวัด</label><select id="sProv"><option value="">ทุกจังหวัด</option></select></div>
+      <button class="btn btn-amber" type="submit">ค้นหารถ</button>
+    </form>
+  </div>
+</div>
+<div class="brandrow"><div class="wrap" id="brandChips" role="group" aria-label="ยี่ห้อยอดนิยม"></div></div>
+
+<main id="buy">
+  <div class="wrap layout">
+    <aside class="filters" aria-label="ตัวกรอง">
+      <h3>กรองผลลัพธ์ <button type="button" id="clearAll">ล้างทั้งหมด</button></h3>
+      <div class="fgroup"><h4>ประเภทรถ</h4><div id="fBody"></div></div>
+      <div class="fgroup"><h4>เกียร์</h4><div id="fGear"></div></div>
+      <div class="fgroup"><h4>เชื้อเพลิง</h4><div id="fFuel"></div></div>
+      <div class="fgroup">
+        <h4>เลขไมล์ไม่เกิน</h4>
+        <input type="range" id="fKm" min="20000" max="200000" step="10000" value="200000" aria-label="เลขไมล์สูงสุด">
+        <div class="rangeval"><span>20,000</span><b id="fKmVal">200,000 กม.</b></div>
+      </div>
+      <div class="fgroup"><h4>ผู้ขาย</h4><div id="fSeller"></div></div>
+      <div class="fgroup" style="padding-bottom:0">
+        <label class="ck"><input type="checkbox" id="fCert"> เฉพาะรถผ่านการตรวจสภาพ</label>
+      </div>
+    </aside>
+
+    <div>
+      <div class="toolbar">
+        <h2 id="resultTitle">รถมือสองทั้งหมด</h2>
+        <label for="sort" class="sub" style="color:var(--muted);font-size:13px">เรียงตาม</label>
+        <select id="sort">
+          <option value="new">ลงประกาศล่าสุด</option>
+          <option value="pAsc">ราคา ต่ำไปสูง</option>
+          <option value="pDesc">ราคา สูงไปต่ำ</option>
+          <option value="yDesc">ปีใหม่สุด</option>
+          <option value="kmAsc">ไมล์น้อยสุด</option>
+        </select>
+      </div>
+      <div class="activechips" id="activeChips"></div>
+      <div class="grid" id="grid"></div>
+    </div>
+  </div>
+</main>
+
+<section class="band" id="dealers">
+  <div class="wrap">
+    <h2>ค้นหาดีลเลอร์ตามพื้นที่</h2>
+    <p class="lead">เลือกย่านเพื่อดูรถจากเต็นท์ในพื้นที่นั้น ตัวเลขคือจำนวนเต็นท์ที่ลงประกาศอยู่</p>
+    <h3 style="font-size:15px;margin-bottom:8px;color:var(--muted)">กรุงเทพฯ และปริมณฑล</h3>
+    <div class="areas" id="areasBkk"></div>
+    <h3 style="font-size:15px;margin:18px 0 8px;color:var(--muted)">ต่างจังหวัด</h3>
+    <div class="areas" id="areasProv"></div>
+  </div>
+</section>
+
+<section class="band" id="sell">
+  <div class="wrap split">
+    <div class="panel" id="loan">
+      <h3>คำนวณค่างวดรถ</h3>
+      <div class="form-grid">
+        <div class="field full"><label for="cPrice">ราคารถ (บาท)</label><input id="cPrice" type="number" inputmode="numeric" value="589000" min="0" step="1000"></div>
+        <div class="field"><label for="cDown">เงินดาวน์ (%)</label><select id="cDown"><option>0</option><option>5</option><option>10</option><option selected>15</option><option>20</option><option>25</option><option>30</option></select></div>
+        <div class="field"><label for="cRate">ดอกเบี้ยคงที่ต่อปี (%)</label><input id="cRate" type="number" value="3.49" step="0.01" min="0"></div>
+        <div class="field full"><label for="cTerm">ระยะผ่อน</label><select id="cTerm"><option value="36">36 งวด (3 ปี)</option><option value="48">48 งวด (4 ปี)</option><option value="60">60 งวด (5 ปี)</option><option value="72" selected>72 งวด (6 ปี)</option><option value="84">84 งวด (7 ปี)</option></select></div>
+      </div>
+      <div class="calc-out">
+        <div><small>เงินดาวน์</small><b id="oDown">–</b></div>
+        <div><small>ยอดจัดไฟแนนซ์</small><b id="oFin">–</b></div>
+        <div class="hl"><small>ค่างวด/เดือน</small><b id="oMonth">–</b></div>
+      </div>
+      <p class="note">คิดแบบดอกเบี้ยคงที่ (Flat rate) ค่างวดรวม VAT 7% แล้ว ตัวเลขเป็นการประมาณ อัตราจริงขึ้นกับไฟแนนซ์และอายุรถ</p>
+    </div>
+
+    <div class="panel">
+      <h3>ลงขายรถของคุณ ฟรี</h3>
+      <form class="form-grid" id="sellForm">
+        <div class="field"><label for="slBrand">ยี่ห้อ</label><select id="slBrand" required></select></div>
+        <div class="field"><label for="slModel">รุ่น</label><input id="slModel" required placeholder="เช่น City 1.0 Turbo SV"></div>
+        <div class="field"><label for="slYear">ปีจดทะเบียน</label><select id="slYear" required></select></div>
+        <div class="field"><label for="slKm">เลขไมล์ (กม.)</label><input id="slKm" type="number" required min="0" placeholder="65000"></div>
+        <div class="field"><label for="slPrice">ราคาที่ต้องการ (บาท)</label><input id="slPrice" type="number" required min="1000" placeholder="450000"></div>
+        <div class="field"><label for="slProv">จังหวัด</label><select id="slProv" required></select></div>
+        <div class="field"><label for="slName">ชื่อผู้ขาย</label><input id="slName" required></div>
+        <div class="field"><label for="slTel">เบอร์โทร</label><input id="slTel" type="tel" required pattern="0[0-9]{8,9}" placeholder="0812345678"></div>
+        <div class="field full"><label for="slNote">รายละเอียดเพิ่มเติม</label><textarea id="slNote" placeholder="เช่น เจ้าของมือเดียว เข้าศูนย์ตลอด ไม่มีชน"></textarea></div>
+        <button class="btn btn-road full" type="submit">ลงประกาศ</button>
+      </form>
+      <div id="sellOk"></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="cols">
+      <div><h4>ขับต่อ</h4><p style="margin:0;max-width:34ch">ตลาดซื้อขายรถมือสองสำหรับผู้ซื้อ เจ้าของรถ และเต็นท์รถทั่วประเทศไทย</p></div>
+      <div><h4>ผู้ซื้อ</h4><ul><li><a href="#buy">ค้นหารถ</a></li><li><a href="#loan">คำนวณสินเชื่อ</a></li><li><a href="#dealers">ดีลเลอร์ใกล้คุณ</a></li></ul></div>
+      <div><h4>ผู้ขาย</h4><ul><li><a href="#sell">ลงขายรถ</a></li><li><a href="#dealers">สมัครเป็นดีลเลอร์</a></li></ul></div>
+      <div><h4>ติดต่อ</h4><ul><li>02-000-0000</li><li>hello@khaptor.example</li></ul></div>
+    </div>
+    <div class="copy">ตัวอย่างเว็บไซต์ ข้อมูลรถและผู้ขายในหน้านี้เป็นข้อมูลสมมติเพื่อสาธิตเท่านั้น</div>
+  </div>
+</footer>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast" role="status"></div>
+
