@@ -266,7 +266,7 @@ async function api(path,opt){
     try{return await r.json()}catch(e){return{ok:false,error:"เซิร์ฟเวอร์ตอบกลับผิดรูปแบบ ("+r.status+")"}}
   }catch(e){return{ok:false,error:"เชื่อมต่อไม่ได้ ตรวจอินเทอร์เน็ตแล้วลองใหม่"}}
 }
-const STATUS={pending:["รอตรวจ","warn"],approved:["เผยแพร่แล้ว","good"],rejected:["ไม่ผ่านการตรวจ","bad"]};
+const STATUS={pending:["รอตรวจ","warn"],approved:["เผยแพร่แล้ว","good"],rejected:["ถูกซ่อนโดยทีมงาน","bad"]};
 function renderMine(list){
   const box=$("myListings");
   if(!list||!list.length){box.innerHTML="";return}
@@ -280,7 +280,7 @@ $("myListings").addEventListener("click",async e=>{
   e.target.disabled=true;
   const j=await api("/api/listings/"+encodeURIComponent(id),{method:"DELETE"});
   if(!j.ok){toast(j.error||"ลบไม่สำเร็จ");e.target.disabled=false;return}
-  toast("ลบประกาศแล้ว");loadMe();
+  toast("ลบประกาศแล้ว");loadMe();loadListings();
 });
 function setUser(u,list){
   $("sellFields").disabled=!u;
@@ -321,16 +321,18 @@ $("sellForm").addEventListener("submit",async e=>{
   $("sellBtn").disabled=false;
   if(!j.ok){$("sellOk").innerHTML=`<div class="err">${esc(j.error||"ส่งประกาศไม่สำเร็จ")}</div>`;if(j.error&&/ล็อกอิน/.test(j.error))setUser(null,[]);return}
   track("submit_listing",{brand:body.brand,province:body.prov,value:+body.price,currency:"THB"});
-  $("sellOk").innerHTML=`<div class="ok">ส่งประกาศแล้ว ทีมงานจะตรวจและเผยแพร่ภายใน 24 ชั่วโมง ดูสถานะได้ที่รายการด้านล่าง</div>`;
+  $("sellOk").innerHTML=`<div class="ok">ลงประกาศแล้ว ประกาศของคุณขึ้นเป็นคันแรกในรายการรถ <a href="#listing-${esc(j.listing.id)}">ดูประกาศ</a></div>`;
   ["slModel","slSub","slKm","slPrice","slNote"].forEach(id=>$(id).value="");$("slConsent").checked=false;
-  loadMe();
+  loadMe();await loadListings();state.sort="new";$("sort").value="new";render();
 });
 
 /* ประกาศจริงที่อนุมัติแล้ว ขึ้นก่อนรถตัวอย่าง */
 async function loadListings(){
   if(!AUTH)return;
   const j=await api("/api/listings");
-  if(!j.ok||!j.listings||!j.listings.length)return;
+  if(!j.ok||!j.listings)return;
+  for(let i=CARS.length-1;i>=0;i--)if(CARS[i].user)CARS.splice(i,1);
+  if(!j.listings.length){refreshModels();render();return}
   const now=Date.now();
   const extra=j.listings.map((l,i)=>({id:100000+i,uid:l.id,user:true,code:"KT-U"+String(l.id).slice(-6).toUpperCase(),url:"#listing-"+l.id,
     brand:l.brand,model:l.model,sub:l.sub||"",year:l.year,price:l.price,km:l.km,body:l.body,gear:l.gear,fuel:l.fuel,color:l.color,prov:l.prov,
