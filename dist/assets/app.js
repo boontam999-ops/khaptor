@@ -35,6 +35,7 @@ const slug=c=>(c.year+"-"+c.brand+"-"+c.model+"-"+c.id).toLowerCase().replace(/[
 const BASE=(document.body.dataset.base||"");
 /* Analytics: no-op until GA4 is configured and consent given (see site.js) */
 const track=(name,params)=>{try{window.ktTrack&&window.ktTrack(name,params||{})}catch(e){}};
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt=n=>Math.round(n).toLocaleString("th-TH");
 const $=id=>document.getElementById(id);
 let favs=new Set();
@@ -88,9 +89,14 @@ function fillSelect(el,items,first){el.innerHTML=(first?`<option value="">${firs
 fillSelect($("sBrand"),brands,"ทุกยี่ห้อ");
 fillSelect($("sYear"),Array.from({length:11},(_,i)=>2025-i).map(y=>[y,"ตั้งแต่ "+y]),"ทุกปี");
 fillSelect($("sProv"),PROVS,"ทุกจังหวัด");
-fillSelect($("slBrand"),[...brands,"อื่นๆ"]);
-fillSelect($("slYear"),Array.from({length:20},(_,i)=>2026-i));
-fillSelect($("slProv"),PROVS);
+const SELL_BRANDS=["BMW","BYD","Chevrolet","Ford","Honda","Hyundai","Isuzu","Kia","Mazda","Mercedes-Benz","MG","Mitsubishi","Nissan","Subaru","Suzuki","Toyota","Volvo","อื่นๆ"];
+fillSelect($("slBrand"),SELL_BRANDS,"เลือกยี่ห้อ");
+fillSelect($("slYear"),Array.from({length:25},(_,i)=>new Date().getFullYear()-i));
+fillSelect($("slProv"),[...PROVS,"อื่นๆ"],"เลือกจังหวัด");
+fillSelect($("slBody"),Object.entries(BODY),"เลือกประเภท");
+fillSelect($("slGear"),["อัตโนมัติ","ธรรมดา"]);
+fillSelect($("slFuel"),["เบนซิน","ดีเซล","ไฮบริด","ไฟฟ้า"]);
+fillSelect($("slColor"),Object.keys(COLORS));
 function refreshModels(){const b=$("sBrand").value;const ms=[...new Set(CARS.filter(c=>!b||c.brand===b).map(c=>c.model))].sort();fillSelect($("sModel"),ms,"ทุกรุ่น")}
 refreshModels();
 $("sBrand").addEventListener("change",refreshModels);
@@ -136,7 +142,7 @@ function matches(c,skip){
 }
 
 function card(c){
-  const tags=[c.cert?'<span class="tag cert">ผ่านการตรวจสภาพ</span>':"",c.fuel==="ไฟฟ้า"?'<span class="tag ev">EV</span>':"",c.days===0?'<span class="tag">ลงวันนี้</span>':""].join("");
+  const tags=[c.cert?'<span class="tag cert">ผ่านการตรวจสภาพ</span>':"",c.fuel==="ไฟฟ้า"?'<span class="tag ev">EV</span>':"",c.user?'<span class="tag">เจ้าของขายเอง</span>':"",c.days===0?'<span class="tag">ลงวันนี้</span>':""].join("");
   return `<article class="card" tabindex="0" data-id="${c.id}" aria-label="${c.brand} ${c.model} ราคา ${fmt(c.price)} บาท">
     ${picHTML(c)}<div class="tags">${tags}</div>
       <button class="fav ${favs.has(c.id)?"on":""}" type="button" data-fav="${c.id}" aria-label="บันทึกรถคันนี้" aria-pressed="${favs.has(c.id)}">
@@ -144,12 +150,12 @@ function card(c){
       </button>
     </div>
     <div class="cbody">
-      <h3><a href="${BASE}cars/${slug(c)}.html" class="cardlink">${c.year} ${c.brand} ${c.model}</a></h3>
+      <h3><a href="${c.url||BASE+"cars/"+slug(c)+".html"}" class="cardlink">${c.year} ${c.brand} ${c.model}</a></h3>
       <div class="sub">${c.sub}</div>
       <div class="specs"><span>${fmt(c.km)} กม.</span><span>${c.gear}</span><span>${c.fuel}</span><span>${c.prov}</span></div>
       <div class="pricerow">
         <div><div class="price">฿${fmt(c.price)}</div><div class="monthly">ผ่อนประมาณ ฿${fmt(monthly(c.price))}/เดือน</div></div>
-        <div class="plate">${c.plate}<small>${PROV_ABBR[c.prov]}</small></div>
+        <div class="plate">${esc(c.plate)}<small>${esc(PROV_ABBR[c.prov]||c.prov)}</small></div>
       </div>
       <div class="seller">${c.seller==="dealer"?"เต็นท์รถ":"เจ้าของขายเอง"} · ลงประกาศ${c.days===0?"วันนี้":` ${c.days} วันก่อน`}</div>
     </div>
@@ -216,20 +222,21 @@ function openCar(id){
       <div><span>ปีจดทะเบียน</span><b>${c.year}</b></div><div><span>เลขไมล์</span><b>${fmt(c.km)} กม.</b></div>
       <div><span>ประเภท</span><b>${BODY[c.body]}</b></div><div><span>เกียร์</span><b>${c.gear}</b></div>
       <div><span>เชื้อเพลิง</span><b>${c.fuel}</b></div><div><span>สี</span><b>${c.color}</b></div>
-      <div><span>ตรวจสภาพ</span><b style="color:${c.cert?"var(--good)":"var(--muted)"}">${c.cert?"ผ่าน 175 จุด":"ยังไม่ตรวจ"}</b></div><div><span>รหัสประกาศ</span><b>KT-${String(c.id).padStart(5,"0")}</b></div>
+      <div><span>ตรวจสภาพ</span><b style="color:${c.cert?"var(--good)":"var(--muted)"}">${c.cert?"ผ่าน 175 จุด":"ยังไม่ตรวจ"}</b></div><div><span>รหัสประกาศ</span><b>${c.user?esc(c.code):"KT-"+String(c.id).padStart(5,"0")}</b></div>
     </div>
     <div class="contact">
       <button class="btn btn-amber" type="button" id="mCall">ดูเบอร์ผู้ขาย</button>
       <button class="btn btn-line" type="button" id="mLoan">คำนวณค่างวด</button>
-      <a class="btn btn-line" href="${BASE}cars/${slug(c)}.html">ดูหน้าประกาศเต็ม</a>
+      ${c.user?"":`<a class="btn btn-line" href="${BASE}cars/${slug(c)}.html">ดูหน้าประกาศเต็ม</a>`}
       <button class="btn btn-line" type="button" id="mFav">${favs.has(c.id)?"เอาออกจากที่ถูกใจ":"บันทึกไว้"}</button>
     </div>
+    ${c.user&&c.note?`<p style="margin:0;white-space:pre-line">${esc(c.note)}</p>`:""}
     <div id="mPhone"></div>
   </div>`;
   $("modal").classList.add("open");$("mClose").focus();
   $("mClose").onclick=closeModal;
   $("mFav").onclick=()=>toggleFav(c.id);
-  $("mCall").onclick=()=>{track("generate_lead",{currency:"THB",value:c.price,lead_source:"call_seller",item_id:"KT-"+c.id});$("mPhone").innerHTML=`<div class="ok">โทร 08${(c.id*7919%90000000+10000000)} (เบอร์ตัวอย่าง) แจ้งรหัสประกาศ KT-${String(c.id).padStart(5,"0")}</div>`};
+  $("mCall").onclick=()=>{track("generate_lead",{currency:"THB",value:c.price,lead_source:"call_seller",item_id:c.user?c.code:"KT-"+c.id});$("mPhone").innerHTML=c.user?`<div class="ok">${esc(c.sellerName)} โทร ${esc(c.tel)} แจ้งว่าเห็นประกาศ ${esc(c.code)} จากขับต่อ</div>`:`<div class="ok">โทร 08${(c.id*7919%90000000+10000000)} (เบอร์ตัวอย่าง) แจ้งรหัสประกาศ KT-${String(c.id).padStart(5,"0")}</div>`};
   $("mLoan").onclick=()=>{$("cPrice").value=c.price;calc();closeModal();$("loan").scrollIntoView({behavior:"smooth"})};
 }
 function closeModal(){$("modal").classList.remove("open");if(lastFocus)lastFocus.focus();lastFocus=null}
@@ -251,15 +258,92 @@ function calc(){
 }
 let calcTracked=false;["cPrice","cDown","cRate","cTerm"].forEach(id=>$(id).addEventListener("input",()=>{calc();if(!calcTracked){calcTracked=true;track("use_loan_calculator",{})}}));calc();
 
-/* sell form */
-$("sellForm").addEventListener("submit",e=>{
+/* ---- ลงประกาศ: ต้องล็อกอิน Google (ทำงานผ่าน Cloudflare Functions) ---- */
+const AUTH=window.KT_AUTH||null;
+async function api(path,opt){
+  try{
+    const r=await fetch(path,Object.assign({credentials:"same-origin",headers:{"content-type":"application/json"}},opt||{}));
+    try{return await r.json()}catch(e){return{ok:false,error:"เซิร์ฟเวอร์ตอบกลับผิดรูปแบบ ("+r.status+")"}}
+  }catch(e){return{ok:false,error:"เชื่อมต่อไม่ได้ ตรวจอินเทอร์เน็ตแล้วลองใหม่"}}
+}
+const STATUS={pending:["รอตรวจ","warn"],approved:["เผยแพร่แล้ว","good"],rejected:["ไม่ผ่านการตรวจ","bad"]};
+function renderMine(list){
+  const box=$("myListings");
+  if(!list||!list.length){box.innerHTML="";return}
+  box.innerHTML=`<h4 class="mine-h">ประกาศของคุณ</h4>`+list.map(l=>{const st=STATUS[l.status]||["",""];
+    return `<div class="mine"><div><b>${esc(l.year+" "+l.brand+" "+l.model)}</b><small>฿${fmt(l.price)} · ${esc(l.prov)} · ส่งเมื่อ ${new Date(l.created_at).toLocaleDateString("th-TH")}</small></div>
+    <span class="pill ${st[1]}">${st[0]}</span><button type="button" class="btn btn-line btn-sm" data-del="${esc(l.id)}">ลบ</button></div>`}).join("");
+}
+$("myListings").addEventListener("click",async e=>{
+  const id=e.target.getAttribute&&e.target.getAttribute("data-del");if(!id)return;
+  if(e.target.dataset.confirm!=="1"){e.target.dataset.confirm="1";e.target.textContent="กดอีกครั้งเพื่อลบ";return}
+  e.target.disabled=true;
+  const j=await api("/api/listings/"+encodeURIComponent(id),{method:"DELETE"});
+  if(!j.ok){toast(j.error||"ลบไม่สำเร็จ");e.target.disabled=false;return}
+  toast("ลบประกาศแล้ว");loadMe();
+});
+function setUser(u,list){
+  $("sellFields").disabled=!u;
+  $("authBox").hidden=!!u;
+  const bar=$("userBar");bar.hidden=!u;
+  if(u){
+    bar.innerHTML=`<span>ลงประกาศในชื่อ <b>${esc(u.name||u.email)}</b> <small>${esc(u.email)}</small></span><button type="button" class="btn btn-line btn-sm" id="logoutBtn">ออกจากระบบ</button>`;
+    $("logoutBtn").onclick=async()=>{await api("/api/auth/logout",{method:"POST"});try{google.accounts.id.disableAutoSelect()}catch(e){}setUser(null,[]);$("sellOk").innerHTML=""};
+    if(!$("slName").value)$("slName").value=u.name||"";
+  }
+  renderMine(list);
+}
+async function loadMe(){const j=await api("/api/me");if(j.ok)setUser(j.user,j.listings||[]);return j}
+function initGoogle(){
+  const msg=$("authMsg");
+  if(!AUTH){msg.textContent="การลงประกาศใช้ได้บนเว็บจริงที่ khaptor.com";return}
+  if(!AUTH.googleClientId){msg.textContent="ระบบลงประกาศกำลังจะเปิดให้ใช้งานเร็วๆ นี้";return}
+  loadMe();
+  const sc=document.createElement("script");sc.src="https://accounts.google.com/gsi/client";sc.async=true;
+  sc.onload=()=>{
+    google.accounts.id.initialize({client_id:AUTH.googleClientId,ux_mode:"popup",callback:async res=>{
+      msg.textContent="กำลังเข้าสู่ระบบ...";
+      const j=await api("/api/auth/google",{method:"POST",body:JSON.stringify({credential:res.credential})});
+      if(!j.ok){msg.textContent=j.error||"ล็อกอินไม่สำเร็จ ลองใหม่อีกครั้ง";return}
+      track("login",{method:"Google"});await loadMe();$("slBrand").focus();
+    }});
+    google.accounts.id.renderButton($("gBtn"),{theme:"outline",size:"large",text:"signin_with",shape:"pill",locale:"th",width:280});
+  };
+  sc.onerror=()=>{msg.textContent="โหลดปุ่มล็อกอินของ Google ไม่ได้ ลองรีเฟรชหน้า"};
+  document.head.appendChild(sc);
+}
+$("sellForm").addEventListener("submit",async e=>{
   e.preventDefault();
-  const n={id:CARS.length+1,brand:$("slBrand").value,model:$("slModel").value.split(" ")[0]||"รถ",sub:$("slModel").value.split(" ").slice(1).join(" ")||$("slNote").value.slice(0,40)||"เจ้าของขายเอง",year:+$("slYear").value,price:+$("slPrice").value,km:+$("slKm").value,body:"sedan",gear:"อัตโนมัติ",fuel:"เบนซิน",color:"ขาว",prov:$("slProv").value,seller:"owner",cert:false,days:0,plate:"ป้ายแดง"};
-  CARS.push(n);
-  track("submit_listing",{brand:n.brand,province:n.prov,value:n.price,currency:"THB"});
-  $("sellOk").innerHTML=`<div class="ok">ลงประกาศแล้ว รหัส KT-${String(n.id).padStart(5,"0")} ประกาศของคุณขึ้นเป็นคันแรกในรายการรถ (ในหน้าสาธิตนี้ประกาศจะอยู่จนกว่าจะรีเฟรชหน้า)</div>`;
-  e.target.reset();state.sort="new";$("sort").value="new";render();
+  const v=id=>$(id).value.trim();
+  const body={brand:v("slBrand"),model:v("slModel"),sub:v("slSub"),year:v("slYear"),km:v("slKm"),body:v("slBody"),gear:v("slGear"),fuel:v("slFuel"),color:v("slColor"),price:v("slPrice"),prov:v("slProv"),name:v("slName"),tel:v("slTel"),note:v("slNote"),consent:$("slConsent").checked};
+  $("sellBtn").disabled=true;$("sellOk").innerHTML="";
+  const j=await api("/api/listings",{method:"POST",body:JSON.stringify(body)});
+  $("sellBtn").disabled=false;
+  if(!j.ok){$("sellOk").innerHTML=`<div class="err">${esc(j.error||"ส่งประกาศไม่สำเร็จ")}</div>`;if(j.error&&/ล็อกอิน/.test(j.error))setUser(null,[]);return}
+  track("submit_listing",{brand:body.brand,province:body.prov,value:+body.price,currency:"THB"});
+  $("sellOk").innerHTML=`<div class="ok">ส่งประกาศแล้ว ทีมงานจะตรวจและเผยแพร่ภายใน 24 ชั่วโมง ดูสถานะได้ที่รายการด้านล่าง</div>`;
+  ["slModel","slSub","slKm","slPrice","slNote"].forEach(id=>$(id).value="");$("slConsent").checked=false;
+  loadMe();
 });
 
+/* ประกาศจริงที่อนุมัติแล้ว ขึ้นก่อนรถตัวอย่าง */
+async function loadListings(){
+  if(!AUTH)return;
+  const j=await api("/api/listings");
+  if(!j.ok||!j.listings||!j.listings.length)return;
+  const now=Date.now();
+  const extra=j.listings.map((l,i)=>({id:100000+i,uid:l.id,user:true,code:"KT-U"+String(l.id).slice(-6).toUpperCase(),url:"#listing-"+l.id,
+    brand:l.brand,model:l.model,sub:l.sub||"",year:l.year,price:l.price,km:l.km,body:l.body,gear:l.gear,fuel:l.fuel,color:l.color,prov:l.prov,
+    seller:"owner",cert:false,days:Math.max(0,Math.floor((now-Date.parse(l.created_at))/864e5)),plate:"เจ้าของขาย",tel:l.tel,sellerName:l.name,note:l.note||""}));
+  CARS.unshift(...extra);
+  refreshModels();render();
+  openFromHash();
+}
+function openFromHash(){
+  const m=location.hash.match(/^#listing-(.+)$/);
+  if(m){const c=CARS.find(x=>x.uid===m[1]);if(c)openCar(c.id)}
+}
+window.addEventListener("hashchange",openFromHash);
+
 let tt;function toast(t){const el=$("toast");el.textContent=t;el.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>el.classList.remove("show"),1800)}
-saveFavs();render();
+saveFavs();render();initGoogle();loadListings();

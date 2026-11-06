@@ -20,7 +20,8 @@ export async function onRequest(ctx) {
   if (!maybeHtml || !type.includes("text/html")) return res;
 
   const s = await getSettings(ctx.env);
-  let head = `<script>window.KT_ADS=${JSON.stringify(publicView(s)).replace(/</g, "\\u003c")}</script>`;
+  const auth = { googleClientId: ctx.env.GOOGLE_CLIENT_ID || "" };
+  let head = `<script>window.KT_ADS=${JSON.stringify(publicView(s)).replace(/</g, "\\u003c")};window.KT_AUTH=${JSON.stringify(auth).replace(/</g, "\\u003c")}</script>`;
   if (s.ads_enabled && s.adsense_client) {
     const c = esc(s.adsense_client);
     head += `<meta name="google-adsense-account" content="${c}">` +

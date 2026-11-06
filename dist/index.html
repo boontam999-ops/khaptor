@@ -391,19 +391,33 @@ gtag('js',new Date());gtag('config','G-BQV73C8MX1');</script>
 
     <div class="panel">
       <h3>ลงขายรถของคุณ ฟรี</h3>
-      <form class="form-grid" id="sellForm">
+      <div id="authBox" class="authbox">
+        <p id="authMsg">ล็อกอินด้วยบัญชี Google เพื่อลงประกาศ เราใช้ชื่อและอีเมลเพื่อยืนยันตัวตนเท่านั้น อีเมลจะไม่แสดงในประกาศ</p>
+        <div id="gBtn"></div>
+      </div>
+      <div id="userBar" class="userbar" hidden></div>
+      <form class="form-grid" id="sellForm" novalidate>
+        <fieldset id="sellFields" disabled>
         <div class="field"><label for="slBrand">ยี่ห้อ</label><select id="slBrand" required></select></div>
-        <div class="field"><label for="slModel">รุ่น</label><input id="slModel" required placeholder="เช่น City 1.0 Turbo SV"></div>
+        <div class="field"><label for="slModel">รุ่น</label><input id="slModel" required maxlength="40" placeholder="เช่น City"></div>
+        <div class="field full"><label for="slSub">รุ่นย่อย</label><input id="slSub" maxlength="60" placeholder="เช่น 1.0 Turbo SV"></div>
         <div class="field"><label for="slYear">ปีจดทะเบียน</label><select id="slYear" required></select></div>
-        <div class="field"><label for="slKm">เลขไมล์ (กม.)</label><input id="slKm" type="number" required min="0" placeholder="65000"></div>
-        <div class="field"><label for="slPrice">ราคาที่ต้องการ (บาท)</label><input id="slPrice" type="number" required min="1000" placeholder="450000"></div>
+        <div class="field"><label for="slKm">เลขไมล์ (กม.)</label><input id="slKm" type="number" inputmode="numeric" required min="0" placeholder="65000"></div>
+        <div class="field"><label for="slBody">ประเภทรถ</label><select id="slBody" required></select></div>
+        <div class="field"><label for="slGear">เกียร์</label><select id="slGear" required></select></div>
+        <div class="field"><label for="slFuel">เชื้อเพลิง</label><select id="slFuel" required></select></div>
+        <div class="field"><label for="slColor">สี</label><select id="slColor" required></select></div>
+        <div class="field"><label for="slPrice">ราคาที่ต้องการ (บาท)</label><input id="slPrice" type="number" inputmode="numeric" required min="10000" placeholder="450000"></div>
         <div class="field"><label for="slProv">จังหวัด</label><select id="slProv" required></select></div>
-        <div class="field"><label for="slName">ชื่อผู้ขาย</label><input id="slName" required></div>
-        <div class="field"><label for="slTel">เบอร์โทร</label><input id="slTel" type="tel" required pattern="0[0-9]{8,9}" placeholder="0812345678"></div>
-        <div class="field full"><label for="slNote">รายละเอียดเพิ่มเติม</label><textarea id="slNote" placeholder="เช่น เจ้าของมือเดียว เข้าศูนย์ตลอด ไม่มีชน"></textarea></div>
-        <button class="btn btn-road full" type="submit">ลงประกาศ</button>
+        <div class="field"><label for="slName">ชื่อผู้ขาย</label><input id="slName" required maxlength="50"></div>
+        <div class="field"><label for="slTel">เบอร์โทร</label><input id="slTel" type="tel" inputmode="tel" required placeholder="0812345678"></div>
+        <div class="field full"><label for="slNote">รายละเอียดเพิ่มเติม</label><textarea id="slNote" maxlength="600" placeholder="เช่น เจ้าของมือเดียว เข้าศูนย์ตลอด ไม่มีชน"></textarea></div>
+        <label class="full sell-consent"><input type="checkbox" id="slConsent"> ยินยอมให้แสดงชื่อและเบอร์โทรนี้ในประกาศ เพื่อให้ผู้ซื้อติดต่อได้</label>
+        <button class="btn btn-road full" type="submit" id="sellBtn">ส่งประกาศ</button>
+        </fieldset>
       </form>
-      <div id="sellOk"></div>
+      <div id="sellOk" role="status"></div>
+      <div id="myListings"></div>
     </div>
   </div>
 </section>

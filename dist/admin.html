@@ -52,12 +52,24 @@ input:focus-visible,button:focus-visible{outline:3px solid var(--amber);outline-
 .bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .bar .muted{margin:0}
 .hidden{display:none}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.tab{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:6px 14px;font:500 14px var(--body);cursor:pointer}
+.tab.on{background:var(--road);color:#fff;border-color:var(--road)}
+.tab span{opacity:.75;margin-left:2px}
+.li{border-top:1px solid var(--line);padding:14px 0;display:grid;gap:6px}
+.li h3{margin:0;font:600 16px var(--body)}
+.li .meta{color:var(--muted);font-size:13px}
+.li .note{background:var(--bg);border-radius:8px;padding:8px 10px;font-size:14px;white-space:pre-line}
+.li .acts{display:flex;gap:8px;flex-wrap:wrap}
+.btn-good{background:var(--good);color:#fff}
+.btn-bad{background:var(--surface);border:1px solid var(--bad);color:var(--bad)}
+.empty{color:var(--muted);padding:18px 0;text-align:center}
 @media (max-width:640px){.row{grid-template-columns:auto 1fr}.row input[type=text]{grid-column:1/-1}}
 @media (prefers-reduced-motion:reduce){.sw span,.sw span::before{transition:none}}
 </style>
 </head>
 <body>
-<header><h1>แอดมิน ขับต่อ · จัดการโฆษณา</h1><a href="/">ดูหน้าเว็บ</a></header>
+<header><h1>แอดมิน ขับต่อ</h1><a href="/">ดูหน้าเว็บ</a></header>
 <main>
   <section class="card" id="loginCard">
     <h2>เข้าสู่ระบบ</h2>
@@ -71,6 +83,20 @@ input:focus-visible,button:focus-visible{outline:3px solid var(--amber);outline-
 
   <div id="panel" class="hidden" style="display:grid;gap:18px">
     <div class="msg" id="kvWarn"></div>
+
+    <section class="card">
+      <div class="bar" style="justify-content:space-between"><h2>ประกาศขายรถจากผู้ใช้</h2><button class="btn btn-line" id="reloadL" type="button">โหลดใหม่</button></div>
+      <p class="muted">ประกาศใหม่จะรอตรวจก่อน กดอนุมัติแล้วจึงขึ้นเว็บภายในราว 30 วินาที</p>
+      <div class="tabs" role="tablist">
+        <button type="button" class="tab on" data-f="pending">รอตรวจ <span id="cPending">0</span></button>
+        <button type="button" class="tab" data-f="approved">เผยแพร่แล้ว <span id="cApproved">0</span></button>
+        <button type="button" class="tab" data-f="rejected">ไม่ผ่าน <span id="cRejected">0</span></button>
+      </div>
+      <div id="lList"></div>
+      <div class="msg" id="lMsg" style="margin-top:12px"></div>
+    </section>
+
+    <h2 style="font-size:20px;margin:6px 0 -4px">โฆษณา</h2>
 
     <section class="card">
       <div class="master">
@@ -153,10 +179,58 @@ function sync(){
 }
 $("adsOn").addEventListener("change",sync);
 
+var LISTINGS=[],FILTER="pending";
+function escH(t){return String(t==null?"":t).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function adminApi(body){
+  return fetch("/api/admin/listings",{method:"POST",headers:{"content-type":"application/json","x-admin-password":pw},body:JSON.stringify(body)})
+    .then(function(r){return r.json().catch(function(){return{ok:false,error:"HTTP "+r.status}})}).catch(function(){return{ok:false,error:"เชื่อมต่อไม่ได้"}});
+}
+function loadListings(){
+  adminApi({action:"list"}).then(function(r){
+    if(!r.ok){show($("lMsg"),"err",r.error||"โหลดประกาศไม่ได้");return}
+    hide($("lMsg"));LISTINGS=r.listings||[];renderListings();
+  });
+}
+function renderListings(){
+  var n={pending:0,approved:0,rejected:0};LISTINGS.forEach(function(l){n[l.status]=(n[l.status]||0)+1});
+  $("cPending").textContent=n.pending;$("cApproved").textContent=n.approved;$("cRejected").textContent=n.rejected;
+  var rows=LISTINGS.filter(function(l){return l.status===FILTER});
+  if(!rows.length){$("lList").innerHTML='<div class="empty">ไม่มีประกาศในหมวดนี้</div>';return}
+  $("lList").innerHTML=rows.map(function(l){
+    var o=l.owner||{};
+    return '<div class="li"><h3>'+escH(l.year+" "+l.brand+" "+l.model+" "+(l.sub||""))+' · ฿'+Number(l.price).toLocaleString("th-TH")+'</h3>'+
+      '<div class="meta">'+escH(Number(l.km).toLocaleString("th-TH")+" กม. · "+l.gear+" · "+l.fuel+" · สี"+l.color+" · "+l.prov)+'</div>'+
+      '<div class="meta">ผู้ขาย '+escH(l.name)+' โทร '+escH(l.tel)+' · บัญชี Google '+escH(o.email||"-")+' · ส่งเมื่อ '+new Date(l.created_at).toLocaleString("th-TH")+'</div>'+
+      (l.note?'<div class="note">'+escH(l.note)+'</div>':'')+
+      '<div class="acts">'+
+        (l.status!=="approved"?'<button class="btn btn-good" data-a="approve" data-id="'+escH(l.id)+'">อนุมัติ</button>':'')+
+        (l.status!=="rejected"?'<button class="btn btn-bad" data-a="reject" data-id="'+escH(l.id)+'">'+(l.status==="approved"?"ซ่อนประกาศ":"ไม่อนุมัติ")+'</button>':'')+
+        '<button class="btn btn-line" data-a="delete" data-id="'+escH(l.id)+'">ลบถาวร</button>'+
+      '</div></div>';
+  }).join("");
+}
+document.querySelector(".tabs").addEventListener("click",function(e){
+  var t=e.target.closest(".tab");if(!t)return;FILTER=t.getAttribute("data-f");
+  [].forEach.call(document.querySelectorAll(".tab"),function(x){x.classList.toggle("on",x===t)});renderListings();
+});
+$("reloadL").addEventListener("click",loadListings);
+$("lList").addEventListener("click",function(e){
+  var b=e.target.closest("button[data-a]");if(!b)return;
+  var a=b.getAttribute("data-a"),id=b.getAttribute("data-id");
+  if(a==="delete"&&b.getAttribute("data-c")!=="1"){b.setAttribute("data-c","1");b.textContent="กดอีกครั้งเพื่อลบ";return}
+  b.disabled=true;
+  adminApi({action:a,id:id}).then(function(r){
+    if(!r.ok){show($("lMsg"),"err",r.error||"ทำรายการไม่สำเร็จ");b.disabled=false;return}
+    show($("lMsg"),"ok",{approve:"อนุมัติแล้ว ประกาศจะขึ้นเว็บภายในราว 30 วินาที",reject:"ซ่อนประกาศแล้ว",delete:"ลบประกาศแล้ว"}[a]);
+    loadListings();
+  });
+});
+
 function enter(res){
   $("loginCard").classList.add("hidden");
   $("panel").classList.remove("hidden");
   fill(res.settings,res.kv);
+  loadListings();
 }
 
 $("loginForm").addEventListener("submit",function(e){

@@ -52,6 +52,19 @@
 ส่วน `functions/ads.txt.js` สร้างไฟล์ ads.txt จากรหัสที่ใส่ในหน้าแอดมิน
 แพ็กเกจฟรีของ Cloudflare เรียกใช้ Functions ได้ 100,000 ครั้งต่อวัน และอ่าน KV ได้ 100,000 ครั้งต่อวัน พอสำหรับเว็บที่เพิ่งเริ่ม
 
+## ลงประกาศด้วยบัญชี Google
+คนที่จะลงขายรถต้องล็อกอิน Google ก่อน ประกาศใหม่จะมีสถานะ "รอตรวจ" ให้แอดมินอนุมัติในหน้า admin.html ก่อนขึ้นเว็บ
+ผู้ใช้ 1 บัญชีลงประกาศได้สูงสุด 3 คันต่อวัน และดูหรือลบประกาศของตัวเองได้ในหน้าแรก
+
+ตั้งค่าครั้งเดียว:
+1. Google Cloud Console > APIs & Services > **OAuth consent screen** ตั้งชื่อแอป "ขับต่อ" และใส่อีเมลติดต่อ แล้วเลือก External และ Publish
+2. **Credentials** > **Create credentials** > **OAuth client ID** เลือก Web application
+   ในช่อง Authorized JavaScript origins ใส่ `https://khaptor.com` และ `https://www.khaptor.com`
+3. คัดลอก Client ID (ลงท้ายด้วย `.apps.googleusercontent.com`)
+4. Cloudflare > khaptor > Settings > Variables and Secrets > Add เลือก Type: **Text** ตั้งชื่อ `GOOGLE_CLIENT_ID` แล้ววาง Client ID จากนั้น Retry deployment
+
+ข้อมูลประกาศเก็บใน KV เดียวกับการตั้งค่าโฆษณา (SETTINGS) ไม่ต้องสร้างเพิ่ม และกุญแจสำหรับเซ็น session สร้างให้อัตโนมัติ
+
 ## Google AdSense
 1. สมัครที่ adsense.google.com โดยใช้โดเมนของคุณ แล้วใส่ `ca-pub-...` ในหน้าแอดมิน
    ระบบจะใส่ meta tag ยืนยัน สคริปต์ AdSense และไฟล์ `ads.txt` ให้เอง
