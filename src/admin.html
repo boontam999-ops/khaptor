@@ -64,6 +64,10 @@ input:focus-visible,button:focus-visible{outline:3px solid var(--amber);outline-
 .btn-good{background:var(--good);color:#fff}
 .btn-bad{background:var(--surface);border:1px solid var(--bad);color:var(--bad)}
 .empty{color:var(--muted);padding:18px 0;text-align:center}
+.aphs{display:flex;flex-wrap:wrap;gap:8px}
+.aph{display:grid;gap:4px;width:120px}
+.aph img{width:120px;height:90px;object-fit:cover;border-radius:8px;display:block}
+.aph .btn{padding:4px 8px;font-size:12px}
 @media (max-width:640px){.row{grid-template-columns:auto 1fr}.row input[type=text]{grid-column:1/-1}}
 @media (prefers-reduced-motion:reduce){.sw span,.sw span::before{transition:none}}
 </style>
@@ -202,6 +206,7 @@ function renderListings(){
       '<div class="meta">'+escH(Number(l.km).toLocaleString("th-TH")+" กม. · "+l.gear+" · "+l.fuel+" · สี"+l.color+" · "+l.prov)+'</div>'+
       (l.sold?'<div class="meta" style="color:var(--bad);font-weight:600">ผู้ขายแจ้งว่าขายแล้ว</div>':'')+'<div class="meta">ผู้ขาย '+escH(l.name)+' โทร '+escH(l.tel)+' · บัญชี Google '+escH(o.email||"-")+' · ส่งเมื่อ '+new Date(l.created_at).toLocaleString("th-TH")+'</div>'+
       (l.note?'<div class="note">'+escH(l.note)+'</div>':'')+
+      ((l.photos&&l.photos.length)?'<div class="aphs">'+l.photos.map(function(p){return '<span class="aph"><a href="/p/'+escH(p)+'.jpg" target="_blank" rel="noopener"><img src="/p/'+escH(p)+'-t.jpg" alt=""></a><button class="btn btn-bad" data-a="remove_photo" data-id="'+escH(l.id)+'" data-photo="'+escH(p)+'">ลบรูป</button></span>'}).join('')+'</div>':'')+
       '<div class="acts">'+
         (l.status!=="approved"?'<button class="btn btn-good" data-a="approve" data-id="'+escH(l.id)+'">'+(l.status==="rejected"?"แสดงอีกครั้ง":"อนุมัติ")+'</button>':'')+
         (l.status!=="rejected"?'<button class="btn btn-bad" data-a="reject" data-id="'+escH(l.id)+'">'+(l.status==="approved"?"ซ่อนประกาศ":"ไม่อนุมัติ")+'</button>':'')+
@@ -219,9 +224,9 @@ $("lList").addEventListener("click",function(e){
   var a=b.getAttribute("data-a"),id=b.getAttribute("data-id");
   if(a==="delete"&&b.getAttribute("data-c")!=="1"){b.setAttribute("data-c","1");b.textContent="กดอีกครั้งเพื่อลบ";return}
   b.disabled=true;
-  adminApi({action:a,id:id}).then(function(r){
+  adminApi({action:a,id:id,photo:b.getAttribute("data-photo")}).then(function(r){
     if(!r.ok){show($("lMsg"),"err",r.error||"ทำรายการไม่สำเร็จ");b.disabled=false;return}
-    show($("lMsg"),"ok",{approve:"แสดงประกาศบนเว็บแล้ว",reject:"ซ่อนประกาศแล้ว",delete:"ลบประกาศแล้ว"}[a]);
+    show($("lMsg"),"ok",{approve:"แสดงประกาศบนเว็บแล้ว",reject:"ซ่อนประกาศแล้ว",delete:"ลบประกาศแล้ว",remove_photo:"ลบรูปแล้ว"}[a]);
     loadListings();
   });
 });

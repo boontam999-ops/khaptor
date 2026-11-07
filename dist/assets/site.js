@@ -86,6 +86,21 @@
     shareTrack(m,box);
   });
 
+  /* ---- แกลเลอรีรูป (หน้าประกาศและกล่องรายละเอียด) ---- */
+  function gTrack(el){var g=el.closest(".sheet-media, .car-hero, .gallery-box")||el.closest("[data-gallery]").parentNode;return g.querySelector(".g-track")}
+  document.addEventListener("click",function(e){
+    var b=e.target.closest&&e.target.closest("[data-g],[data-gi]");if(!b)return;
+    var t=gTrack(b);if(!t)return;
+    if(b.hasAttribute("data-g"))t.scrollBy({left:+b.getAttribute("data-g")*t.clientWidth,behavior:"smooth"});
+    else t.scrollTo({left:+b.getAttribute("data-gi")*t.clientWidth,behavior:"smooth"});
+  });
+  document.addEventListener("scroll",function(e){
+    var t=e.target;if(!t.classList||!t.classList.contains("g-track"))return;
+    var i=Math.round(t.scrollLeft/Math.max(1,t.clientWidth)),g=t.parentNode,c=g.querySelector(".g-count");
+    if(c)c.textContent=(i+1)+"/"+t.children.length;
+    var th=g.parentNode.querySelectorAll(".g-thumbs button");for(var k=0;k<th.length;k++)th[k].classList.toggle("on",k===i);
+  },true);
+
   function init(){
     window.ktInitShare();
     var choice=getChoice();

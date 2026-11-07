@@ -79,6 +79,7 @@ function carSVG(c){
   </svg>`;
 }
 function picHTML(c){
+  if(c.photos&&c.photos.length)return `<div class="pic has-photo"><img src="/p/${esc(c.photos[0])}-t.jpg" alt="${esc(c.year+" "+c.brand+" "+c.model)}" loading="lazy">${c.photos.length>1?`<span class="ph-count">${c.photos.length} รูป</span>`:""}`;
   const bg=`hsl(${(c.id*37)%360} 22% ${document.documentElement.dataset.theme==="dark"?"22%":"91%"})`;
   return `<div class="pic" style="background:linear-gradient(180deg,${bg},color-mix(in srgb,${bg} 70%,#000 6%))">${carSVG(c)}`;
 }
@@ -224,7 +225,7 @@ function openCar(id){
   const c=CARS.find(x=>x.id===id);lastFocus=lastFocus||document.activeElement;
   const m=monthly(c.price);
   track("view_item",{currency:"THB",value:c.price,items:[{item_id:"KT-"+c.id,item_name:c.year+" "+c.brand+" "+c.model,item_brand:c.brand,price:c.price}]});
-  $("sheet").innerHTML=`${picHTML(c)}</div>
+  $("sheet").innerHTML=`${c.photos&&c.photos.length?`<div class="sheet-media">${galleryHTML(c.photos,c.year+" "+c.brand+" "+c.model)}</div>`:picHTML(c)+"</div>"}
   <div class="info">
     <button class="x" type="button" id="mClose" aria-label="ปิด">✕</button>
     <div><div class="sub" style="color:var(--muted);font-size:13px">${c.seller==="dealer"?"เต็นท์รถ":"เจ้าของขายเอง"} · ${c.prov}</div>
@@ -274,6 +275,76 @@ function calc(){
 }
 let calcTracked=false;["cPrice","cDown","cRate","cTerm"].forEach(id=>$(id).addEventListener("input",()=>{calc();if(!calcTracked){calcTracked=true;track("use_loan_calculator",{})}}));calc();
 
+/* ---- รูปรถ: ย่อและลบ EXIF ในเบราว์เซอร์ แล้วอัปโหลดทีละรูป ---- */
+const MAX_PHOTOS=8;
+async function loadBitmap(file){
+  try{return await createImageBitmap(file,{imageOrientation:"from-image"})}catch(e){}
+  return await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=()=>no(new Error("เปิดไฟล์รูปนี้ไม่ได้ ลองใช้รูป JPG หรือ PNG"));i.src=URL.createObjectURL(file)});
+}
+function toJpeg(bmp,max,q){
+  const w=bmp.width,h=bmp.height,s=Math.min(1,max/Math.max(w,h));
+  const c=document.createElement("canvas");c.width=Math.max(1,Math.round(w*s));c.height=Math.max(1,Math.round(h*s));
+  const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(bmp,0,0,c.width,c.height);
+  return new Promise((ok,no)=>c.toBlob(b=>b?ok(b):no(new Error("แปลงรูปไม่สำเร็จ")),"image/jpeg",q));
+}
+async function uploadPhoto(file){
+  if(!/^image\//.test(file.type||"image/"))throw new Error("ไฟล์นี้ไม่ใช่รูปภาพ");
+  const bmp=await loadBitmap(file);
+  let full=await toJpeg(bmp,1280,.8);if(full.size>880*1024)full=await toJpeg(bmp,1280,.62);
+  const thumb=await toJpeg(bmp,480,.72);
+  const fd=new FormData();fd.append("full",full,"full.jpg");fd.append("thumb",thumb,"thumb.jpg");
+  let j;
+  try{const r=await fetch("/api/photos",{method:"POST",body:fd,credentials:"same-origin"});try{j=await r.json()}catch(e){j={ok:false,error:"อัปโหลดไม่สำเร็จ ("+r.status+")"}}}
+  catch(e){j={ok:false,error:"เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง"}}
+  if(!j.ok)throw new Error(j.error||"อัปโหลดไม่สำเร็จ");
+  return j.id;
+}
+class PhotoPicker{
+  constructor(el,ids){this.el=el;this.items=[];this.reset(ids);
+    el.addEventListener("click",e=>{const b=e.target.closest("[data-pact]");if(!b)return;e.preventDefault();
+      const i=+b.getAttribute("data-i"),a=b.getAttribute("data-pact"),it=this.items;
+      if(a==="del")it.splice(i,1);
+      else if(a==="left"&&i>0)[it[i-1],it[i]]=[it[i],it[i-1]];
+      else if(a==="right"&&i<it.length-1)[it[i+1],it[i]]=[it[i],it[i+1]];
+      else if(a==="cover"&&i>0)it.unshift(it.splice(i,1)[0]);
+      this.render()});
+    el.addEventListener("change",e=>{if(e.target.matches("input[type=file]")){this.add([...e.target.files]);e.target.value=""}});
+  }
+  reset(ids){this.items=(ids||[]).map(id=>({id,url:"/p/"+id+"-t.jpg",status:"ok"}));this.render()}
+  ids(){return this.items.filter(x=>x.status==="ok").map(x=>x.id)}
+  busy(){return this.items.some(x=>x.status==="up")}
+  add(files){
+    const room=MAX_PHOTOS-this.items.length;
+    if(files.length>room)toast(`ใส่รูปได้อีก ${room} รูป`);
+    files.slice(0,Math.max(0,room)).forEach(f=>{
+      const it={id:null,url:URL.createObjectURL(f),status:"up"};this.items.push(it);
+      uploadPhoto(f).then(id=>{it.id=id;it.status="ok"},err=>{it.status="err";it.msg=err.message}).then(()=>this.render());
+    });
+    this.render();
+  }
+  render(){
+    const n=this.items.length;
+    this.el.innerHTML=this.items.map((it,i)=>`<div class="ph-tile ${it.status}">
+      <img src="${esc(it.url)}" alt="รูปที่ ${i+1}">
+      ${i===0&&it.status==="ok"?'<span class="ph-cover">รูปปก</span>':""}
+      ${it.status==="up"?'<span class="ph-state">กำลังอัปโหลด...</span>':""}
+      ${it.status==="err"?`<span class="ph-state err">${esc(it.msg||"อัปโหลดไม่สำเร็จ")}</span>`:""}
+      <div class="ph-acts">
+        ${i>0&&it.status==="ok"?`<button type="button" data-pact="cover" data-i="${i}" title="ตั้งเป็นรูปปก">ปก</button>`:""}
+        ${i>0?`<button type="button" data-pact="left" data-i="${i}" aria-label="เลื่อนไปทางซ้าย">‹</button>`:""}
+        ${i<n-1?`<button type="button" data-pact="right" data-i="${i}" aria-label="เลื่อนไปทางขวา">›</button>`:""}
+        <button type="button" data-pact="del" data-i="${i}" aria-label="ลบรูปนี้">✕</button>
+      </div></div>`).join("")+(n<MAX_PHOTOS?`<label class="ph-add"><input type="file" accept="image/*" multiple hidden><span>+ เพิ่มรูป</span><small>${n}/${MAX_PHOTOS}</small></label>`:"");
+  }
+}
+function galleryHTML(photos,alt){
+  const n=photos.length;
+  return `<div class="gallery" data-gallery><div class="g-track">${photos.map((p,i)=>`<img src="/p/${esc(p)}.jpg" alt="${esc(alt)} รูปที่ ${i+1}"${i?' loading="lazy"':""}>`).join("")}</div>
+  ${n>1?`<button type="button" class="g-nav g-prev" data-g="-1" aria-label="รูปก่อนหน้า">‹</button><button type="button" class="g-nav g-next" data-g="1" aria-label="รูปถัดไป">›</button><span class="g-count">1/${n}</span>`:""}</div>
+  ${n>1?`<div class="g-thumbs">${photos.map((p,i)=>`<button type="button"${i?"":` class="on"`} data-gi="${i}" aria-label="ดูรูปที่ ${i+1}"><img src="/p/${esc(p)}-t.jpg" alt=""></button>`).join("")}</div>`:""}`;
+}
+const sellPicker=new PhotoPicker($("slPhotos"),[]);
+
 /* ---- ลงประกาศ: ต้องล็อกอิน Google (ทำงานผ่าน Cloudflare Functions) ---- */
 const AUTH=window.KT_AUTH||null;
 async function api(path,opt){
@@ -288,9 +359,28 @@ function renderMine(list){
   if(!list||!list.length){box.innerHTML="";return}
   box.innerHTML=`<h4 class="mine-h">ประกาศของคุณ</h4>`+list.map(l=>{const st=STATUS[l.status]||["",""];
     return `<div class="mine"><div><b>${esc(l.year+" "+l.brand+" "+l.model)}</b><small>฿${fmt(l.price)} · ${esc(l.prov)} · ส่งเมื่อ ${new Date(l.created_at).toLocaleDateString("th-TH")}</small></div>
-    <span class="pill ${l.sold?"sold":st[1]}">${l.sold?"ขายแล้ว":st[0]}</span><span class="mine-acts"><button type="button" class="btn btn-sm ${l.sold?"btn-line":"btn-road"}" data-sold="${esc(l.id)}" data-v="${l.sold?"0":"1"}">${l.sold?"ยังไม่ขาย":"ขายแล้ว"}</button><button type="button" class="btn btn-line btn-sm" data-del="${esc(l.id)}">ลบ</button></span></div>`}).join("");
+    <span class="pill ${l.sold?"sold":st[1]}">${l.sold?"ขายแล้ว":st[0]}</span><span class="mine-acts"><button type="button" class="btn btn-line btn-sm" data-editph="${esc(l.id)}">แก้รูป (${(l.photos||[]).length})</button><button type="button" class="btn btn-sm ${l.sold?"btn-line":"btn-road"}" data-sold="${esc(l.id)}" data-v="${l.sold?"0":"1"}">${l.sold?"ยังไม่ขาย":"ขายแล้ว"}</button><button type="button" class="btn btn-line btn-sm" data-del="${esc(l.id)}">ลบ</button></span><div class="mine-edit" id="me-${esc(l.id)}" hidden></div></div>`}).join("");
+  MINE=list;
 }
+let MINE=[];
 $("myListings").addEventListener("click",async e=>{
+  const eid=e.target.getAttribute&&e.target.getAttribute("data-editph");
+  if(eid){
+    const box=$("me-"+eid);if(!box)return;
+    if(!box.hidden){box.hidden=true;box.innerHTML="";return}
+    const l=MINE.find(x=>x.id===eid)||{};
+    box.hidden=false;box.innerHTML=`<div class="ph-grid"></div><div class="mine-edit-acts"><button type="button" class="btn btn-road btn-sm" data-saveph>บันทึกรูป</button><button type="button" class="btn btn-line btn-sm" data-cancelph>ยกเลิก</button></div>`;
+    const pk=new PhotoPicker(box.querySelector(".ph-grid"),l.photos||[]);
+    box.querySelector("[data-cancelph]").onclick=()=>{box.hidden=true;box.innerHTML=""};
+    box.querySelector("[data-saveph]").onclick=async ev=>{
+      if(pk.busy()){toast("รอให้อัปโหลดรูปเสร็จก่อน");return}
+      ev.target.disabled=true;
+      const j=await api("/api/listings/"+encodeURIComponent(eid),{method:"PATCH",body:JSON.stringify({photos:pk.ids()})});
+      if(!j.ok){toast(j.error||"บันทึกไม่สำเร็จ");ev.target.disabled=false;return}
+      toast("บันทึกรูปแล้ว");loadMe();loadListings();
+    };
+    return;
+  }
   const sid=e.target.getAttribute&&e.target.getAttribute("data-sold");
   if(sid){
     const sold=e.target.getAttribute("data-v")==="1";e.target.disabled=true;
@@ -339,14 +429,15 @@ function initGoogle(){
 $("sellForm").addEventListener("submit",async e=>{
   e.preventDefault();
   const v=id=>$(id).value.trim();
-  const body={brand:v("slBrand"),model:v("slModel"),sub:v("slSub"),year:v("slYear"),km:v("slKm"),body:v("slBody"),gear:v("slGear"),fuel:v("slFuel"),color:v("slColor"),price:v("slPrice"),prov:v("slProv"),name:v("slName"),tel:v("slTel"),note:v("slNote"),consent:$("slConsent").checked};
+  if(sellPicker.busy()){$("sellOk").innerHTML=`<div class="err">รอให้อัปโหลดรูปเสร็จก่อน</div>`;return}
+  const body={photos:sellPicker.ids(),brand:v("slBrand"),model:v("slModel"),sub:v("slSub"),year:v("slYear"),km:v("slKm"),body:v("slBody"),gear:v("slGear"),fuel:v("slFuel"),color:v("slColor"),price:v("slPrice"),prov:v("slProv"),name:v("slName"),tel:v("slTel"),note:v("slNote"),consent:$("slConsent").checked};
   $("sellBtn").disabled=true;$("sellOk").innerHTML="";
   const j=await api("/api/listings",{method:"POST",body:JSON.stringify(body)});
   $("sellBtn").disabled=false;
   if(!j.ok){$("sellOk").innerHTML=`<div class="err">${esc(j.error||"ส่งประกาศไม่สำเร็จ")}</div>`;if(j.error&&/ล็อกอิน/.test(j.error))setUser(null,[]);return}
   track("submit_listing",{brand:body.brand,province:body.prov,value:+body.price,currency:"THB"});
   $("sellOk").innerHTML=`<div class="ok">ลงประกาศแล้ว ประกาศของคุณขึ้นเป็นคันแรกในรายการรถ <a href="/l/${esc(j.listing.id)}">ดูหน้าประกาศ</a></div>`;
-  ["slModel","slSub","slKm","slPrice","slNote"].forEach(id=>$(id).value="");$("slConsent").checked=false;
+  ["slModel","slSub","slKm","slPrice","slNote"].forEach(id=>$(id).value="");$("slConsent").checked=false;sellPicker.reset([]);
   loadMe();await loadListings();state.sort="new";$("sort").value="new";render();
 });
 
@@ -360,7 +451,7 @@ async function loadListings(){
   const now=Date.now();
   const extra=j.listings.map((l,i)=>({id:100000+i,uid:l.id,user:true,code:"KT-U"+String(l.id).slice(-6).toUpperCase(),url:"/l/"+l.id,
     brand:l.brand,model:l.model,sub:l.sub||"",year:l.year,price:l.price,km:l.km,body:l.body,gear:l.gear,fuel:l.fuel,color:l.color,prov:l.prov,
-    seller:"owner",cert:false,days:Math.max(0,Math.floor((now-Date.parse(l.created_at))/864e5)),plate:"เจ้าของขาย",tel:l.tel,sellerName:l.name,note:l.note||"",sold:!!l.sold}));
+    seller:"owner",cert:false,days:Math.max(0,Math.floor((now-Date.parse(l.created_at))/864e5)),plate:"เจ้าของขาย",tel:l.tel,sellerName:l.name,note:l.note||"",sold:!!l.sold,photos:Array.isArray(l.photos)?l.photos:[]}));
   CARS.unshift(...extra);
   refreshModels();render();
   openFromHash();

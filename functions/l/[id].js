@@ -27,12 +27,13 @@ export async function onRequestGet({ request, env, params }) {
   const code = "KT-U" + id.slice(-6).toUpperCase();
   const title = `${name} ${l.sub || ""} มือสอง ราคา ${fmt(l.price)} บาท${l.sold ? " (ขายแล้ว)" : ""} | ขับต่อ`.replace(/\s+/g, " ");
   const desc = `ขาย ${name} ${l.sub || ""} สี${l.color} ไมล์ ${fmt(l.km)} กม. เกียร์${l.gear} ${l.fuel} ที่${l.prov} ราคา ${fmt(l.price)} บาท เจ้าของขายเอง`.replace(/\s+/g, " ");
-  const ogImg = `og/gen-${l.body}-${COLOR_SLUG[l.color] || "white"}.jpg`;
+  const photos = Array.isArray(l.photos) ? l.photos.filter(p => /^[a-z0-9]{10}$/.test(p)) : [];
+  const ogImg = photos.length ? `p/${photos[0]}.jpg` : `og/gen-${l.body}-${COLOR_SLUG[l.color] || "white"}.jpg`;
   const share = `${name} ${l.sub || ""} ราคา ${fmt(l.price)} บาท`.replace(/\s+/g, " ");
   const u = encodeURIComponent(url), t = encodeURIComponent(share);
 
   const ld = {
-    "@context": "https://schema.org", "@type": "Car", name: `${name} ${l.sub || ""}`.trim(), url, image: `${origin}/${ogImg}`,
+    "@context": "https://schema.org", "@type": "Car", name: `${name} ${l.sub || ""}`.trim(), url, image: photos.length ? photos.map(p => `${origin}/p/${p}.jpg`) : `${origin}/${ogImg}`,
     description: desc, brand: { "@type": "Brand", name: l.brand }, model: l.model, vehicleModelDate: String(l.year),
     bodyType: BODY_SCHEMA[l.body], color: l.color, fuelType: FUEL_SCHEMA[l.fuel],
     vehicleTransmission: l.gear === "อัตโนมัติ" ? "AutomaticTransmission" : "ManualTransmission",
@@ -49,7 +50,8 @@ export async function onRequestGet({ request, env, params }) {
   const main = `<main class="wrap carpage">
   <nav class="crumbs" aria-label="เส้นทาง"><ol><li><a href="../index.html">หน้าแรก</a></li><li><a href="../index.html#buy">รถมือสอง</a></li><li aria-current="page">${esc(name)}</li></ol></nav>
   <div class="car-top">
-    <div class="pic car-hero" style="background:hsl(${[...id].reduce((a, c) => a + c.charCodeAt(0), 0) % 360} 22% 91%)">${carSVG(l.body, l.color, esc(`ภาพประกอบ ${name} สี${l.color}`))}</div>
+    ${photos.length ? `<div class="car-hero gallery-box"><div class="gallery" data-gallery><div class="g-track">${photos.map((p, i) => `<img src="/p/${p}.jpg" alt="${esc(name)} รูปที่ ${i + 1}"${i ? ' loading="lazy"' : ""}>`).join("")}</div>${photos.length > 1 ? `<button type="button" class="g-nav g-prev" data-g="-1" aria-label="รูปก่อนหน้า">‹</button><button type="button" class="g-nav g-next" data-g="1" aria-label="รูปถัดไป">›</button><span class="g-count">1/${photos.length}</span>` : ""}</div>${photos.length > 1 ? `<div class="g-thumbs">${photos.map((p, i) => `<button type="button"${i ? "" : ' class="on"'} data-gi="${i}" aria-label="ดูรูปที่ ${i + 1}"><img src="/p/${p}-t.jpg" alt=""></button>`).join("")}</div>` : ""}</div>`
+      : `<div class="pic car-hero" style="background:hsl(${[...id].reduce((a, c) => a + c.charCodeAt(0), 0) % 360} 22% 91%)">${carSVG(l.body, l.color, esc(`ภาพประกอบ ${name} สี${l.color}`))}</div>`}
     <div class="car-info">
       <div class="sub" style="color:var(--muted);font-size:13px">เจ้าของขายเอง · ${esc(l.prov)} · ลงประกาศ ${thDate(l.created_at)}</div>
       <h1>${esc(name)} <span>${esc(l.sub || "")}</span></h1>

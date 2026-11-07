@@ -1,5 +1,6 @@
 import { checkAuth, json } from "../../../lib/settings.js";
 import { listAll, getListing, saveListing, indexRemove, rebuildPublic } from "../../../lib/listings.js";
+import { deletePhotos } from "../../../lib/photos.js";
 
 // POST /api/admin/listings  {action:"list"} | {action:"approve"|"reject"|"delete", id}  ต้องมี X-Admin-Password
 export async function onRequestPost({ request, env }) {
@@ -18,6 +19,12 @@ export async function onRequestPost({ request, env }) {
   } else if (b.action === "delete") {
     await env.SETTINGS.delete("listing:" + l.id);
     await indexRemove(env, l);
+    await deletePhotos(env, l.photos);
+  } else if (b.action === "remove_photo") {
+    const pid = String(b.photo || "");
+    l.photos = (l.photos || []).filter(x => x !== pid);
+    await deletePhotos(env, [pid]);
+    await saveListing(env, l);
   } else return json({ ok: false, error: "action ไม่รู้จัก" }, 400);
   await rebuildPublic(env);
   return json({ ok: true });
