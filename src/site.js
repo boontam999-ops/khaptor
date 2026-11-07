@@ -58,9 +58,11 @@
   /* ---- car page: reveal phone + lead event ---- */
   document.addEventListener("click",function(e){
     var b=e.target.closest&&e.target.closest("[data-call]");if(!b)return;
-    var id=+b.getAttribute("data-call"),price=+b.getAttribute("data-price");
-    window.ktTrack("generate_lead",{currency:"THB",value:price,lead_source:"call_seller",item_id:"KT-"+id});
+    var id=b.getAttribute("data-call"),price=+b.getAttribute("data-price"),tel=b.getAttribute("data-tel");
+    window.ktTrack("generate_lead",{currency:"THB",value:price,lead_source:"call_seller",item_id:tel?id:"KT-"+id});
     var box=document.querySelector("[data-phone]");
+    if(box&&tel){var d=document.createElement("div");d.className="ok";d.textContent=(b.getAttribute("data-name")||"ผู้ขาย")+" โทร "+tel+" แจ้งว่าเห็นประกาศ "+id+" จากขับต่อ";box.innerHTML="";box.appendChild(d);return}
+    id=+id;
     if(box)box.innerHTML='<div class="ok">โทร 08'+(id*7919%90000000+10000000)+' (เบอร์ตัวอย่าง) แจ้งรหัสประกาศ KT-'+String(id).padStart(5,"0")+'</div>';
   });
 

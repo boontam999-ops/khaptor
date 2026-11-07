@@ -484,6 +484,9 @@ def build():
              f'<div class="posts">{"".join(post_card(p, "../") for p in POSTS)}</div></main>',
              "../", ld=[bc_ld])
 
+    # ---- template for user listing pages (filled by functions/l/[id].js) ----
+    page("l/_template.html", "%%TITLE%%", "%%DESC%%", "%%MAIN%%", "../", og_image="%%OGIMG%%", og_type="product")
+
     # ---- about, privacy, 404 ----
     base = ""
     page("about.html", f"เกี่ยวกับเรา และติดต่อ {C['SITE_NAME']}", f"{C['SITE_NAME']} ตลาดซื้อขายรถมือสองออนไลน์ ติดต่อทีมงานได้ทางโทรศัพท์และอีเมล",
@@ -521,7 +524,7 @@ def build():
     sm += [f"  <url><loc>{u}</loc><lastmod>{d.isoformat()}</lastmod><changefreq>{f}</changefreq><priority>{p}</priority></url>" for u, d, f, p in urls]
     sm.append("</urlset>")
     (DIST / "sitemap.xml").write_text("\n".join(sm) + "\n", encoding="utf-8")
-    (DIST / "robots.txt").write_text(f"User-agent: *\nAllow: /\nDisallow: /404.html\nDisallow: /admin.html\nDisallow: /api/\n\nSitemap: {D}/sitemap.xml\n", encoding="utf-8")
+    (DIST / "robots.txt").write_text(f"User-agent: *\nAllow: /\nDisallow: /404.html\nDisallow: /admin.html\nDisallow: /api/\nDisallow: /l/_template.html\n\nSitemap: {D}/sitemap.xml\nSitemap: {D}/sitemap-listings.xml\n", encoding="utf-8")
     pub = C["ADSENSE_CLIENT"].replace("ca-", "").strip()
     (DIST / "ads.txt").write_text((f"google.com, {pub}, DIRECT, f08c47fec0942fa0\n" if pub else
                                    "# ใส่ ADSENSE_CLIENT ใน build.py แล้วรันใหม่ ไฟล์นี้จะมีบรรทัดของ Google ให้อัตโนมัติ\n"), encoding="utf-8")

@@ -31,5 +31,14 @@ with sync_playwright() as p:
 <body><div class="pic">{B.car_svg(c)}</div><div class="t"><h1>{B.E(B.car_name(c))}</h1><div class="s">{B.E(c['sub'])} · {B.fmt(c['km'])} กม. · {c['prov']}</div>
 <div class="pr">฿{B.fmt(c['price'])}</div><div class="m">ผ่อนประมาณ ฿{B.fmt(B.monthly(c['price']))}/เดือน</div><div class="br">{logo.format(s=40)} {B.C['SITE_NAME']}</div></div></body></html>""",
              OUT / f"car-{c['id']}.jpg")
+    COLOR_SLUG = {"ขาว": "white", "ดำ": "black", "เทา": "gray", "เงิน": "silver", "แดง": "red", "น้ำเงิน": "blue", "น้ำตาล": "brown"}
+    for body in ["sedan", "hatch", "suv", "pickup", "van"]:
+        for color, cs in COLOR_SLUG.items():
+            c = {"id": 7, "body": body, "color": color, "brand": "", "model": ""}
+            shot(pg, f"""<html><head>{FONT}<style>{BASE_CSS}
+.pic{{flex:1.3;height:100%;border-radius:24px;background:#eef1f5;display:grid;place-items:center}}.pic svg{{width:92%}}
+.t{{flex:.8}}h1{{font-size:52px;line-height:1.15}}p{{font-size:28px;opacity:.85;font-family:'IBM Plex Sans Thai',Loma,sans-serif;margin-top:14px}}</style></head>
+<body><div class="pic">{B.car_svg(c)}</div><div class="t">{logo.format(s=90)}<h1 style="margin-top:22px">{B.C['SITE_NAME']}</h1><p>ประกาศขายรถมือสอง<br>จากเจ้าของโดยตรง</p></div></body></html>""",
+                 OUT / f"gen-{body}-{cs}.jpg")
     b.close()
 print("images ->", OUT)

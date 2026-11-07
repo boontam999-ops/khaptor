@@ -207,7 +207,7 @@ $("grid").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.classList.
 /* ปุ่มแชร์ในกล่องรายละเอียด: รถตัวอย่างแชร์หน้ารถ ประกาศผู้ใช้แชร์ลิงก์ #listing-<id> */
 function shareHTML(c){
   const origin=location.origin.startsWith("http")?location.origin:"https://khaptor.com";
-  const url=c.user?origin+"/#listing-"+c.uid:origin+"/cars/"+slug(c)+".html";
+  const url=c.user?origin+"/l/"+c.uid:origin+"/cars/"+slug(c)+".html";
   const title=`${c.year} ${c.brand} ${c.model} ${c.sub||""} ราคา ${fmt(c.price)} บาท`.replace(/\s+/g," ");
   const u=encodeURIComponent(url),t=encodeURIComponent(title);
   return `<div class="share" data-share-url="${esc(url)}" data-share-title="${esc(title)}"><span class="share-label">แชร์</span>
@@ -242,7 +242,7 @@ function openCar(id){
     <div class="contact">
       ${c.sold?`<span class="sold-note">รถคันนี้ขายแล้ว</span>`:`<button class="btn btn-amber" type="button" id="mCall">ดูเบอร์ผู้ขาย</button>`}
       <button class="btn btn-line" type="button" id="mLoan">คำนวณค่างวด</button>
-      ${c.user?"":`<a class="btn btn-line" href="${BASE}cars/${slug(c)}.html">ดูหน้าประกาศเต็ม</a>`}
+      <a class="btn btn-line" href="${c.user?"/l/"+esc(c.uid):BASE+"cars/"+slug(c)+".html"}">ดูหน้าประกาศเต็ม</a>
       <button class="btn btn-line" type="button" id="mFav">${favs.has(c.id)?"เอาออกจากที่ถูกใจ":"บันทึกไว้"}</button>
     </div>
     ${c.user&&c.note?`<p style="margin:0;white-space:pre-line">${esc(c.note)}</p>`:""}
@@ -345,7 +345,7 @@ $("sellForm").addEventListener("submit",async e=>{
   $("sellBtn").disabled=false;
   if(!j.ok){$("sellOk").innerHTML=`<div class="err">${esc(j.error||"ส่งประกาศไม่สำเร็จ")}</div>`;if(j.error&&/ล็อกอิน/.test(j.error))setUser(null,[]);return}
   track("submit_listing",{brand:body.brand,province:body.prov,value:+body.price,currency:"THB"});
-  $("sellOk").innerHTML=`<div class="ok">ลงประกาศแล้ว ประกาศของคุณขึ้นเป็นคันแรกในรายการรถ <a href="#listing-${esc(j.listing.id)}">ดูประกาศ</a></div>`;
+  $("sellOk").innerHTML=`<div class="ok">ลงประกาศแล้ว ประกาศของคุณขึ้นเป็นคันแรกในรายการรถ <a href="/l/${esc(j.listing.id)}">ดูหน้าประกาศ</a></div>`;
   ["slModel","slSub","slKm","slPrice","slNote"].forEach(id=>$(id).value="");$("slConsent").checked=false;
   loadMe();await loadListings();state.sort="new";$("sort").value="new";render();
 });
@@ -358,7 +358,7 @@ async function loadListings(){
   for(let i=CARS.length-1;i>=0;i--)if(CARS[i].user)CARS.splice(i,1);
   if(!j.listings.length){refreshModels();render();return}
   const now=Date.now();
-  const extra=j.listings.map((l,i)=>({id:100000+i,uid:l.id,user:true,code:"KT-U"+String(l.id).slice(-6).toUpperCase(),url:"#listing-"+l.id,
+  const extra=j.listings.map((l,i)=>({id:100000+i,uid:l.id,user:true,code:"KT-U"+String(l.id).slice(-6).toUpperCase(),url:"/l/"+l.id,
     brand:l.brand,model:l.model,sub:l.sub||"",year:l.year,price:l.price,km:l.km,body:l.body,gear:l.gear,fuel:l.fuel,color:l.color,prov:l.prov,
     seller:"owner",cert:false,days:Math.max(0,Math.floor((now-Date.parse(l.created_at))/864e5)),plate:"เจ้าของขาย",tel:l.tel,sellerName:l.name,note:l.note||"",sold:!!l.sold}));
   CARS.unshift(...extra);
