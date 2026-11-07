@@ -204,6 +204,20 @@ $("grid").addEventListener("click",e=>{
 });
 $("grid").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.classList.contains("card"))openCar(+e.target.dataset.id)});
 
+/* ปุ่มแชร์ในกล่องรายละเอียด: รถตัวอย่างแชร์หน้ารถ ประกาศผู้ใช้แชร์ลิงก์ #listing-<id> */
+function shareHTML(c){
+  const origin=location.origin.startsWith("http")?location.origin:"https://khaptor.com";
+  const url=c.user?origin+"/#listing-"+c.uid:origin+"/cars/"+slug(c)+".html";
+  const title=`${c.year} ${c.brand} ${c.model} ${c.sub||""} ราคา ${fmt(c.price)} บาท`.replace(/\s+/g," ");
+  const u=encodeURIComponent(url),t=encodeURIComponent(title);
+  return `<div class="share" data-share-url="${esc(url)}" data-share-title="${esc(title)}"><span class="share-label">แชร์</span>
+  <button type="button" class="sh sh-native" data-share="native" hidden>แชร์</button>
+  <a class="sh sh-line" data-share="line" href="https://social-plugins.line.me/lineit/share?url=${u}" target="_blank" rel="noopener" aria-label="แชร์ไปที่ LINE">LINE</a>
+  <a class="sh sh-fb" data-share="facebook" href="https://www.facebook.com/sharer/sharer.php?u=${u}" target="_blank" rel="noopener" aria-label="แชร์ไปที่ Facebook">Facebook</a>
+  <a class="sh sh-x" data-share="x" href="https://twitter.com/intent/tweet?url=${u}&text=${t}" target="_blank" rel="noopener" aria-label="แชร์ไปที่ X">X</a>
+  <button type="button" class="sh sh-copy" data-share="copy">คัดลอกลิงก์</button></div>`;
+}
+
 /* detail modal */
 let lastFocus=null;
 function openCar(id){
@@ -233,8 +247,9 @@ function openCar(id){
     </div>
     ${c.user&&c.note?`<p style="margin:0;white-space:pre-line">${esc(c.note)}</p>`:""}
     <div id="mPhone"></div>
+    ${shareHTML(c)}
   </div>`;
-  $("modal").classList.add("open");$("mClose").focus();
+  $("modal").classList.add("open");$("mClose").focus();window.ktInitShare&&window.ktInitShare($("sheet"));
   $("mClose").onclick=closeModal;
   $("mFav").onclick=()=>toggleFav(c.id);
   if($("mCall"))$("mCall").onclick=()=>{track("generate_lead",{currency:"THB",value:c.price,lead_source:"call_seller",item_id:c.user?c.code:"KT-"+c.id});$("mPhone").innerHTML=c.user?`<div class="ok">${esc(c.sellerName)} โทร ${esc(c.tel)} แจ้งว่าเห็นประกาศ ${esc(c.code)} จากขับต่อ</div>`:`<div class="ok">โทร 08${(c.id*7919%90000000+10000000)} (เบอร์ตัวอย่าง) แจ้งรหัสประกาศ KT-${String(c.id).padStart(5,"0")}</div>`};

@@ -402,3 +402,18 @@ footer a:hover{color:#fff}
 .mine{grid-template-columns:1fr auto auto}
 .mine-acts{display:flex;gap:6px}
 @media (max-width:520px){.mine{grid-template-columns:1fr auto}.mine-acts{grid-column:1/-1}}
+/* share buttons */
+.share{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:4px}
+.share-label{font-size:13px;color:var(--muted);font-weight:600;margin-right:2px}
+.sh{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:999px;font:600 13.5px var(--body);text-decoration:none;cursor:pointer;border:1px solid transparent;transition:transform .15s,filter .15s}
+.sh:hover{filter:brightness(1.07);transform:translateY(-1px)}
+.sh-line{background:#06c755;color:#fff}
+.sh-fb{background:#1877f2;color:#fff}
+.sh-x{background:#0f1419;color:#fff}
+.sh-native{background:var(--amber);color:#fff}
+.sh-copy{background:var(--surface);border-color:var(--line);color:var(--ink)}
+.sh-copy.ok-copy{border-color:var(--good);color:var(--good)}
+.sh[hidden]{display:none}
+.article .share{margin:26px 0 6px;padding-top:18px;border-top:1px solid var(--line)}
+:root[data-theme="dark"] .sh-x{background:#2b3648}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sh-x{background:#2b3648}}

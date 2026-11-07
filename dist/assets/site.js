@@ -64,7 +64,28 @@
     if(box)box.innerHTML='<div class="ok">โทร 08'+(id*7919%90000000+10000000)+' (เบอร์ตัวอย่าง) แจ้งรหัสประกาศ KT-'+String(id).padStart(5,"0")+'</div>';
   });
 
+  /* ---- ปุ่มแชร์ ---- */
+  function shareTrack(method,box){window.ktTrack("share",{method:method,content_type:"page",item_id:box.getAttribute("data-share-url")})}
+  window.ktInitShare=function(root){
+    var boxes=(root||document).querySelectorAll(".share");
+    for(var i=0;i<boxes.length;i++){var n=boxes[i].querySelector(".sh-native");if(n&&navigator.share)n.hidden=false}
+  };
+  document.addEventListener("click",function(e){
+    var b=e.target.closest&&e.target.closest("[data-share]");if(!b)return;
+    var box=b.closest(".share"),url=box.getAttribute("data-share-url"),title=box.getAttribute("data-share-title"),m=b.getAttribute("data-share");
+    if(m==="native"){e.preventDefault();navigator.share({title:title,url:url}).then(function(){shareTrack("native",box)}).catch(function(){});return}
+    if(m==="copy"){
+      e.preventDefault();
+      var done=function(){var t=b.textContent;b.textContent="คัดลอกแล้ว";b.classList.add("ok-copy");setTimeout(function(){b.textContent=t;b.classList.remove("ok-copy")},1600);shareTrack("copy",box)};
+      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url).then(done,function(){prompt("คัดลอกลิงก์นี้",url)})}
+      else{prompt("คัดลอกลิงก์นี้",url)}
+      return;
+    }
+    shareTrack(m,box);
+  });
+
   function init(){
+    window.ktInitShare();
     var choice=getChoice();
     if(choice)applyConsent(choice);else banner();
     window.ktFillAds();

@@ -225,6 +225,19 @@ def item_list(cars, name):
             "itemListElement": [{"@type": "ListItem", "position": i, "url": f"{D}/cars/{car_slug(c)}.html", "name": car_name(c)} for i, c in enumerate(cars, 1)]}
 
 
+def share_bar(url, title):
+    from urllib.parse import quote
+    u, t = quote(url, safe=""), quote(title, safe="")
+    return f'''<div class="share" data-share-url="{E(url)}" data-share-title="{E(title)}">
+  <span class="share-label">แชร์</span>
+  <button type="button" class="sh sh-native" data-share="native" hidden>แชร์</button>
+  <a class="sh sh-line" data-share="line" href="https://social-plugins.line.me/lineit/share?url={u}" target="_blank" rel="noopener" aria-label="แชร์ไปที่ LINE">LINE</a>
+  <a class="sh sh-fb" data-share="facebook" href="https://www.facebook.com/sharer/sharer.php?u={u}" target="_blank" rel="noopener" aria-label="แชร์ไปที่ Facebook">Facebook</a>
+  <a class="sh sh-x" data-share="x" href="https://twitter.com/intent/tweet?url={u}&amp;text={t}" target="_blank" rel="noopener" aria-label="แชร์ไปที่ X">X</a>
+  <button type="button" class="sh sh-copy" data-share="copy">คัดลอกลิงก์</button>
+</div>'''
+
+
 def ad(slot): return f'<div class="ad-slot ad-{slot}" data-ad="{slot}"></div>'
 
 
@@ -376,6 +389,7 @@ def build():
         <a class="btn btn-line" href="../index.html#loan">คำนวณค่างวดแบบละเอียด</a>
       </div>
       <div data-phone></div>
+      {share_bar(f"{D}/cars/{car_slug(c)}.html", f"{name} {c['sub']} ราคา {fmt(c['price'])} บาท")}
     </div>
   </div>
   <div class="car-cols">
@@ -456,6 +470,7 @@ def build():
     <h1>{E(p["title"])}</h1>
     <div class="meta">โดยทีมงาน{C["SITE_NAME"]} · <time datetime="{p["date"].isoformat()}">{th_date(p["date"])}</time> · อ่านประมาณ {max(2, round(p["words"] / 900))} นาที</div>
     <div class="prose">{content}</div>
+    {share_bar(url, p["title"])}
   </article>
   <section class="related"><h2>รถที่เกี่ยวข้อง</h2><div class="grid">{"".join(static_card(c, base) for c in cars)}</div></section>
   {f'<section class="related"><h2>บทความอื่น</h2><div class="posts">{"".join(post_card(x, base) for x in more)}</div></section>' if more else ""}
