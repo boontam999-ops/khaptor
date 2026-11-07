@@ -393,3 +393,12 @@ footer a:hover{color:#fff}
 }
 .ftoggle{color:var(--ink)}
 @media (max-width:960px){aside .ad-sidebar{display:none}}
+/* sold listings */
+.card.sold .pic{filter:grayscale(.85);opacity:.75}
+.card.sold .price{text-decoration:line-through;color:var(--muted)}
+.tag.sold-tag{background:#0f1729;color:#fff}
+.sold-note{display:inline-flex;align-items:center;padding:10px 18px;border-radius:999px;background:var(--soft);font-weight:600;color:var(--muted)}
+.pill.sold{background:#0f1729;color:#fff}
+.mine{grid-template-columns:1fr auto auto}
+.mine-acts{display:flex;gap:6px}
+@media (max-width:520px){.mine{grid-template-columns:1fr auto}.mine-acts{grid-column:1/-1}}

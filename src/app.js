@@ -142,8 +142,8 @@ function matches(c,skip){
 }
 
 function card(c){
-  const tags=[c.cert?'<span class="tag cert">ผ่านการตรวจสภาพ</span>':"",c.fuel==="ไฟฟ้า"?'<span class="tag ev">EV</span>':"",c.user?'<span class="tag">เจ้าของขายเอง</span>':"",c.days===0?'<span class="tag">ลงวันนี้</span>':""].join("");
-  return `<article class="card" tabindex="0" data-id="${c.id}" aria-label="${c.brand} ${c.model} ราคา ${fmt(c.price)} บาท">
+  const tags=[c.cert?'<span class="tag cert">ผ่านการตรวจสภาพ</span>':"",c.fuel==="ไฟฟ้า"?'<span class="tag ev">EV</span>':"",c.sold?'<span class="tag sold-tag">ขายแล้ว</span>':"",c.user&&!c.sold?'<span class="tag">เจ้าของขายเอง</span>':"",c.days===0?'<span class="tag">ลงวันนี้</span>':""].join("");
+  return `<article class="card${c.sold?" sold":""}" tabindex="0" data-id="${c.id}" aria-label="${c.brand} ${c.model} ราคา ${fmt(c.price)} บาท">
     ${picHTML(c)}<div class="tags">${tags}</div>
       <button class="fav ${favs.has(c.id)?"on":""}" type="button" data-fav="${c.id}" aria-label="บันทึกรถคันนี้" aria-pressed="${favs.has(c.id)}">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="${favs.has(c.id)?"currentColor":"none"}" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.4-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.6-9.5 9-9.5 9z"/></svg>
@@ -166,7 +166,7 @@ function render(){
   brandChips();
   let list=CARS.filter(c=>matches(c));
   const S={new:(a,b)=>a.days-b.days,pAsc:(a,b)=>a.price-b.price,pDesc:(a,b)=>b.price-a.price,yDesc:(a,b)=>b.year-a.year,kmAsc:(a,b)=>a.km-b.km};
-  list.sort(S[state.sort]);
+  list.sort((a,b)=>(a.sold?1:0)-(b.sold?1:0)||S[state.sort](a,b));
   const title=state.onlyFav?"รถที่ถูกใจ":[state.brand||"รถมือสอง",state.model].filter(Boolean).join(" ")+(state.prov?" ใน"+state.prov:"");
   $("resultTitle").innerHTML=`${title}<small>${list.length} คัน</small>`;
   $("grid").innerHTML=list.length?list.map((c,i)=>card(c)+(i===5&&list.length>8?'<div class="ad-slot ad-infeed" data-ad="infeed"></div>':"")).join(""):`<div class="empty">ไม่พบรถที่ตรงกับเงื่อนไข ลองขยายช่วงราคาหรือเอาตัวกรองบางอันออก</div>`;
@@ -226,7 +226,7 @@ function openCar(id){
       <div><span>ตรวจสภาพ</span><b style="color:${c.cert?"var(--good)":"var(--muted)"}">${c.cert?"ผ่าน 175 จุด":"ยังไม่ตรวจ"}</b></div><div><span>รหัสประกาศ</span><b>${c.user?esc(c.code):"KT-"+String(c.id).padStart(5,"0")}</b></div>
     </div>
     <div class="contact">
-      <button class="btn btn-amber" type="button" id="mCall">ดูเบอร์ผู้ขาย</button>
+      ${c.sold?`<span class="sold-note">รถคันนี้ขายแล้ว</span>`:`<button class="btn btn-amber" type="button" id="mCall">ดูเบอร์ผู้ขาย</button>`}
       <button class="btn btn-line" type="button" id="mLoan">คำนวณค่างวด</button>
       ${c.user?"":`<a class="btn btn-line" href="${BASE}cars/${slug(c)}.html">ดูหน้าประกาศเต็ม</a>`}
       <button class="btn btn-line" type="button" id="mFav">${favs.has(c.id)?"เอาออกจากที่ถูกใจ":"บันทึกไว้"}</button>
@@ -237,7 +237,7 @@ function openCar(id){
   $("modal").classList.add("open");$("mClose").focus();
   $("mClose").onclick=closeModal;
   $("mFav").onclick=()=>toggleFav(c.id);
-  $("mCall").onclick=()=>{track("generate_lead",{currency:"THB",value:c.price,lead_source:"call_seller",item_id:c.user?c.code:"KT-"+c.id});$("mPhone").innerHTML=c.user?`<div class="ok">${esc(c.sellerName)} โทร ${esc(c.tel)} แจ้งว่าเห็นประกาศ ${esc(c.code)} จากขับต่อ</div>`:`<div class="ok">โทร 08${(c.id*7919%90000000+10000000)} (เบอร์ตัวอย่าง) แจ้งรหัสประกาศ KT-${String(c.id).padStart(5,"0")}</div>`};
+  if($("mCall"))$("mCall").onclick=()=>{track("generate_lead",{currency:"THB",value:c.price,lead_source:"call_seller",item_id:c.user?c.code:"KT-"+c.id});$("mPhone").innerHTML=c.user?`<div class="ok">${esc(c.sellerName)} โทร ${esc(c.tel)} แจ้งว่าเห็นประกาศ ${esc(c.code)} จากขับต่อ</div>`:`<div class="ok">โทร 08${(c.id*7919%90000000+10000000)} (เบอร์ตัวอย่าง) แจ้งรหัสประกาศ KT-${String(c.id).padStart(5,"0")}</div>`};
   $("mLoan").onclick=()=>{$("cPrice").value=c.price;calc();closeModal();$("loan").scrollIntoView({behavior:"smooth"})};
 }
 function closeModal(){$("modal").classList.remove("open");if(lastFocus)lastFocus.focus();lastFocus=null}
@@ -273,9 +273,17 @@ function renderMine(list){
   if(!list||!list.length){box.innerHTML="";return}
   box.innerHTML=`<h4 class="mine-h">ประกาศของคุณ</h4>`+list.map(l=>{const st=STATUS[l.status]||["",""];
     return `<div class="mine"><div><b>${esc(l.year+" "+l.brand+" "+l.model)}</b><small>฿${fmt(l.price)} · ${esc(l.prov)} · ส่งเมื่อ ${new Date(l.created_at).toLocaleDateString("th-TH")}</small></div>
-    <span class="pill ${st[1]}">${st[0]}</span><button type="button" class="btn btn-line btn-sm" data-del="${esc(l.id)}">ลบ</button></div>`}).join("");
+    <span class="pill ${l.sold?"sold":st[1]}">${l.sold?"ขายแล้ว":st[0]}</span><span class="mine-acts"><button type="button" class="btn btn-sm ${l.sold?"btn-line":"btn-road"}" data-sold="${esc(l.id)}" data-v="${l.sold?"0":"1"}">${l.sold?"ยังไม่ขาย":"ขายแล้ว"}</button><button type="button" class="btn btn-line btn-sm" data-del="${esc(l.id)}">ลบ</button></span></div>`}).join("");
 }
 $("myListings").addEventListener("click",async e=>{
+  const sid=e.target.getAttribute&&e.target.getAttribute("data-sold");
+  if(sid){
+    const sold=e.target.getAttribute("data-v")==="1";e.target.disabled=true;
+    const j=await api("/api/listings/"+encodeURIComponent(sid),{method:"PATCH",body:JSON.stringify({sold})});
+    if(!j.ok){toast(j.error||"บันทึกไม่สำเร็จ");e.target.disabled=false;return}
+    if(sold)track("mark_sold",{item_id:sid});
+    toast(sold?"ทำเครื่องหมายขายแล้ว ยินดีด้วยครับ":"เปลี่ยนกลับเป็นยังไม่ขายแล้ว");loadMe();loadListings();return;
+  }
   const id=e.target.getAttribute&&e.target.getAttribute("data-del");if(!id)return;
   if(e.target.dataset.confirm!=="1"){e.target.dataset.confirm="1";e.target.textContent="กดอีกครั้งเพื่อลบ";return}
   e.target.disabled=true;
@@ -337,7 +345,7 @@ async function loadListings(){
   const now=Date.now();
   const extra=j.listings.map((l,i)=>({id:100000+i,uid:l.id,user:true,code:"KT-U"+String(l.id).slice(-6).toUpperCase(),url:"#listing-"+l.id,
     brand:l.brand,model:l.model,sub:l.sub||"",year:l.year,price:l.price,km:l.km,body:l.body,gear:l.gear,fuel:l.fuel,color:l.color,prov:l.prov,
-    seller:"owner",cert:false,days:Math.max(0,Math.floor((now-Date.parse(l.created_at))/864e5)),plate:"เจ้าของขาย",tel:l.tel,sellerName:l.name,note:l.note||""}));
+    seller:"owner",cert:false,days:Math.max(0,Math.floor((now-Date.parse(l.created_at))/864e5)),plate:"เจ้าของขาย",tel:l.tel,sellerName:l.name,note:l.note||"",sold:!!l.sold}));
   CARS.unshift(...extra);
   refreshModels();render();
   openFromHash();

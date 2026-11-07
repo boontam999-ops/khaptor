@@ -200,7 +200,7 @@ function renderListings(){
     var o=l.owner||{};
     return '<div class="li"><h3>'+escH(l.year+" "+l.brand+" "+l.model+" "+(l.sub||""))+' · ฿'+Number(l.price).toLocaleString("th-TH")+'</h3>'+
       '<div class="meta">'+escH(Number(l.km).toLocaleString("th-TH")+" กม. · "+l.gear+" · "+l.fuel+" · สี"+l.color+" · "+l.prov)+'</div>'+
-      '<div class="meta">ผู้ขาย '+escH(l.name)+' โทร '+escH(l.tel)+' · บัญชี Google '+escH(o.email||"-")+' · ส่งเมื่อ '+new Date(l.created_at).toLocaleString("th-TH")+'</div>'+
+      (l.sold?'<div class="meta" style="color:var(--bad);font-weight:600">ผู้ขายแจ้งว่าขายแล้ว</div>':'')+'<div class="meta">ผู้ขาย '+escH(l.name)+' โทร '+escH(l.tel)+' · บัญชี Google '+escH(o.email||"-")+' · ส่งเมื่อ '+new Date(l.created_at).toLocaleString("th-TH")+'</div>'+
       (l.note?'<div class="note">'+escH(l.note)+'</div>':'')+
       '<div class="acts">'+
         (l.status!=="approved"?'<button class="btn btn-good" data-a="approve" data-id="'+escH(l.id)+'">'+(l.status==="rejected"?"แสดงอีกครั้ง":"อนุมัติ")+'</button>':'')+
