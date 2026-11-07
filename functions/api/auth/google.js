@@ -1,10 +1,10 @@
-import { verifyGoogleIdToken, makeSessionCookie, sameOrigin } from "../../../lib/auth.js";
+import { verifyGoogleIdToken, makeSessionCookie, sameOrigin, googleClientId } from "../../../lib/auth.js";
 import { json } from "../../../lib/settings.js";
 
 // POST /api/auth/google  {credential}  รับ ID token จากปุ่ม Sign in with Google
 export async function onRequestPost({ request, env }) {
   if (!sameOrigin(request)) return json({ ok: false, error: "คำขอไม่ได้มาจากเว็บนี้" }, 403);
-  if (!env.GOOGLE_CLIENT_ID || !env.SETTINGS) return json({ ok: false, error: "ระบบล็อกอินยังไม่ได้ตั้งค่า" }, 503);
+  if (!googleClientId(env) || !env.SETTINGS) return json({ ok: false, error: "ระบบล็อกอินยังไม่ได้ตั้งค่า" }, 503);
   let body;
   try { body = await request.json(); } catch (e) { return json({ ok: false, error: "ข้อมูลไม่ถูกต้อง" }, 400); }
   try {

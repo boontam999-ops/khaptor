@@ -181,6 +181,7 @@ function render(){
   if(state.year)chips.push(["year","ปี "+state.year+" ขึ้นไป"]);
   if(state.prov)chips.push(["prov",state.prov]);
   window.ktFillAds&&window.ktFillAds();
+  const nF=state.body.size+state.gear.size+state.fuel.size+state.seller.size+(state.cert?1:0)+(state.km<200000?1:0);$("fCount").textContent=nF?String(nF):"";
   $("activeChips").innerHTML=chips.map(([k,l])=>`<button type="button" data-rm="${k}">${l} ✕</button>`).join("");
 }
 $("activeChips").addEventListener("click",e=>{const k=e.target.dataset.rm;if(!k)return;
@@ -346,6 +347,13 @@ function openFromHash(){
   if(m){const c=CARS.find(x=>x.uid===m[1]);if(c)openCar(c.id)}
 }
 window.addEventListener("hashchange",openFromHash);
+
+/* ตัวกรองบนมือถือ: พับไว้ กดเปิดเมื่อต้องการ */
+const mqSmall=window.matchMedia("(max-width:960px)");
+function setFilters(open){const a=document.querySelector("aside.filters");a.classList.toggle("collapsed",!open);$("filterToggle").setAttribute("aria-expanded",String(open))}
+$("filterToggle").addEventListener("click",()=>{if(mqSmall.matches)setFilters(document.querySelector("aside.filters").classList.contains("collapsed"))});
+setFilters(!mqSmall.matches);
+(mqSmall.addEventListener?mqSmall.addEventListener("change",e=>setFilters(!e.matches)):null);
 
 let tt;function toast(t){const el=$("toast");el.textContent=t;el.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>el.classList.remove("show"),1800)}
 saveFavs();render();initGoogle();loadListings();

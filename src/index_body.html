@@ -39,7 +39,8 @@
 <main id="buy">
   <div class="wrap layout">
     <aside class="filters" aria-label="ตัวกรอง">
-      <h3>กรองผลลัพธ์ <button type="button" id="clearAll">ล้างทั้งหมด</button></h3>
+      <h3><button type="button" id="filterToggle" class="ftoggle" aria-expanded="true" aria-controls="filterBody">กรองผลลัพธ์ <span id="fCount"></span></button> <button type="button" id="clearAll">ล้างทั้งหมด</button></h3>
+      <div id="filterBody">
       <div class="fgroup"><h4>ประเภทรถ</h4><div id="fBody"></div></div>
       <div class="fgroup"><h4>เกียร์</h4><div id="fGear"></div></div>
       <div class="fgroup"><h4>เชื้อเพลิง</h4><div id="fFuel"></div></div>
@@ -51,6 +52,7 @@
       <div class="fgroup"><h4>ผู้ขาย</h4><div id="fSeller"></div></div>
       <div class="fgroup" style="padding-bottom:0">
         <label class="ck"><input type="checkbox" id="fCert"> เฉพาะรถผ่านการตรวจสภาพ</label>
+      </div>
       </div>
     </aside>
 

@@ -134,7 +134,7 @@ def head(title, desc, path, base, ld=(), og_image="og/site.jpg", noindex=False, 
         f'<meta property="og:image" content="{D}/{og_image}">',
         '<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">',
         '<meta name="twitter:card" content="summary_large_image">',
-        '<meta name="theme-color" content="#0f2b4b">',
+        '<meta name="theme-color" content="#0b1222">',
         f'<link rel="icon" href="{base}favicon.svg" type="image/svg+xml">',
         f'<link rel="apple-touch-icon" href="{base}og/icon-180.png">',
     ]
@@ -154,13 +154,13 @@ gtag('js',new Date());""" + (f"gtag('config','{ga}');" if ga else "") + "</scrip
     cfg = {"ga4": ga, "adsense": ads, "slots": C["ADSENSE_SLOTS"], "placeholders": bool(C["SHOW_AD_PLACEHOLDERS"]) and not ads, "privacy": base + "privacy.html"}
     parts.append(f"<script>window.KT_CONFIG={json.dumps(cfg)}</script>")
     parts += ['<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>',
-              '<link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">',
+              '<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">',
               f'<link rel="stylesheet" href="{base}assets/style.css">']
     parts += [jsonld(x) for x in ld]
     return "<!DOCTYPE html>\n<html lang=\"th\">\n<head>\n" + "\n".join(parts) + "\n</head>\n"
 
 
-LOGO = '<svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="8" fill="#f2a516"/><circle cx="17" cy="17" r="9" fill="none" stroke="#3a2700" stroke-width="3"/><circle cx="17" cy="17" r="2.6" fill="#3a2700"/><path d="M17 8v6M17 20v6M8 17h6M20 17h6" stroke="#3a2700" stroke-width="2"/></svg>'
+LOGO = '<svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="10" fill="#ff5a36"/><circle cx="17" cy="17" r="9" fill="none" stroke="#fff" stroke-width="3"/><circle cx="17" cy="17" r="2.6" fill="#fff"/><path d="M17 8v6M17 20v6M8 17h6M20 17h6" stroke="#fff" stroke-width="2"/></svg>'
 
 
 def header(base, is_index=False):

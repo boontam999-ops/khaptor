@@ -61,7 +61,7 @@
 2. **Credentials** > **Create credentials** > **OAuth client ID** เลือก Web application
    ในช่อง Authorized JavaScript origins ใส่ `https://khaptor.com` และ `https://www.khaptor.com`
 3. คัดลอก Client ID (ลงท้ายด้วย `.apps.googleusercontent.com`)
-4. Cloudflare > khaptor > Settings > Variables and Secrets > Add เลือก Type: **Text** ตั้งชื่อ `GOOGLE_CLIENT_ID` แล้ววาง Client ID จากนั้น Retry deployment
+4. Client ID ปัจจุบัน (โปรเจกต์ omni Gemini Project) ใส่ไว้ใน `lib/auth.js` แล้ว ถ้าจะเปลี่ยน ให้ตั้งตัวแปร `GOOGLE_CLIENT_ID` ใน Cloudflare
 
 ข้อมูลประกาศเก็บใน KV เดียวกับการตั้งค่าโฆษณา (SETTINGS) ไม่ต้องสร้างเพิ่ม และกุญแจสำหรับเซ็น session สร้างให้อัตโนมัติ
 
