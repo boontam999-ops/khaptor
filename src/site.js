@@ -101,6 +101,35 @@
     var th=g.parentNode.querySelectorAll(".g-thumbs button");for(var k=0;k<th.length;k++)th[k].classList.toggle("on",k===i);
   },true);
 
+  /* ---- ติดตั้งเป็นแอป ---- */
+  var deferredPrompt=null;
+  var standalone=function(){return window.matchMedia("(display-mode: standalone)").matches||navigator.standalone===true};
+  var isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+  function showInstall(on){var b=document.querySelectorAll("[data-install]");for(var i=0;i<b.length;i++)b[i].hidden=!on}
+  window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();deferredPrompt=e;showInstall(true)});
+  window.addEventListener("appinstalled",function(){deferredPrompt=null;showInstall(false);window.ktTrack("app_installed",{})});
+  function installHelp(){
+    if(document.getElementById("ktInstall"))return;
+    var d=document.createElement("div");d.id="ktInstall";d.className="install-help";d.setAttribute("role","dialog");d.setAttribute("aria-label","วิธีติดตั้งแอปขับต่อ");
+    var steps=isIOS
+      ?'<ol><li>กดปุ่ม <b>แชร์</b> (สี่เหลี่ยมมีลูกศรชี้ขึ้น) ที่แถบล่างของ Safari</li><li>เลื่อนลงแล้วกด <b>เพิ่มไปยังหน้าจอโฮม</b></li><li>กด <b>เพิ่ม</b> ไอคอนขับต่อจะอยู่บนหน้าจอ</li></ol><p class="muted">ต้องเปิดผ่าน Safari เท่านั้น</p>'
+      :'<ol><li><b>Android (Chrome):</b> กดเมนู ⋮ มุมขวาบน แล้วกด <b>ติดตั้งแอป</b> หรือ <b>เพิ่มลงในหน้าจอหลัก</b></li><li><b>คอมพิวเตอร์ (Chrome / Edge):</b> กดไอคอนติดตั้งท้ายช่อง URL หรือเมนู ⋮ แล้วเลือก <b>ติดตั้งขับต่อ</b></li></ol>';
+    d.innerHTML='<div class="install-card"><button type="button" class="install-x" aria-label="ปิด">✕</button><h3>ติดตั้งแอปขับต่อ</h3><p>มีไอคอนบนหน้าจอ เปิดเต็มจอเหมือนแอป และเปิดดูหน้าที่เคยเปิดได้แม้ไม่มีเน็ต</p>'+steps+'</div>';
+    d.addEventListener("click",function(e){if(e.target===d||e.target.closest(".install-x"))d.remove()});
+    document.body.appendChild(d);
+  }
+  document.addEventListener("click",function(e){
+    var b=e.target.closest&&e.target.closest("[data-install],[data-install-help]");if(!b)return;e.preventDefault();
+    if(deferredPrompt&&b.hasAttribute("data-install")){deferredPrompt.prompt();deferredPrompt.userChoice.then(function(c){window.ktTrack("install_prompt",{outcome:c.outcome});deferredPrompt=null;showInstall(false)});return}
+    if(standalone()){var t=document.getElementById("toast");if(t){t.textContent="คุณใช้งานผ่านแอปอยู่แล้ว";t.classList.add("show");setTimeout(function(){t.classList.remove("show")},1800)}return}
+    installHelp();
+  });
+  if(isIOS&&!standalone())showInstall(true);
+  if("serviceWorker" in navigator&&location.protocol==="https:"||location.hostname==="localhost"){
+    if("serviceWorker" in navigator)window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js").catch(function(){})});
+  }
+  if(standalone())document.documentElement.classList.add("in-app");
+
   function init(){
     window.ktInitShare();
     var choice=getChoice();

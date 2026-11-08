@@ -456,3 +456,15 @@ footer a:hover{color:#fff}
 .car-hero.gallery-box{display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--bg);min-height:0}
 @media (max-width:960px){.sheet-media{border-radius:24px 24px 0 0}}
 .ph-grid .ph-add{display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0;font-size:14px;color:var(--muted)}
+/* installable app */
+.install-btn[hidden]{display:none}
+.install-help{position:fixed;inset:0;background:rgba(5,12,22,.55);display:grid;place-items:end center;z-index:80;padding:16px}
+@media (min-width:640px){.install-help{place-items:center}}
+.install-card{background:var(--surface);color:var(--ink);border-radius:22px;max-width:440px;width:100%;padding:22px;box-shadow:var(--shadow-lg);position:relative}
+.install-card h3{font-size:20px;margin-bottom:6px}
+.install-card p{margin:0 0 10px;color:var(--muted);font-size:14px}
+.install-card ol{margin:0;padding-left:20px;display:grid;gap:8px;font-size:15px}
+.install-x{position:absolute;right:12px;top:12px;border:0;background:var(--soft);width:32px;height:32px;border-radius:50%;cursor:pointer}
+.in-app header.top{padding-top:env(safe-area-inset-top)}
+.in-app footer .copy{padding-bottom:env(safe-area-inset-bottom)}
+@media (max-width:520px){.install-btn{padding:8px 12px;font-size:13px}}

@@ -4,6 +4,7 @@ Disallow: /404.html
 Disallow: /admin.html
 Disallow: /api/
 Disallow: /l/_template.html
+Disallow: /offline.html
 
 Sitemap: https://khaptor.com/sitemap.xml
 Sitemap: https://khaptor.com/sitemap-listings.xml

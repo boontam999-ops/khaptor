@@ -19,7 +19,12 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#0b1222">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="og/icon-180.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ขับต่อ">
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}
 gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',wait_for_update:500});
 try{if(localStorage.getItem('kt-consent')==='all')gtag('consent','update',{ad_storage:'granted',ad_user_data:'granted',ad_personalization:'granted',analytics_storage:'granted'})}catch(e){}
@@ -41,7 +46,7 @@ gtag('js',new Date());gtag('config','G-BQV73C8MX1');</script>
     <nav class="main" aria-label="เมนูหลัก">
       <a href="#buy">ซื้อรถ</a><a href="#sell">ขายรถ</a><a href="#dealers">ดีลเลอร์</a><a href="#loan">คำนวณสินเชื่อ</a><a href="articles/index.html">บทความ</a>
     </nav>
-    <div class="top-actions"><button class="btn btn-ghost" id="favBtn" type="button">รถที่ถูกใจ <span id="favCount">0</span></button><a class="btn btn-amber" href="#sell">ลงขายรถฟรี</a></div>
+    <div class="top-actions"><button class="btn btn-ghost install-btn" type="button" data-install hidden>ติดตั้งแอป</button><button class="btn btn-ghost" id="favBtn" type="button">รถที่ถูกใจ <span id="favCount">0</span></button><a class="btn btn-amber" href="#sell">ลงขายรถฟรี</a></div>
   </div>
 </header>
 <div class="hero" id="top">
@@ -435,7 +440,7 @@ gtag('js',new Date());gtag('config','G-BQV73C8MX1');</script>
   <div class="wrap">
     <div class="cols">
       <div><h4>ขับต่อ</h4><p style="margin:0;max-width:34ch">ตลาดซื้อขายรถมือสองสำหรับผู้ซื้อ เจ้าของรถ และเต็นท์รถทั่วประเทศไทย</p>
-        <ul style="margin-top:10px"><li><a href="articles/index.html">บทความรถมือสอง</a></li><li><a href="about.html">เกี่ยวกับเรา / ติดต่อ</a></li><li><a href="privacy.html">นโยบายความเป็นส่วนตัว</a></li><li><a href="#" data-consent-open>ตั้งค่าคุกกี้</a></li></ul></div>
+        <ul style="margin-top:10px"><li><a href="articles/index.html">บทความรถมือสอง</a></li><li><a href="about.html">เกี่ยวกับเรา / ติดต่อ</a></li><li><a href="privacy.html">นโยบายความเป็นส่วนตัว</a></li><li><a href="#" data-consent-open>ตั้งค่าคุกกี้</a></li><li><a href="#" data-install-help>ติดตั้งแอปขับต่อ</a></li></ul></div>
       <div><h4>ตามยี่ห้อ</h4><ul><li><a href="brand/bmw.html">รถมือสอง BMW</a></li><li><a href="brand/byd.html">รถมือสอง BYD</a></li><li><a href="brand/ford.html">รถมือสอง Ford</a></li><li><a href="brand/honda.html">รถมือสอง Honda</a></li><li><a href="brand/isuzu.html">รถมือสอง Isuzu</a></li><li><a href="brand/mg.html">รถมือสอง MG</a></li><li><a href="brand/mazda.html">รถมือสอง Mazda</a></li><li><a href="brand/mercedes-benz.html">รถมือสอง Mercedes-Benz</a></li></ul></div>
       <div><h4>ตามจังหวัด</h4><ul><li><a href="province/bangkok.html">รถมือสองกรุงเทพมหานคร</a></li><li><a href="province/nonthaburi.html">รถมือสองนนทบุรี</a></li><li><a href="province/pathum-thani.html">รถมือสองปทุมธานี</a></li><li><a href="province/samut-prakan.html">รถมือสองสมุทรปราการ</a></li><li><a href="province/chonburi.html">รถมือสองชลบุรี</a></li><li><a href="province/chiang-mai.html">รถมือสองเชียงใหม่</a></li><li><a href="province/khon-kaen.html">รถมือสองขอนแก่น</a></li><li><a href="province/nakhon-ratchasima.html">รถมือสองนครราชสีมา</a></li></ul></div>
       <div><h4>ติดต่อ</h4><ul><li>02-000-0000</li><li>hello@khaptor.com</li></ul></div>

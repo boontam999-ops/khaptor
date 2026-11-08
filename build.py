@@ -136,7 +136,12 @@ def head(title, desc, path, base, ld=(), og_image="og/site.jpg", noindex=False, 
         '<meta name="twitter:card" content="summary_large_image">',
         '<meta name="theme-color" content="#0b1222">',
         f'<link rel="icon" href="{base}favicon.svg" type="image/svg+xml">',
-        f'<link rel="apple-touch-icon" href="{base}og/icon-180.png">',
+        f'<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">',
+        '<link rel="manifest" href="/manifest.webmanifest">',
+        '<meta name="mobile-web-app-capable" content="yes">',
+        '<meta name="apple-mobile-web-app-capable" content="yes">',
+        '<meta name="apple-mobile-web-app-status-bar-style" content="default">',
+        f'<meta name="apple-mobile-web-app-title" content="{E(C["SITE_NAME"])}">',
     ]
     if C["GSC_VERIFICATION"].strip():
         parts.append(f'<meta name="google-site-verification" content="{E(C["GSC_VERIFICATION"].strip())}">')
@@ -173,7 +178,7 @@ def header(base, is_index=False):
     <nav class="main" aria-label="เมนูหลัก">
       <a href="{home}#buy">ซื้อรถ</a><a href="{home}#sell">ขายรถ</a><a href="{home}#dealers">ดีลเลอร์</a><a href="{home}#loan">คำนวณสินเชื่อ</a><a href="{base}articles/index.html">บทความ</a>
     </nav>
-    <div class="top-actions">{fav}<a class="btn btn-amber" href="{home}#sell">ลงขายรถฟรี</a></div>
+    <div class="top-actions"><button class="btn btn-ghost install-btn" type="button" data-install hidden>ติดตั้งแอป</button>{fav}<a class="btn btn-amber" href="{home}#sell">ลงขายรถฟรี</a></div>
   </div>
 </header>'''
 
@@ -189,7 +194,7 @@ def footer(base):
   <div class="wrap">
     <div class="cols">
       <div><h4>{C["SITE_NAME"]}</h4><p style="margin:0;max-width:34ch">ตลาดซื้อขายรถมือสองสำหรับผู้ซื้อ เจ้าของรถ และเต็นท์รถทั่วประเทศไทย</p>
-        <ul style="margin-top:10px"><li><a href="{base}articles/index.html">บทความรถมือสอง</a></li><li><a href="{base}about.html">เกี่ยวกับเรา / ติดต่อ</a></li><li><a href="{base}privacy.html">นโยบายความเป็นส่วนตัว</a></li><li><a href="#" data-consent-open>ตั้งค่าคุกกี้</a></li></ul></div>
+        <ul style="margin-top:10px"><li><a href="{base}articles/index.html">บทความรถมือสอง</a></li><li><a href="{base}about.html">เกี่ยวกับเรา / ติดต่อ</a></li><li><a href="{base}privacy.html">นโยบายความเป็นส่วนตัว</a></li><li><a href="#" data-consent-open>ตั้งค่าคุกกี้</a></li><li><a href="#" data-install-help>ติดตั้งแอปขับต่อ</a></li></ul></div>
       <div><h4>ตามยี่ห้อ</h4><ul>{brand_links}</ul></div>
       <div><h4>ตามจังหวัด</h4><ul>{prov_links}</ul></div>
       <div><h4>ติดต่อ</h4><ul><li>{E(C["CONTACT_PHONE"])}</li><li>{E(C["CONTACT_EMAIL"])}</li></ul></div>
@@ -297,6 +302,44 @@ def post_card(p, base):
             f'<p>{E(p["description"])}</p><time datetime="{p["date"].isoformat()}">{th_date(p["date"])}</time></article>')
 
 
+# ---------- installable app (PWA) ----------
+def write_pwa():
+    manifest = {
+        "id": "/",
+        "name": f"{C['SITE_NAME']} ตลาดรถมือสอง",
+        "short_name": C["SITE_NAME"],
+        "description": "ซื้อขายรถมือสองทั่วไทย เทียบราคา ดูสเปก คำนวณค่างวด และลงขายรถฟรี",
+        "lang": "th", "dir": "ltr",
+        "start_url": "/?source=app", "scope": "/",
+        "display": "standalone", "display_override": ["window-controls-overlay", "standalone"],
+        "orientation": "any",
+        "background_color": "#f4f5f7", "theme_color": "#ffffff",
+        "categories": ["shopping", "lifestyle", "auto"],
+        "icons": [
+            {"src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+            {"src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+            {"src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"},
+        ],
+        "screenshots": [
+            {"src": "/icons/screen-wide.png", "sizes": "1440x900", "type": "image/png", "form_factor": "wide", "label": "หน้าแรก ขับต่อ บนคอมพิวเตอร์"},
+            {"src": "/icons/screen-narrow.png", "sizes": "390x844", "type": "image/png", "form_factor": "narrow", "label": "หน้าแรก ขับต่อ บนมือถือ"},
+        ],
+        "shortcuts": [
+            {"name": "ลงขายรถฟรี", "url": "/?source=app#sell", "icons": [{"src": "/icons/icon-192.png", "sizes": "192x192"}]},
+            {"name": "คำนวณค่างวด", "url": "/?source=app#loan", "icons": [{"src": "/icons/icon-192.png", "sizes": "192x192"}]},
+            {"name": "บทความ", "url": "/articles/index.html", "icons": [{"src": "/icons/icon-192.png", "sizes": "192x192"}]},
+        ],
+    }
+    (DIST / "manifest.webmanifest").write_text(json.dumps(manifest, ensure_ascii=False, indent=1), encoding="utf-8")
+    version = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    (DIST / "sw.js").write_text((SRC / "sw.js").read_text(encoding="utf-8").replace("__VERSION__", version), encoding="utf-8")
+    (DIST / "_headers").write_text(
+        "/sw.js\n  Cache-Control: no-cache\n  Service-Worker-Allowed: /\n"
+        "/manifest.webmanifest\n  Content-Type: application/manifest+json\n  Cache-Control: public, max-age=3600\n"
+        "/icons/*\n  Cache-Control: public, max-age=604800\n"
+        "/assets/*\n  Cache-Control: public, max-age=3600, must-revalidate\n", encoding="utf-8")
+
+
 # ---------- build ----------
 def build():
     if DIST.exists():
@@ -308,7 +351,9 @@ def build():
     shutil.copy(SRC / "admin.html", DIST / "admin.html")
     if (SRC / "og").exists():
         shutil.copytree(SRC / "og", DIST / "og")
+    shutil.copytree(SRC / "icons", DIST / "icons")
     POSTS = load_articles()
+    write_pwa()
     (DIST / "favicon.svg").write_text(LOGO.replace('aria-hidden="true"', 'xmlns="http://www.w3.org/2000/svg"'), encoding="utf-8")
 
     # ---- index ----
@@ -508,6 +553,9 @@ def build():
 <h2>สิทธิของคุณ</h2><p>คุณขอเข้าถึง แก้ไข ลบ หรือคัดค้านการประมวลผลข้อมูลส่วนบุคคลของคุณได้ โดยติดต่อ {E(C["CONTACT_EMAIL"])} เราจะตอบกลับภายใน 30 วัน</p>
 <h2>ระยะเวลาเก็บข้อมูล</h2><p>ข้อมูลประกาศขายรถเก็บไว้จนกว่าคุณจะลบประกาศ หรือไม่เกิน 1 ปีหลังประกาศหมดอายุ</p></main>''',
          base)
+    page("offline.html", f"ออฟไลน์ | {C['SITE_NAME']}", "ไม่มีการเชื่อมต่ออินเทอร์เน็ต",
+         '<main class="wrap prose page"><h1>ตอนนี้ไม่มีอินเทอร์เน็ต</h1><p>ตรวจการเชื่อมต่อแล้วกดลองใหม่ หน้าที่คุณเคยเปิดแล้วยังเปิดดูได้แบบออฟไลน์</p><p><button class="btn btn-amber" type="button" onclick="location.reload()">ลองใหม่</button></p></main>',
+         "/", noindex=True)
     page("404.html", f"ไม่พบหน้านี้ | {C['SITE_NAME']}", "ไม่พบหน้าที่คุณต้องการ",
          '<main class="wrap prose page"><h1>ไม่พบหน้านี้</h1><p>ประกาศนี้อาจขายไปแล้วหรือถูกลบ ลองค้นหารถคันอื่นที่ <a href="/index.html#buy">หน้ารวมรถมือสอง</a></p></main>',
          "/", noindex=True)
@@ -524,7 +572,7 @@ def build():
     sm += [f"  <url><loc>{u}</loc><lastmod>{d.isoformat()}</lastmod><changefreq>{f}</changefreq><priority>{p}</priority></url>" for u, d, f, p in urls]
     sm.append("</urlset>")
     (DIST / "sitemap.xml").write_text("\n".join(sm) + "\n", encoding="utf-8")
-    (DIST / "robots.txt").write_text(f"User-agent: *\nAllow: /\nDisallow: /404.html\nDisallow: /admin.html\nDisallow: /api/\nDisallow: /l/_template.html\n\nSitemap: {D}/sitemap.xml\nSitemap: {D}/sitemap-listings.xml\n", encoding="utf-8")
+    (DIST / "robots.txt").write_text(f"User-agent: *\nAllow: /\nDisallow: /404.html\nDisallow: /admin.html\nDisallow: /api/\nDisallow: /l/_template.html\nDisallow: /offline.html\n\nSitemap: {D}/sitemap.xml\nSitemap: {D}/sitemap-listings.xml\n", encoding="utf-8")
     pub = C["ADSENSE_CLIENT"].replace("ca-", "").strip()
     (DIST / "ads.txt").write_text((f"google.com, {pub}, DIRECT, f08c47fec0942fa0\n" if pub else
                                    "# ใส่ ADSENSE_CLIENT ใน build.py แล้วรันใหม่ ไฟล์นี้จะมีบรรทัดของ Google ให้อัตโนมัติ\n"), encoding="utf-8")

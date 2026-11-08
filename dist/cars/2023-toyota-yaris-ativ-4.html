@@ -19,7 +19,12 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#0b1222">
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="../og/icon-180.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ขับต่อ">
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}
 gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',wait_for_update:500});
 try{if(localStorage.getItem('kt-consent')==='all')gtag('consent','update',{ad_storage:'granted',ad_user_data:'granted',ad_personalization:'granted',analytics_storage:'granted'})}catch(e){}
@@ -39,7 +44,7 @@ gtag('js',new Date());gtag('config','G-BQV73C8MX1');</script>
     <nav class="main" aria-label="เมนูหลัก">
       <a href="../index.html#buy">ซื้อรถ</a><a href="../index.html#sell">ขายรถ</a><a href="../index.html#dealers">ดีลเลอร์</a><a href="../index.html#loan">คำนวณสินเชื่อ</a><a href="../articles/index.html">บทความ</a>
     </nav>
-    <div class="top-actions"><a class="btn btn-ghost" href="../index.html#buy">ดูรถทั้งหมด</a><a class="btn btn-amber" href="../index.html#sell">ลงขายรถฟรี</a></div>
+    <div class="top-actions"><button class="btn btn-ghost install-btn" type="button" data-install hidden>ติดตั้งแอป</button><a class="btn btn-ghost" href="../index.html#buy">ดูรถทั้งหมด</a><a class="btn btn-amber" href="../index.html#sell">ลงขายรถฟรี</a></div>
   </div>
 </header>
 <main class="wrap carpage">
@@ -47,7 +52,7 @@ gtag('js',new Date());gtag('config','G-BQV73C8MX1');</script>
   <div class="car-top">
     <div class="pic car-hero" style="background:hsl(148 22% 91%)"><svg viewBox="0 0 300 130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ภาพประกอบ Toyota Yaris Ativ สีเงิน"><ellipse cx="150" cy="112" rx="132" ry="7" fill="rgba(0,0,0,.18)"/><path d="M18 92 L30 72 Q34 66 44 64 L86 58 Q100 40 126 38 L184 38 Q206 40 222 58 L262 64 Q280 68 284 84 L284 96 Q284 100 278 100 L22 100 Q16 100 18 92Z" fill="#c3c9cf" stroke="rgba(0,0,0,.35)" stroke-width="1.5"/><path d="M92 60 Q106 44 128 43 L150 43 L150 60Z M156 43 L182 43 Q200 45 214 60 L156 60Z" fill="#3d5266" opacity=".9"/><path d="M30 82 L270 82" stroke="rgba(0,0,0,.12)" stroke-width="2"/><rect x="270" y="72" width="12" height="6" rx="2" fill="#ffd27a"/><rect x="18" y="74" width="8" height="6" rx="2" fill="#d9454f"/><circle cx="70" cy="100" r="17" fill="#1c1f24"/><circle cx="70" cy="100" r="8" fill="#b9c0c8"/><circle cx="70" cy="100" r="2.5" fill="#1c1f24"/><circle cx="230" cy="100" r="17" fill="#1c1f24"/><circle cx="230" cy="100" r="8" fill="#b9c0c8"/><circle cx="230" cy="100" r="2.5" fill="#1c1f24"/></svg></div>
     <div class="car-info">
-      <div class="sub" style="color:var(--muted);font-size:13px">เต็นท์รถ · นนทบุรี · ลงประกาศ 04/11/2026</div>
+      <div class="sub" style="color:var(--muted);font-size:13px">เต็นท์รถ · นนทบุรี · ลงประกาศ 05/11/2026</div>
       <h1>2023 Toyota Yaris Ativ <span>1.2 Premium</span></h1>
       <div style="display:flex;align-items:end;justify-content:space-between;gap:10px">
         <div><div class="price" style="font-size:30px">฿459,000</div><div class="monthly">ดาวน์ 15% ผ่อน 72 งวด ประมาณ ฿7,012/เดือน</div></div>
@@ -133,7 +138,7 @@ gtag('js',new Date());gtag('config','G-BQV73C8MX1');</script>
   <div class="wrap">
     <div class="cols">
       <div><h4>ขับต่อ</h4><p style="margin:0;max-width:34ch">ตลาดซื้อขายรถมือสองสำหรับผู้ซื้อ เจ้าของรถ และเต็นท์รถทั่วประเทศไทย</p>
-        <ul style="margin-top:10px"><li><a href="../articles/index.html">บทความรถมือสอง</a></li><li><a href="../about.html">เกี่ยวกับเรา / ติดต่อ</a></li><li><a href="../privacy.html">นโยบายความเป็นส่วนตัว</a></li><li><a href="#" data-consent-open>ตั้งค่าคุกกี้</a></li></ul></div>
+        <ul style="margin-top:10px"><li><a href="../articles/index.html">บทความรถมือสอง</a></li><li><a href="../about.html">เกี่ยวกับเรา / ติดต่อ</a></li><li><a href="../privacy.html">นโยบายความเป็นส่วนตัว</a></li><li><a href="#" data-consent-open>ตั้งค่าคุกกี้</a></li><li><a href="#" data-install-help>ติดตั้งแอปขับต่อ</a></li></ul></div>
       <div><h4>ตามยี่ห้อ</h4><ul><li><a href="../brand/bmw.html">รถมือสอง BMW</a></li><li><a href="../brand/byd.html">รถมือสอง BYD</a></li><li><a href="../brand/ford.html">รถมือสอง Ford</a></li><li><a href="../brand/honda.html">รถมือสอง Honda</a></li><li><a href="../brand/isuzu.html">รถมือสอง Isuzu</a></li><li><a href="../brand/mg.html">รถมือสอง MG</a></li><li><a href="../brand/mazda.html">รถมือสอง Mazda</a></li><li><a href="../brand/mercedes-benz.html">รถมือสอง Mercedes-Benz</a></li></ul></div>
       <div><h4>ตามจังหวัด</h4><ul><li><a href="../province/bangkok.html">รถมือสองกรุงเทพมหานคร</a></li><li><a href="../province/nonthaburi.html">รถมือสองนนทบุรี</a></li><li><a href="../province/pathum-thani.html">รถมือสองปทุมธานี</a></li><li><a href="../province/samut-prakan.html">รถมือสองสมุทรปราการ</a></li><li><a href="../province/chonburi.html">รถมือสองชลบุรี</a></li><li><a href="../province/chiang-mai.html">รถมือสองเชียงใหม่</a></li><li><a href="../province/khon-kaen.html">รถมือสองขอนแก่น</a></li><li><a href="../province/nakhon-ratchasima.html">รถมือสองนครราชสีมา</a></li></ul></div>
       <div><h4>ติดต่อ</h4><ul><li>02-000-0000</li><li>hello@khaptor.com</li></ul></div>
