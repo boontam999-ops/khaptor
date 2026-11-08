@@ -125,8 +125,9 @@
     installHelp();
   });
   if(isIOS&&!standalone())showInstall(true);
-  if("serviceWorker" in navigator&&location.protocol==="https:"||location.hostname==="localhost"){
-    if("serviceWorker" in navigator)window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js").catch(function(){})});
+  if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost")){
+    var regSW=function(){navigator.serviceWorker.register("/sw.js").catch(function(){})};
+    if(document.readyState==="complete")regSW();else window.addEventListener("load",regSW);
   }
   if(standalone())document.documentElement.classList.add("in-app");
 
