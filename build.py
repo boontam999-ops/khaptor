@@ -199,6 +199,7 @@ def footer(base):
       <div><h4>ตามจังหวัด</h4><ul>{prov_links}</ul></div>
       <div><h4>ติดต่อ</h4><ul><li>{E(C["CONTACT_PHONE"])}</li><li>{E(C["CONTACT_EMAIL"])}</li></ul></div>
     </div>
+    <nav class="partner-links" id="kt-links" aria-label="เว็บไซต์พันธมิตร" hidden></nav>
     <div class="copy">© {TODAY.year} {C["SITE_NAME"]} · ข้อมูลรถในเว็บตัวอย่างนี้เป็นข้อมูลสมมติ</div>
   </div>
 </footer>'''

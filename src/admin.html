@@ -68,6 +68,16 @@ input:focus-visible,button:focus-visible{outline:3px solid var(--amber);outline-
 .aph{display:grid;gap:4px;width:120px}
 .aph img{width:120px;height:90px;object-fit:cover;border-radius:8px;display:block}
 .aph .btn{padding:4px 8px;font-size:12px}
+.lk-top{display:grid;grid-template-columns:1fr 180px;gap:14px;align-items:end;margin-bottom:8px}
+.lk-top select{height:42px;border:1px solid var(--line);border-radius:8px;padding:0 10px;background:var(--bg);font:inherit}
+.lk-row{display:grid;grid-template-columns:28px 1fr 1.6fr auto auto;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.lk-row .n{color:var(--muted);font-size:13px;text-align:center}
+.lk-row input[type=text]{height:38px}
+.lk-row .nf{display:flex;align-items:center;gap:4px;font-size:13px;white-space:nowrap}
+.lk-row .acts{display:flex;gap:4px}
+.lk-row .acts button{border:1px solid var(--line);background:var(--surface);border-radius:6px;width:30px;height:30px;cursor:pointer}
+.lk-empty{color:var(--muted);padding:12px 0}
+@media (max-width:640px){.lk-top{grid-template-columns:1fr}.lk-row{grid-template-columns:24px 1fr;}.lk-row .url,.lk-row .nf,.lk-row .acts{grid-column:2}}
 @media (max-width:640px){.row{grid-template-columns:auto 1fr}.row input[type=text]{grid-column:1/-1}}
 @media (prefers-reduced-motion:reduce){.sw span,.sw span::before{transition:none}}
 </style>
@@ -98,6 +108,22 @@ input:focus-visible,button:focus-visible{outline:3px solid var(--amber);outline-
       </div>
       <div id="lList"></div>
       <div class="msg" id="lMsg" style="margin-top:12px"></div>
+    </section>
+
+    <section class="card" id="linksCard">
+      <h2>ลิงก์ฟุตเตอร์ (แลกลิงก์)</h2>
+      <p class="muted">ลิงก์จะแสดงท้ายเว็บในกล่อง "เว็บไซต์พันธมิตร" และฝังใน HTML ฝั่งเซิร์ฟเวอร์ Google จึงเห็นลิงก์จริง บันทึกแล้วขึ้นเว็บภายในราว 30 วินาที</p>
+      <div class="lk-top">
+        <div><label class="f" for="lkTitle">หัวข้อกล่อง</label><input type="text" id="lkTitle" maxlength="60"></div>
+        <div><label class="f" for="lkScope">แสดงที่</label><select id="lkScope" style="width:100%"><option value="all">ทุกหน้า</option><option value="home">เฉพาะหน้าแรก</option></select></div>
+      </div>
+      <div id="lkList"></div>
+      <div class="bar" style="margin-top:10px">
+        <button class="btn btn-line" type="button" id="lkAdd">+ เพิ่มลิงก์</button>
+        <button class="btn btn-amber" type="button" id="lkSave">บันทึกลิงก์</button>
+      </div>
+      <div class="msg" id="lkMsg" style="margin-top:12px"></div>
+      <p class="muted" style="margin:12px 0 0;font-size:13px">ข้อแนะนำ SEO: แลกกับเว็บที่เนื้อหาเกี่ยวข้องกับรถหรือการเงิน และไม่ควรมีลิงก์เยอะเกินไป Google มองว่าการแลกลิงก์จำนวนมากเป็นการปั่นอันดับ ลิงก์ที่จ่ายเงินซื้อหรือเว็บที่ไม่แน่ใจให้ติ๊ก <b>nofollow</b> ไว้</p>
     </section>
 
     <h2 style="font-size:20px;margin:6px 0 -4px">โฆษณา</h2>
@@ -231,11 +257,48 @@ $("lList").addEventListener("click",function(e){
   });
 });
 
+/* ---- ลิงก์ฟุตเตอร์ ---- */
+var LINKS=[];
+function lkApi(body){
+  return fetch("/api/admin/links",{method:"POST",headers:{"content-type":"application/json","x-admin-password":pw},body:JSON.stringify(body)})
+    .then(function(r){return r.json().catch(function(){return{ok:false,error:"HTTP "+r.status}})}).catch(function(){return{ok:false,error:"เชื่อมต่อไม่ได้"}});
+}
+function lkSync(){[].forEach.call(document.querySelectorAll(".lk-row"),function(row,i){LINKS[i].name=row.querySelector(".name").value;LINKS[i].url=row.querySelector(".url").value;LINKS[i].nofollow=row.querySelector(".nfc").checked})}
+function lkRender(){
+  if(!LINKS.length){$("lkList").innerHTML='<div class="lk-empty">ยังไม่มีลิงก์ กด "+ เพิ่มลิงก์" เพื่อเริ่ม</div>';return}
+  $("lkList").innerHTML=LINKS.map(function(l,i){
+    return '<div class="lk-row"><span class="n">'+(i+1)+'</span>'+
+      '<input type="text" class="name" placeholder="ชื่อเว็บ เช่น ตรวจหวย" maxlength="60" value="'+escH(l.name||"")+'" aria-label="ชื่อเว็บลำดับ '+(i+1)+'">'+
+      '<input type="text" class="url" placeholder="https://example.com" maxlength="300" value="'+escH(l.url||"")+'" aria-label="URL ลำดับ '+(i+1)+'">'+
+      '<label class="nf"><input type="checkbox" class="nfc"'+(l.nofollow?" checked":"")+'> nofollow</label>'+
+      '<span class="acts"><button type="button" data-lk="up" data-i="'+i+'" aria-label="เลื่อนขึ้น">↑</button><button type="button" data-lk="down" data-i="'+i+'" aria-label="เลื่อนลง">↓</button><button type="button" data-lk="del" data-i="'+i+'" aria-label="ลบลิงก์">✕</button></span></div>';
+  }).join("");
+}
+$("lkList").addEventListener("click",function(e){
+  var b=e.target.closest("[data-lk]");if(!b)return;lkSync();
+  var i=+b.getAttribute("data-i"),a=b.getAttribute("data-lk");
+  if(a==="del")LINKS.splice(i,1);
+  else if(a==="up"&&i>0)LINKS.splice(i-1,0,LINKS.splice(i,1)[0]);
+  else if(a==="down"&&i<LINKS.length-1)LINKS.splice(i+1,0,LINKS.splice(i,1)[0]);
+  lkRender();
+});
+$("lkAdd").addEventListener("click",function(){lkSync();LINKS.push({name:"",url:"",nofollow:false});lkRender();var r=document.querySelectorAll(".lk-row .name");r[r.length-1].focus()});
+$("lkSave").addEventListener("click",function(){
+  lkSync();$("lkSave").disabled=true;hide($("lkMsg"));
+  lkApi({action:"save",data:{title:$("lkTitle").value,scope:$("lkScope").value,links:LINKS}}).then(function(r){
+    $("lkSave").disabled=false;
+    if(!r.ok){show($("lkMsg"),"err",r.error||"บันทึกไม่สำเร็จ");return}
+    LINKS=r.data.links;lkRender();show($("lkMsg"),"ok","บันทึกแล้ว "+LINKS.length+" ลิงก์ จะขึ้นท้ายเว็บภายในราว 30 วินาที");
+  });
+});
+function loadLinks(){lkApi({action:"get"}).then(function(r){if(!r.ok){show($("lkMsg"),"err",r.error||"โหลดลิงก์ไม่ได้");return}$("lkTitle").value=r.data.title;$("lkScope").value=r.data.scope;LINKS=r.data.links||[];lkRender()})}
+
 function enter(res){
   $("loginCard").classList.add("hidden");
   $("panel").classList.remove("hidden");
   fill(res.settings,res.kv);
   loadListings();
+  loadLinks();
 }
 
 $("loginForm").addEventListener("submit",function(e){

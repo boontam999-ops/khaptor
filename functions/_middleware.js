@@ -1,5 +1,6 @@
 import { getSettings, publicView } from "../lib/settings.js";
 import { googleClientId } from "../lib/auth.js";
+import { getLinks, linksHTML } from "../lib/links.js";
 
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
@@ -28,7 +29,10 @@ export async function onRequest(ctx) {
     head += `<meta name="google-adsense-account" content="${c}">` +
             `<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${c}" crossorigin="anonymous"></script>`;
   }
-  const out = new HTMLRewriter().on("head", { element(e) { e.append(head, { html: true }); } }).transform(res);
+  const partner = linksHTML(await getLinks(ctx.env), url.pathname);
+  let rw = new HTMLRewriter().on("head", { element(e) { e.append(head, { html: true }); } });
+  if (partner) rw = rw.on("#kt-links", { element(e) { e.removeAttribute("hidden"); e.setInnerContent(partner, { html: true }); } });
+  const out = rw.transform(res);
   const h = new Headers(out.headers);
   h.delete("etag"); h.delete("last-modified");
   h.set("cache-control", "public, max-age=0, must-revalidate");
