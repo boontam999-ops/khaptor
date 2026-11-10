@@ -35,6 +35,8 @@ TODAY = datetime.date.today()
 C = CONFIG
 D = C["DOMAIN"].rstrip("/")
 E = html.escape
+import hashlib
+ASSET_V = hashlib.md5(b"".join((Path(__file__).parent / "src" / n).read_bytes() for n in ("style.css", "site.js", "app.js", "tools.js"))).hexdigest()[:8]
 
 # ---------- data (read from app.js so there is one source of truth) ----------
 app_js = (SRC / "app.js").read_text(encoding="utf-8")
@@ -161,7 +163,7 @@ gtag('js',new Date());""" + (f"gtag('config','{ga}');" if ga else "") + "</scrip
     parts.append(f"<script>window.KT_CONFIG={json.dumps(cfg)}</script>")
     parts += ['<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>',
               '<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">',
-              f'<link rel="stylesheet" href="{base}assets/style.css">']
+              f'<link rel="stylesheet" href="{base}assets/style.css?v={ASSET_V}">']
     parts += [jsonld(x) for x in ld]
     return "<!DOCTYPE html>\n<html lang=\"th\">\n<head>\n" + "\n".join(parts) + "\n</head>\n"
 
@@ -209,8 +211,8 @@ def footer(base):
 def page(path, title, desc, body, base, ld=(), og_image="og/site.jpg", noindex=False, scripts=(), is_index=False, og_type="website"):
     out = head(title, desc, path, base, ld, og_image, noindex, og_type)
     out += f'<body data-base="{base}">\n' + header(base, is_index) + "\n" + body + "\n" + footer(base) + "\n"
-    out += f'<script src="{base}assets/site.js"></script>\n'
-    out += "".join(f'<script src="{base}{s}"></script>\n' for s in scripts)
+    out += f'<script src="{base}assets/site.js?v={ASSET_V}"></script>\n'
+    out += "".join(f'<script src="{base}{s}?v={ASSET_V}"></script>\n' for s in scripts)
     out += "</body>\n</html>\n"
     f = DIST / path
     f.parent.mkdir(parents=True, exist_ok=True)
