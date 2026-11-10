@@ -475,3 +475,40 @@ footer a:hover{color:#fff}
 .partner-links ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13.5px}
 .partner-links a{color:#aab3c5;text-decoration:none}
 .partner-links a:hover{color:#fff;text-decoration:underline}
+
+/* ---- fill wide screens (2026-11-10) ---- */
+section.band{padding:34px 0}
+.posts{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.guide-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:clamp(24px,4vw,64px);align-items:start}
+.guide-grid .prose{max-width:none}
+.guide-grid h2{margin-top:0}
+.faq{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow-sm);padding:20px 24px}
+.faq h2{font-size:22px;margin-bottom:6px}
+.faq details:last-child{border-bottom:0}
+/* sell + loan: form wider, calculator sticks while scrolling */
+#sell .split{grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);align-items:start}
+#sell .split>.side-col{order:2;position:sticky;top:88px;display:grid;gap:20px}
+#sell .split>.panel{order:1}
+@media (min-width:1280px){
+  #sell .form-grid{grid-template-columns:repeat(3,1fr)}
+  #sell .form-grid .full{grid-column:1/-1}
+  #sell .form-grid .note-field{grid-column:span 2}
+}
+/* article page: text + sidebar */
+.article-layout{display:grid;grid-template-columns:minmax(0,760px) minmax(0,1fr);gap:clamp(28px,4vw,64px);align-items:start}
+.article{max-width:none}
+.article-side{display:grid;gap:26px;position:sticky;top:88px}
+.article-side h2{font-size:18px;margin-bottom:12px}
+.side-grid{grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.side-posts{grid-template-columns:1fr}
+.side-posts .post p{display:none}
+@media (max-width:1100px){
+  .guide-grid,.article-layout{grid-template-columns:1fr}
+  .article-side{position:static}
+  #sell .split{grid-template-columns:1fr}
+  #sell .split>.side-col{position:static;order:2}
+}
+.tips h3{font-size:18px;margin-bottom:10px}
+.tips ol{margin:0;padding-left:20px;display:grid;gap:10px;font-size:14.5px;color:var(--muted)}
+.tips b{color:var(--ink)}
+@media (max-width:1279px){#sell .form-grid .note-field{grid-column:1/-1}}

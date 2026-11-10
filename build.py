@@ -377,16 +377,20 @@ def build():
   </div>
 </section>'''
     guide = f'''<section class="band" id="guide">
-  <div class="wrap prose">
+  <div class="wrap guide-grid">
+   <div class="prose">
     <h2>คู่มือซื้อรถมือสองให้คุ้ม</h2>
     <p>ตั้งงบจากค่างวดที่จ่ายไหวต่อเดือนก่อนราคารถ แล้วเผื่อค่าประกันภัย ค่าต่อภาษี และค่าซ่อมบำรุงปีแรกไว้ราว 5 ถึง 10% ของราคารถ ใช้ตัวคำนวณค่างวดด้านบนเทียบระยะผ่อน 48, 60 และ 72 งวด จะเห็นว่าผ่อนนานขึ้นค่างวดต่ำลงแต่ดอกเบี้ยรวมสูงขึ้น</p>
     <p>รถกระบะและ PPV อย่าง Hilux Revo, D-Max และ Fortuner ราคาขายต่อดีในตลาดไทย ส่วนเก๋งเล็กอย่าง City, Yaris Ativ และ Almera ประหยัดน้ำมันและค่าบำรุงรักษาต่ำ เหมาะกับใช้ในเมือง ถ้าสนใจรถไฟฟ้ามือสอง ให้ถามสุขภาพแบตเตอรี่ (State of Health) และเงื่อนไขรับประกันแบตเตอรี่ที่เหลือ</p>
-    <h2 style="margin-top:22px">คำถามที่พบบ่อย</h2>
+   </div>
+   <div class="faq">
+    <h2>คำถามที่พบบ่อย</h2>
     {"".join(f'<details><summary>{E(q)}</summary><p>{E(a)}</p></details>' for q, a in FAQ)}
+   </div>
   </div>
 </section>'''
     latest = (f'<section class="band" id="articles"><div class="wrap"><h2>บทความล่าสุด</h2><p class="lead">เคล็ดลับซื้อขายรถมือสอง สินเชื่อ และการดูแลรถ</p>'
-              f'<div class="posts">{"".join(post_card(p, "") for p in POSTS[:3])}</div>'
+              f'<div class="posts">{"".join(post_card(p, "") for p in POSTS[:4])}</div>'
               f'<p style="margin-top:14px"><a class="btn btn-line" href="articles/index.html">ดูบทความทั้งหมด</a></p></div></section>') if POSTS else ""
     body = body.replace('<section class="band" id="sell">', links + "\n" + latest + "\n" + guide + '\n<section class="band" id="sell">')
     faq_ld = {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [
@@ -511,6 +515,7 @@ def build():
                   "publisher": {"@type": "Organization", "name": C["SITE_NAME"], "logo": {"@type": "ImageObject", "url": f"{D}/og/icon-512.png"}}}
         body = f"""<main class="wrap page">
   {bc_html}
+  <div class="article-layout">
   <article class="article">
     <span class="kicker" style="font-size:13px;font-weight:600;color:var(--road)">{E(p["category"])}</span>
     <h1>{E(p["title"])}</h1>
@@ -518,8 +523,12 @@ def build():
     <div class="prose">{content}</div>
     {share_bar(url, p["title"])}
   </article>
-  <section class="related"><h2>รถที่เกี่ยวข้อง</h2><div class="grid">{"".join(static_card(c, base) for c in cars)}</div></section>
-  {f'<section class="related"><h2>บทความอื่น</h2><div class="posts">{"".join(post_card(x, base) for x in more)}</div></section>' if more else ""}
+  <aside class="article-side">
+    <section><h2>รถที่เกี่ยวข้อง</h2><div class="grid side-grid">{"".join(static_card(c, base) for c in cars)}</div></section>
+    {f'<section><h2>บทความอื่น</h2><div class="posts side-posts">{"".join(post_card(x, base) for x in more)}</div></section>' if more else ""}
+    {ad("sidebar")}
+  </aside>
+  </div>
 </main>"""
         page(f"articles/{p['slug']}.html", f"{p['title']} | {C['SITE_NAME']}", p["description"], body, base, ld=[art_ld, bc_ld], og_type="article")
     if POSTS:

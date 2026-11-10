@@ -87,6 +87,7 @@
 
 <section class="band" id="sell">
   <div class="wrap split">
+    <div class="side-col">
     <div class="panel" id="loan">
       <h3>คำนวณค่างวดรถ</h3>
       <div class="form-grid">
@@ -102,7 +103,17 @@
       </div>
       <p class="note">คิดแบบดอกเบี้ยคงที่ (Flat rate) ค่างวดรวม VAT 7% แล้ว ตัวเลขเป็นการประมาณ อัตราจริงขึ้นกับไฟแนนซ์และอายุรถ</p>
     </div>
-
+      <div class="panel tips">
+        <h3>ลงประกาศอย่างไรให้ขายไว</h3>
+        <ol>
+          <li><b>ใส่รูปจริงครบ 6 ถึง 8 รูป</b> ด้านหน้า ด้านข้าง ด้านหลัง ภายใน เลขไมล์ และห้องเครื่อง ประกาศที่มีรูปครบได้รับการติดต่อมากกว่า</li>
+          <li><b>ตั้งราคาใกล้ตลาด</b> ดูรถรุ่นเดียวกันในเว็บก่อน แล้วเผื่อให้ต่อรองราว 3 ถึง 5%</li>
+          <li><b>เขียนรายละเอียดให้ตอบคำถามล่วงหน้า</b> เช่น เจ้าของกี่มือ เข้าศูนย์หรือไม่ เคยชนไหม</li>
+          <li><b>แชร์ลิงก์ประกาศ</b> ลง LINE กลุ่มและ Facebook ด้วยปุ่มแชร์ในหน้าประกาศ</li>
+          <li><b>กด "ขายแล้ว"</b> เมื่อปิดการขาย จะได้ไม่มีคนโทรมาถามอีก</li>
+        </ol>
+      </div>
+    </div>
     <div class="panel">
       <h3>ลงขายรถของคุณ ฟรี</h3>
       <div id="authBox" class="authbox">
@@ -114,7 +125,7 @@
         <fieldset id="sellFields" disabled>
         <div class="field"><label for="slBrand">ยี่ห้อ</label><select id="slBrand" required></select></div>
         <div class="field"><label for="slModel">รุ่น</label><input id="slModel" required maxlength="40" placeholder="เช่น City"></div>
-        <div class="field full"><label for="slSub">รุ่นย่อย</label><input id="slSub" maxlength="60" placeholder="เช่น 1.0 Turbo SV"></div>
+        <div class="field"><label for="slSub">รุ่นย่อย</label><input id="slSub" maxlength="60" placeholder="เช่น 1.0 Turbo SV"></div>
         <div class="field"><label for="slYear">ปีจดทะเบียน</label><select id="slYear" required></select></div>
         <div class="field"><label for="slKm">เลขไมล์ (กม.)</label><input id="slKm" type="number" inputmode="numeric" required min="0" placeholder="65000"></div>
         <div class="field"><label for="slBody">ประเภทรถ</label><select id="slBody" required></select></div>
@@ -125,8 +136,8 @@
         <div class="field"><label for="slProv">จังหวัด</label><select id="slProv" required></select></div>
         <div class="field"><label for="slName">ชื่อผู้ขาย</label><input id="slName" required maxlength="50"></div>
         <div class="field"><label for="slTel">เบอร์โทร</label><input id="slTel" type="tel" inputmode="tel" required placeholder="0812345678"></div>
+        <div class="field full note-field"><label for="slNote">รายละเอียดเพิ่มเติม</label><textarea id="slNote" maxlength="600" placeholder="เช่น เจ้าของมือเดียว เข้าศูนย์ตลอด ไม่มีชน"></textarea></div>
         <div class="field full"><span class="flabel">รูปรถ <small>สูงสุด 8 รูป · รูปแรกเป็นรูปปก</small></span><div id="slPhotos" class="ph-grid"></div><p class="note" style="margin-top:6px">ถ่ายให้เห็นด้านหน้า ด้านข้าง ด้านหลัง ภายใน หน้าปัดเลขไมล์ และห้องเครื่อง ระบบลบตำแหน่ง GPS ออกจากรูปให้อัตโนมัติ</p></div>
-        <div class="field full"><label for="slNote">รายละเอียดเพิ่มเติม</label><textarea id="slNote" maxlength="600" placeholder="เช่น เจ้าของมือเดียว เข้าศูนย์ตลอด ไม่มีชน"></textarea></div>
         <label class="full sell-consent"><input type="checkbox" id="slConsent"> ยินยอมให้แสดงชื่อและเบอร์โทรนี้ในประกาศ เพื่อให้ผู้ซื้อติดต่อได้</label>
         <button class="btn btn-road full" type="submit" id="sellBtn">ลงประกาศ</button>
         </fieldset>
