@@ -16,7 +16,7 @@ function validate(o, brands, models, provs) {
   const model = brand ? (models[brand] || []).find(m => m.toLowerCase() === String(o.model || "").toLowerCase()) || "" : "";
   return {
     brand, model,
-    body: pick(o.body, BODIES), fuel: pick(o.fuel, FUELS), gear: pick(o.gear, GEARS),
+    body: model ? [] : pick(o.body, BODIES), fuel: pick(o.fuel, FUELS), gear: pick(o.gear, GEARS),
     minPrice: num(o.minPrice, 1000, 50e6), maxPrice: num(o.maxPrice, 1000, 50e6),
     minYear: num(o.minYear, 1980, 2100), maxKm: num(o.maxKm, 1000, 1e6),
     prov: provs.includes(o.prov) ? o.prov : "",
@@ -37,7 +37,7 @@ export async function onRequestPost({ request, env }) {
   for (const br of brands) models[br] = clipList((b.models || {})[br], 60);
 
   // แคชคำค้นเดิม 7 วัน ไม่เสียโควตา AI ซ้ำ
-  const ck = new Request("https://ai-cache.khaptor.internal/search/v1/" + encodeURIComponent(q.toLowerCase()) + "/" + brands.length);
+  const ck = new Request("https://ai-cache.khaptor.internal/search/v2/" + encodeURIComponent(q.toLowerCase()) + "/" + brands.length);
   const cache = caches.default;
   try { const hit = await cache.match(ck); if (hit) { const o = await hit.json(); return json({ ok: true, filters: validate(o, brands, models, provs), cached: true }); } } catch (e) {}
 
@@ -60,7 +60,7 @@ export async function onRequestPost({ request, env }) {
 - ปีเป็น ค.ศ. ถ้าบอก พ.ศ. ให้ลบ 543 ปีปัจจุบันคือ ${year} ("ไม่เกิน 5 ปี" = minYear ${year - 5})
 - cert=true เมื่อขอรถผ่านการตรวจสภาพ
 หลักตีความ: รถครอบครัว/7 ที่นั่ง → suv และ van; ประหยัดน้ำมัน → ไฮบริด เบนซิน หรือไฟฟ้า และ body hatch/sedan ถ้าไม่ได้ระบุประเภท; ขนของ/ใช้งาน → pickup; ขับในเมือง → hatch sedan
-ใส่เฉพาะสิ่งที่ผู้ใช้สื่อ ไม่แน่ใจให้เว้นว่าง
+ใส่เฉพาะสิ่งที่ผู้ใช้สื่อ ไม่แน่ใจให้เว้นว่าง ห้ามใส่ fuel ถ้าผู้ใช้ไม่ได้พูดถึงเชื้อเพลิงหรือความประหยัด ห้ามใส่ gear ถ้าไม่ได้พูดถึงเกียร์ ถ้าระบุรุ่นแล้วไม่ต้องใส่ body
 explain: สรุปสั้นภาษาไทยไม่เกิน 1 ประโยคว่ากรองอะไร` },
     { role: "user", content: q },
   ];
