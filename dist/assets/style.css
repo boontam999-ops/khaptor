@@ -659,3 +659,4 @@ fieldset.plain legend{font-weight:700;padding-right:8px}
 .linkbtn{border:0;background:none;color:var(--amber);font:inherit;font-weight:600;cursor:pointer;padding:0;text-decoration:underline}
 @media (max-width:640px){.askbox{padding:6px 6px 6px 12px}.askbox input{font-size:15px}.ask-eg button:nth-child(n+3){display:none}}
 #slNote{min-height:110px;resize:vertical}
+.ask-thinking{opacity:.75;font-style:normal;font-size:13px;margin-left:6px}

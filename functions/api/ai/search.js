@@ -65,12 +65,13 @@ explain: สรุปสั้นภาษาไทยไม่เกิน 1 �
     { role: "user", content: q },
   ];
   try {
-    const { text } = await runChat(env, messages, { max_tokens: 300, temperature: 0 });
+    const t0 = Date.now();
+    const { text, model } = await runChat(env, messages, { max_tokens: 300, temperature: 0 });
     const m = text.match(/\{[\s\S]*\}/);
     const o = JSON.parse(m ? m[0] : text);
     const f = validate(o, brands, models, provs);
     try { await cache.put(ck, new Response(JSON.stringify(f), { headers: { "content-type": "application/json", "cache-control": "max-age=604800" } })); } catch (e) {}
-    return json({ ok: true, filters: f });
+    return json({ ok: true, filters: f, model: model.split("/").pop(), ms: Date.now() - t0 });
   } catch (e) {
     return json({ ok: false, error: "ai" }, 502);
   }

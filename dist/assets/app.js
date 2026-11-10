@@ -539,27 +539,33 @@ function applyFilters(f){
 }
 function describeFilters(f){const p=[];if(f.brand)p.push(f.brand+(f.model?" "+f.model:""));if(f.body&&f.body.length)p.push(f.body.map(b=>BODY[b]).join("/"));if(f.fuel&&f.fuel.length)p.push(f.fuel.join("/"));if(f.gear&&f.gear.length)p.push("เกียร์"+f.gear.join("/"));if(f.minPrice)p.push("ตั้งแต่ ฿"+fmt(f.minPrice));if(f.maxPrice)p.push("ไม่เกิน ฿"+fmt(f.maxPrice));if(f.minYear)p.push("ปี "+f.minYear+" ขึ้นไป");if(f.maxKm)p.push("ไมล์ไม่เกิน "+fmt(f.maxKm));if(f.prov)p.push(f.prov);if(f.cert)p.push("ผ่านการตรวจสภาพ");return p.join(" · ")}
 const hasAny=f=>!!(f.brand||f.body.length||f.fuel.length||f.gear.length||f.minPrice||f.maxPrice||f.minYear||f.maxKm||f.prov||f.cert);
+let askSeq=0;
+function showAsk(f,via,q){
+  const out=$("askOut");out.hidden=false;
+  if(!hasAny(f)){out.innerHTML=`ยังไม่เข้าใจคำค้นนี้ ลองระบุยี่ห้อ ประเภทรถ หรืองบ เช่น "กระบะดีเซล ไม่เกิน 5 แสน"`;return}
+  applyFilters(f);
+  const n=CARS.filter(c=>matches(c)).length;
+  out.innerHTML=`<span>${via==="ai"?"✦ ":""}ค้นหา: <b>${esc(describeFilters(f))}</b> พบ ${n} คัน${via==="wait"?' <i class="ask-thinking">AI กำลังปรับผลให้ตรงขึ้น…</i>':""}</span><button type="button" id="askClear">ล้าง</button>`;
+  $("askClear").onclick=()=>{askSeq++;$("clearAll").click();out.hidden=true;$("askQ").value=""};
+}
 $("askForm").addEventListener("submit",async e=>{
   e.preventDefault();const q=$("askQ").value.trim();if(q.length<2)return;
-  const btn=$("askBtn"),out=$("askOut");btn.disabled=true;btn.classList.add("loading");
-  let f=ruleParse(q),via="rule";
-  if(window.KT_SITE&&window.KT_SITE.ai){
+  const seq=++askSeq,rules=ruleParse(q),useAI=!!(window.KT_SITE&&window.KT_SITE.ai);
+  showAsk(rules,useAI?"wait":"rule",q);
+  if(hasAny(rules)||useAI)document.getElementById("buy").scrollIntoView({behavior:"smooth"});
+  let via="rule";
+  if(useAI){
     try{
       const brands=[...new Set(CARS.map(c=>c.brand))].sort(),models={};brands.forEach(b=>models[b]=[...new Set(CARS.filter(c=>c.brand===b).map(c=>c.model))]);
       const provs=[...new Set(CARS.map(c=>c.prov))];
-      const r=await fetch("/api/ai/search",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({q,brands,models,provs})});
-      const j=await r.json();
-      if(j.ok&&hasAny(j.filters)){f=j.filters;via="ai"}
-    }catch(err){}
+      const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),15000);
+      const r=await fetch("/api/ai/search",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({q,brands,models,provs}),signal:ctl.signal});
+      clearTimeout(to);const j=await r.json();
+      if(seq!==askSeq)return;
+      if(j.ok&&hasAny(j.filters)){via="ai";showAsk(j.filters,"ai",q)}else showAsk(rules,"rule",q);
+    }catch(err){if(seq===askSeq)showAsk(rules,"rule",q)}
   }
-  btn.disabled=false;btn.classList.remove("loading");
   track("ai_search",{via,search_term:q.slice(0,100)});
-  if(!hasAny(f)){out.hidden=false;out.innerHTML=`ยังไม่เข้าใจคำค้นนี้ ลองระบุยี่ห้อ ประเภทรถ หรืองบ เช่น "กระบะดีเซล ไม่เกิน 5 แสน"`;return}
-  applyFilters(f);
-  const n=CARS.filter(c=>matches(c)).length;
-  out.hidden=false;out.innerHTML=`<span>${via==="ai"?"✦ ":""}ค้นหา: <b>${esc(describeFilters(f))}</b> พบ ${n} คัน</span><button type="button" id="askClear">ล้าง</button>`;
-  $("askClear").onclick=()=>{$("clearAll").click();out.hidden=true;$("askQ").value=""};
-  document.getElementById("buy").scrollIntoView({behavior:"smooth"});
 });
 document.querySelectorAll("[data-ask]").forEach(b=>b.addEventListener("click",()=>{$("askQ").value=b.dataset.ask;$("askForm").requestSubmit()}));
 
