@@ -7,6 +7,7 @@
 import json, re, html, shutil, datetime
 import markdown  # pip install markdown
 from pathlib import Path
+from tools import build_tools
 
 # ============================== CONFIG ==============================
 CONFIG = {
@@ -176,7 +177,7 @@ def header(base, is_index=False):
   <div class="wrap">
     <a class="logo" href="{base}index.html" aria-label="{C["SITE_NAME"]} หน้าแรก">{LOGO}<span>{C["SITE_NAME"]}<small>ตลาดรถมือสองทั่วไทย</small></span></a>
     <nav class="main" aria-label="เมนูหลัก">
-      <a href="{home}#buy">ซื้อรถ</a><a href="{home}#sell">ขายรถ</a><a href="{home}#dealers">ดีลเลอร์</a><a href="{home}#loan">คำนวณสินเชื่อ</a><a href="{base}articles/index.html">บทความ</a>
+      <a href="{home}#buy">ซื้อรถ</a><a href="{home}#sell">ขายรถ</a><a href="{home}#dealers">ดีลเลอร์</a><a href="{base}tools/index.html">เครื่องมือฟรี</a><a href="{base}articles/index.html">บทความ</a>
     </nav>
     <div class="top-actions"><button class="btn btn-ghost install-btn" type="button" data-install hidden>ติดตั้งแอป</button>{fav}<a class="btn btn-amber" href="{home}#sell">ลงขายรถฟรี</a></div>
   </div>
@@ -194,7 +195,7 @@ def footer(base):
   <div class="wrap">
     <div class="cols">
       <div><h4>{C["SITE_NAME"]}</h4><p style="margin:0;max-width:34ch">ตลาดซื้อขายรถมือสองสำหรับผู้ซื้อ เจ้าของรถ และเต็นท์รถทั่วประเทศไทย</p>
-        <ul style="margin-top:10px"><li><a href="{base}articles/index.html">บทความรถมือสอง</a></li><li><a href="{base}about.html">เกี่ยวกับเรา / ติดต่อ</a></li><li><a href="{base}privacy.html">นโยบายความเป็นส่วนตัว</a></li><li><a href="#" data-consent-open>ตั้งค่าคุกกี้</a></li><li><a href="#" data-install-help>ติดตั้งแอปขับต่อ</a></li></ul></div>
+        <ul style="margin-top:10px"><li><a href="{base}articles/index.html">บทความรถมือสอง</a></li><li><a href="{base}tools/index.html">เครื่องมือฟรี</a></li><li><a href="{base}tools/car-tax.html">คำนวณภาษีรถยนต์</a></li><li><a href="{base}tools/contract.html">สัญญาซื้อขายรถยนต์</a></li><li><a href="{base}about.html">เกี่ยวกับเรา / ติดต่อ</a></li><li><a href="{base}privacy.html">นโยบายความเป็นส่วนตัว</a></li><li><a href="#" data-consent-open>ตั้งค่าคุกกี้</a></li><li><a href="#" data-install-help>ติดตั้งแอปขับต่อ</a></li></ul></div>
       <div data-demo><h4>ตามยี่ห้อ</h4><ul>{brand_links}</ul></div>
       <div data-demo><h4>ตามจังหวัด</h4><ul>{prov_links}</ul></div>
       <div><h4>ติดต่อ</h4><ul><li data-site="phone">{E(C["CONTACT_PHONE"])}</li><li data-site="email">{E(C["CONTACT_EMAIL"])}</li></ul></div>
@@ -349,6 +350,8 @@ def build():
     shutil.copy(SRC / "style.css", DIST / "assets/style.css")
     shutil.copy(SRC / "site.js", DIST / "assets/site.js")
     shutil.copy(SRC / "app.js", DIST / "assets/app.js")
+    shutil.copy(SRC / "tools.js", DIST / "assets/tools.js")
+    (DIST / "assets/cars.json").write_text(json.dumps([{k: c[k] for k in ("brand", "model", "sub", "year", "price", "km")} | {"url": f"/cars/{car_slug(c)}.html"} for c in CARS], ensure_ascii=False), encoding="utf-8")
     shutil.copy(SRC / "admin.html", DIST / "admin.html")
     if (SRC / "og").exists():
         shutil.copytree(SRC / "og", DIST / "og")
@@ -539,6 +542,9 @@ def build():
              f'<div class="posts">{"".join(post_card(p, "../") for p in POSTS)}</div></main>',
              "../", ld=[bc_ld])
 
+    # ---- free tools ----
+    tool_urls = build_tools(page, crumbs, ad, share_bar, E, C, D, TODAY.year)
+
     # ---- template for user listing pages (filled by functions/l/[id].js) ----
     page("l/_template.html", "%%TITLE%%", "%%DESC%%", "%%MAIN%%", "../", og_image="%%OGIMG%%", og_type="product")
 
@@ -577,6 +583,7 @@ def build():
     if POSTS:
         urls.append((f"{D}/articles/index.html", POSTS[0]["date"], "daily", "0.7"))
         urls += [(f"{D}/articles/{p['slug']}.html", p["date"], "monthly", "0.7") for p in POSTS]
+    urls += [(u, TODAY, "monthly", "0.8") for u in tool_urls]
     urls += [(f"{D}/cars/{car_slug(c)}.html", listed_date(c), "weekly", "0.6") for c in CARS]
     sm = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     sm += [f"  <url><loc>{u}</loc><lastmod>{d.isoformat()}</lastmod><changefreq>{f}</changefreq><priority>{p}</priority></url>" for u, d, f, p in urls]

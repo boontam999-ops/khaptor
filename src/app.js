@@ -144,6 +144,25 @@ function matches(c,skip){
   return true;
 }
 
+/* ส่งข้อมูลรถไปเครื่องมือ: สัญญาซื้อขาย และเปรียบเทียบ */
+function contractURL(c){const q=new URLSearchParams({kBrand:(c.brand+" "+c.model+" "+(c.sub||"")).trim(),kYear:c.year,kColor:c.color||"",kKm:c.km,kPrice:c.price,kProv:c.prov||""});return BASE+"tools/contract.html?"+q}
+function getCmp(){try{return JSON.parse(localStorage.getItem("kt-compare")||"[]")}catch(e){return []}}
+function cmpKey(c){return c.uid||String(c.id)}
+function toggleCmp(id){
+  const c=CARS.find(x=>x.id===id);if(!c)return;let l=getCmp();const k=cmpKey(c);
+  if(l.some(x=>x.key===k))l=l.filter(x=>x.key!==k);
+  else{if(l.length>=3){toast("เปรียบเทียบได้สูงสุด 3 คัน");return}l.push({key:k,name:`${c.year} ${c.brand} ${c.model}`,price:c.price,year:c.year,km:c.km,fuel:c.fuel});track("add_to_compare",{item_id:k})}
+  try{localStorage.setItem("kt-compare",JSON.stringify(l))}catch(e){}
+  render();cmpBar();if($("modal").classList.contains("open"))openCar(id);
+}
+function cmpBar(){
+  const l=getCmp();let b=$("cmpBar");
+  if(!b){b=document.createElement("div");b.id="cmpBar";b.className="cmp-bar";document.body.appendChild(b);
+    b.addEventListener("click",e=>{if(e.target.id==="cmpBarClear"){try{localStorage.removeItem("kt-compare")}catch(x){}render();cmpBar()}})}
+  b.hidden=!l.length;
+  b.innerHTML=`<span>เลือกเปรียบเทียบ <b>${l.length}</b>/3 คัน: ${l.map(x=>esc(x.name)).join(", ")}</span><button type="button" class="btn btn-line btn-sm" id="cmpBarClear">ล้าง</button><a class="btn btn-amber btn-sm" href="${BASE}tools/compare.html">${l.length<2?"เลือกอีกคัน":"ดูตารางเปรียบเทียบ"}</a>`;
+}
+
 function card(c){
   const tags=[c.cert?'<span class="tag cert">ผ่านการตรวจสภาพ</span>':"",c.fuel==="ไฟฟ้า"?'<span class="tag ev">EV</span>':"",c.sold?'<span class="tag sold-tag">ขายแล้ว</span>':"",c.user&&!c.sold?'<span class="tag">เจ้าของขายเอง</span>':"",c.days===0?'<span class="tag">ลงวันนี้</span>':""].join("");
   return `<article class="card${c.sold?" sold":""}" tabindex="0" data-id="${c.id}" aria-label="${c.brand} ${c.model} ราคา ${fmt(c.price)} บาท">
@@ -151,6 +170,7 @@ function card(c){
       <button class="fav ${favs.has(c.id)?"on":""}" type="button" data-fav="${c.id}" aria-label="บันทึกรถคันนี้" aria-pressed="${favs.has(c.id)}">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="${favs.has(c.id)?"currentColor":"none"}" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.4-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.6-9.5 9-9.5 9z"/></svg>
       </button>
+      <button class="cmp-btn ${getCmp().some(x=>x.key===cmpKey(c))?"on":""}" type="button" data-cmp="${c.id}" aria-pressed="${getCmp().some(x=>x.key===cmpKey(c))}">เทียบ</button>
     </div>
     <div class="cbody">
       <h3><a href="${c.url||BASE+"cars/"+slug(c)+".html"}" class="cardlink">${c.year} ${c.brand} ${c.model}</a></h3>
@@ -202,6 +222,7 @@ $("favBtn").addEventListener("click",()=>{state.onlyFav=!state.onlyFav;render();
 function toggleFav(id){track(favs.has(id)?"remove_from_wishlist":"add_to_wishlist",{item_id:"KT-"+id});favs.has(id)?favs.delete(id):favs.add(id);saveFavs();toast(favs.has(id)?"บันทึกไว้ในรถที่ถูกใจแล้ว":"เอาออกจากรถที่ถูกใจแล้ว");render();if($("modal").classList.contains("open"))openCar(id)}
 $("grid").addEventListener("click",e=>{
   const f=e.target.closest("[data-fav]");if(f){e.stopPropagation();toggleFav(+f.dataset.fav);return}
+  const cb=e.target.closest("[data-cmp]");if(cb){e.stopPropagation();toggleCmp(+cb.dataset.cmp);return}
   if(e.target.closest(".cardlink")&&(e.ctrlKey||e.metaKey||e.button===1))return;
   const c=e.target.closest(".card");if(c){e.preventDefault();openCar(+c.dataset.id)}
 });
@@ -247,7 +268,9 @@ function openCar(id){
       <button class="btn btn-line" type="button" id="mLoan">คำนวณค่างวด</button>
       <a class="btn btn-line" href="${c.user?"/l/"+esc(c.uid):BASE+"cars/"+slug(c)+".html"}">ดูหน้าประกาศเต็ม</a>
       <button class="btn btn-line" type="button" id="mFav">${favs.has(c.id)?"เอาออกจากที่ถูกใจ":"บันทึกไว้"}</button>
+      <button class="btn btn-line" type="button" id="mCmp">${getCmp().some(x=>x.key===cmpKey(c))?"เอาออกจากการเปรียบเทียบ":"เพิ่มเปรียบเทียบ"}</button>
     </div>
+    <div class="tool-links"><a href="${contractURL(c)}">ทำสัญญาซื้อขายคันนี้</a><a href="${BASE}tools/price-estimate.html?brand=${encodeURIComponent(c.brand)}&model=${encodeURIComponent(c.model)}&eYear=${c.year}&eKm=${c.km}">เช็กราคากลางรุ่นนี้</a><a href="${BASE}tools/checklist.html">เช็กลิสต์ตรวจรถก่อนซื้อ</a></div>
     ${c.user&&c.note?`<p style="margin:0;white-space:pre-line">${esc(c.note)}</p>`:""}
     <div id="mPhone"></div>
     ${shareHTML(c)}
@@ -256,6 +279,7 @@ function openCar(id){
   $("modal").classList.add("open");$("mClose").focus();window.ktInitShare&&window.ktInitShare($("sheet"));
   $("mClose").onclick=closeModal;
   $("mFav").onclick=()=>toggleFav(c.id);
+  $("mCmp").onclick=()=>toggleCmp(c.id);
   if($("mCall"))$("mCall").onclick=()=>{track("generate_lead",{currency:"THB",value:c.price,lead_source:"call_seller",item_id:c.user?c.code:"KT-"+c.id});$("mPhone").innerHTML=c.user?`<div class="ok">${esc(c.sellerName)} โทร ${esc(c.tel)} แจ้งว่าเห็นประกาศ ${esc(c.code)} จากขับต่อ</div>`:`<div class="ok">โทร 08${(c.id*7919%90000000+10000000)} (เบอร์ตัวอย่าง) แจ้งรหัสประกาศ KT-${String(c.id).padStart(5,"0")}</div>`};
   $("mLoan").onclick=()=>{$("cPrice").value=c.price;calc();closeModal();$("loan").scrollIntoView({behavior:"smooth"})};
 }
@@ -362,7 +386,7 @@ function renderMine(list){
   if(!list||!list.length){box.innerHTML="";return}
   box.innerHTML=`<h4 class="mine-h">ประกาศของคุณ</h4>`+list.map(l=>{const st=STATUS[l.status]||["",""];
     return `<div class="mine"><div><b>${esc(l.year+" "+l.brand+" "+l.model)}</b><small>฿${fmt(l.price)} · ${esc(l.prov)} · ส่งเมื่อ ${new Date(l.created_at).toLocaleDateString("th-TH")}</small></div>
-    <span class="pill ${l.sold?"sold":st[1]}">${l.sold?"ขายแล้ว":st[0]}</span><span class="mine-acts"><button type="button" class="btn btn-line btn-sm" data-editph="${esc(l.id)}">แก้รูป (${(l.photos||[]).length})</button><button type="button" class="btn btn-sm ${l.sold?"btn-line":"btn-road"}" data-sold="${esc(l.id)}" data-v="${l.sold?"0":"1"}">${l.sold?"ยังไม่ขาย":"ขายแล้ว"}</button><button type="button" class="btn btn-line btn-sm" data-del="${esc(l.id)}">ลบ</button></span><div class="mine-edit" id="me-${esc(l.id)}" hidden></div></div>`}).join("");
+    <span class="pill ${l.sold?"sold":st[1]}">${l.sold?"ขายแล้ว":st[0]}</span><span class="mine-acts"><button type="button" class="btn btn-line btn-sm" data-editph="${esc(l.id)}">แก้รูป (${(l.photos||[]).length})</button><button type="button" class="btn btn-sm ${l.sold?"btn-line":"btn-road"}" data-sold="${esc(l.id)}" data-v="${l.sold?"0":"1"}">${l.sold?"ยังไม่ขาย":"ขายแล้ว"}</button><a class="btn btn-line btn-sm" href="${contractURL(l)}">ทำสัญญา</a><button type="button" class="btn btn-line btn-sm" data-del="${esc(l.id)}">ลบ</button></span><div class="mine-edit" id="me-${esc(l.id)}" hidden></div></div>`}).join("");
   MINE=list;
 }
 let MINE=[];
@@ -473,4 +497,5 @@ setFilters(!mqSmall.matches);
 (mqSmall.addEventListener?mqSmall.addEventListener("change",e=>setFilters(!e.matches)):null);
 
 let tt;function toast(t){const el=$("toast");el.textContent=t;el.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>el.classList.remove("show"),1800)}
-saveFavs();render();initGoogle();loadListings();
+(function(){const mx=+new URLSearchParams(location.search).get("max");if(mx>0){state.maxPrice=mx;const sel=$("sMaxPrice");if(![...sel.options].some(o=>+o.value===mx)){const o=document.createElement("option");o.value=mx;o.textContent=fmt(mx)+" บาท";sel.appendChild(o)}sel.value=String(mx)}})();
+saveFavs();render();cmpBar();initGoogle();loadListings();
