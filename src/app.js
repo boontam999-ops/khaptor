@@ -30,6 +30,8 @@ const RAW=[
 ["Honda","Civic","1.5 Turbo RS",2021,889000,44000,"sedan","อัตโนมัติ","เบนซิน","เทา","สมุทรปราการ","dealer",1,1,"4กธ 9915"]
 ];
 const CARS=RAW.map((r,i)=>({id:i+1,brand:r[0],model:r[1],sub:r[2],year:r[3],price:r[4],km:r[5],body:r[6],gear:r[7],fuel:r[8],color:r[9],prov:r[10],seller:r[11],cert:!!r[12],days:r[13],plate:r[14]}));
+/* รถตัวอย่างถูกปิดในหลังบ้าน */
+if(window.KT_SITE&&window.KT_SITE.show_demo===false)CARS.length=0;
 
 const slug=c=>(c.year+"-"+c.brand+"-"+c.model+"-"+c.id).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
 const BASE=(document.body.dataset.base||"");
@@ -170,7 +172,7 @@ function render(){
   list.sort((a,b)=>(a.sold?1:0)-(b.sold?1:0)||S[state.sort](a,b));
   const title=state.onlyFav?"รถที่ถูกใจ":[state.brand||"รถมือสอง",state.model].filter(Boolean).join(" ")+(state.prov?" ใน"+state.prov:"");
   $("resultTitle").innerHTML=`${title}<small>${list.length} คัน</small>`;
-  $("grid").innerHTML=list.length?list.map((c,i)=>card(c)+(i===5&&list.length>8?'<div class="ad-slot ad-infeed" data-ad="infeed"></div>':"")).join(""):`<div class="empty">ไม่พบรถที่ตรงกับเงื่อนไข ลองขยายช่วงราคาหรือเอาตัวกรองบางอันออก</div>`;
+  $("grid").innerHTML=list.length?list.map((c,i)=>card(c)+(i===5&&list.length>8?'<div class="ad-slot ad-infeed" data-ad="infeed"></div>':"")).join(""):(CARS.length?`<div class="empty">ไม่พบรถที่ตรงกับเงื่อนไข ลองขยายช่วงราคาหรือเอาตัวกรองบางอันออก</div>`:`<div class="empty">ยังไม่มีประกาศขายรถ <a href="#sell">ลงประกาศคันแรกฟรี</a></div>`);
   // facet counts
   document.querySelectorAll("[data-count]").forEach(el=>{const [k,v]=el.dataset.count.split(":");el.textContent=CARS.filter(c=>matches(c,k)&&c[k]===v).length});
   // active chips
@@ -249,6 +251,7 @@ function openCar(id){
     ${c.user&&c.note?`<p style="margin:0;white-space:pre-line">${esc(c.note)}</p>`:""}
     <div id="mPhone"></div>
     ${shareHTML(c)}
+    ${c.user?`<button type="button" class="report-link" data-report="${esc(c.uid)}">แจ้งประกาศไม่เหมาะสม</button>`:""}
   </div>`;
   $("modal").classList.add("open");$("mClose").focus();window.ktInitShare&&window.ktInitShare($("sheet"));
   $("mClose").onclick=closeModal;

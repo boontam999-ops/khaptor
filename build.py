@@ -96,7 +96,7 @@ def static_card(c, base):
     tags = "".join([
         '<span class="tag cert">ผ่านการตรวจสภาพ</span>' if c["cert"] else "",
         '<span class="tag ev">EV</span>' if c["fuel"] == "ไฟฟ้า" else ""])
-    return f'''<article class="card" data-id="{c["id"]}">
+    return f'''<article class="card" data-id="{c["id"]}" data-demo>
   <div class="pic" style="background:{pic_bg(c)}">{car_svg(c)}<div class="tags">{tags}</div></div>
   <div class="cbody">
     <h3><a class="cardlink" href="{base}cars/{car_slug(c)}.html">{E(car_name(c))}</a></h3>
@@ -110,7 +110,7 @@ def static_card(c, base):
 
 
 # ---------- shared page parts ----------
-def jsonld(obj): return f'<script type="application/ld+json">{json.dumps(obj, ensure_ascii=False)}</script>'
+def jsonld(obj): return f'<script type="application/ld+json"{" data-demo" if obj.get("@type") in ("ItemList", "Car") else ""}>{json.dumps(obj, ensure_ascii=False)}</script>'
 
 
 def head(title, desc, path, base, ld=(), og_image="og/site.jpg", noindex=False, og_type="website"):
@@ -195,9 +195,9 @@ def footer(base):
     <div class="cols">
       <div><h4>{C["SITE_NAME"]}</h4><p style="margin:0;max-width:34ch">ตลาดซื้อขายรถมือสองสำหรับผู้ซื้อ เจ้าของรถ และเต็นท์รถทั่วประเทศไทย</p>
         <ul style="margin-top:10px"><li><a href="{base}articles/index.html">บทความรถมือสอง</a></li><li><a href="{base}about.html">เกี่ยวกับเรา / ติดต่อ</a></li><li><a href="{base}privacy.html">นโยบายความเป็นส่วนตัว</a></li><li><a href="#" data-consent-open>ตั้งค่าคุกกี้</a></li><li><a href="#" data-install-help>ติดตั้งแอปขับต่อ</a></li></ul></div>
-      <div><h4>ตามยี่ห้อ</h4><ul>{brand_links}</ul></div>
-      <div><h4>ตามจังหวัด</h4><ul>{prov_links}</ul></div>
-      <div><h4>ติดต่อ</h4><ul><li>{E(C["CONTACT_PHONE"])}</li><li>{E(C["CONTACT_EMAIL"])}</li></ul></div>
+      <div data-demo><h4>ตามยี่ห้อ</h4><ul>{brand_links}</ul></div>
+      <div data-demo><h4>ตามจังหวัด</h4><ul>{prov_links}</ul></div>
+      <div><h4>ติดต่อ</h4><ul><li data-site="phone">{E(C["CONTACT_PHONE"])}</li><li data-site="email">{E(C["CONTACT_EMAIL"])}</li></ul></div>
     </div>
     <nav class="partner-links" id="kt-links" aria-label="เว็บไซต์พันธมิตร" hidden></nav>
     <div class="copy">© {TODAY.year} {C["SITE_NAME"]} · ข้อมูลรถในเว็บตัวอย่างนี้เป็นข้อมูลสมมติ</div>
@@ -366,7 +366,7 @@ def build():
     body = body.replace("    </aside>", "      " + ad("sidebar") + "\n    </aside>")
     newest = sorted(CARS, key=lambda c: c["days"])
     body = body.replace('<div class="grid" id="grid"></div>', '<div class="grid" id="grid">' + "".join(static_card(c, "") for c in newest) + "</div>")
-    links = f'''<section class="band" id="browse">
+    links = f'''<section class="band" id="browse" data-demo>
   <div class="wrap">
     <h2>ดูรถมือสองตามยี่ห้อและจังหวัด</h2>
     <p class="lead">รวมประกาศขายรถแยกตามยี่ห้อและพื้นที่ เลือกดูเฉพาะที่สนใจได้เลย</p>
@@ -524,7 +524,7 @@ def build():
     {share_bar(url, p["title"])}
   </article>
   <aside class="article-side">
-    <section><h2>รถที่เกี่ยวข้อง</h2><div class="grid side-grid">{"".join(static_card(c, base) for c in cars)}</div></section>
+    <section data-demo><h2>รถที่เกี่ยวข้อง</h2><div class="grid side-grid">{"".join(static_card(c, base) for c in cars)}</div></section>
     {f'<section><h2>บทความอื่น</h2><div class="posts side-posts">{"".join(post_card(x, base) for x in more)}</div></section>' if more else ""}
     {ad("sidebar")}
   </aside>
@@ -548,7 +548,7 @@ def build():
          f'''<main class="wrap prose page"><h1>เกี่ยวกับ{C["SITE_NAME"]}</h1>
 <p>{C["SITE_NAME"]} เป็นตลาดออนไลน์สำหรับซื้อขายรถมือสองในประเทศไทย ผู้ซื้อค้นหาและเปรียบเทียบรถจากเต็นท์รถและเจ้าของขายเองได้ฟรี ส่วนเจ้าของรถลงประกาศขายได้โดยไม่มีค่าใช้จ่าย</p>
 <p>เราไม่ได้เป็นผู้ขายรถเอง การซื้อขายเกิดขึ้นโดยตรงระหว่างผู้ซื้อกับผู้ขาย ก่อนโอนเงินทุกครั้ง โปรดตรวจเอกสารและตัวรถด้วยตัวเอง</p>
-<h2>ติดต่อเรา</h2><p>โทร {E(C["CONTACT_PHONE"])}<br>อีเมล {E(C["CONTACT_EMAIL"])}<br>เวลาทำการ จันทร์ถึงเสาร์ 9:00 ถึง 18:00 น.</p>
+<h2>ติดต่อเรา</h2><p>โทร <span data-site="phone">{E(C["CONTACT_PHONE"])}</span><br>อีเมล <span data-site="email">{E(C["CONTACT_EMAIL"])}</span><br>เวลาทำการ จันทร์ถึงเสาร์ 9:00 ถึง 18:00 น.</p>
 <h2>แจ้งประกาศไม่เหมาะสม</h2><p>หากพบประกาศที่น่าสงสัยว่าเป็นการหลอกลวง แจ้งรหัสประกาศมาทางอีเมล ทีมงานจะตรวจสอบภายใน 1 วันทำการ</p></main>''',
          base, ld=[ORG])
     page("privacy.html", f"นโยบายความเป็นส่วนตัวและคุกกี้ | {C['SITE_NAME']}", f"นโยบายความเป็นส่วนตัวของ {C['SITE_NAME']} ตาม พ.ร.บ.คุ้มครองข้อมูลส่วนบุคคล (PDPA) และการใช้คุกกี้",

@@ -4,332 +4,510 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>แอดมิน ขับต่อ</title>
+<title>หลังบ้าน ขับต่อ</title>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f3f5f8;--surface:#fff;--ink:#14202e;--muted:#5d6b7c;--line:#dde3ea;--road:#163a63;--road-2:#0f2b4b;--amber:#f2a516;--amber-ink:#3a2700;--good:#1f8a4c;--bad:#c0303a;
-  --display:"Bai Jamjuree","IBM Plex Sans Thai",system-ui,sans-serif;--body:"IBM Plex Sans Thai",system-ui,sans-serif;color-scheme:light}
+/* Layout: dark side nav + content column of cards; one section visible at a time (hash routed) */
+:root{--bg:#f4f5f7;--surface:#fff;--soft:#eef1f5;--ink:#0f1729;--muted:#5b6474;--line:#e4e7ec;--nav:#0b1222;--amber:#ff5a36;--good:#12a150;--bad:#c0303a;--warn:#b7791f;
+  --display:"Anuphan","IBM Plex Sans Thai",system-ui,sans-serif;--body:"IBM Plex Sans Thai",system-ui,sans-serif;--shadow:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.08);color-scheme:light}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 var(--body)}
-h1,h2{font-family:var(--display);margin:0}
-header{background:var(--road-2);color:#fff;padding:14px clamp(16px,3vw,40px);display:flex;align-items:center;gap:12px}
-header h1{font-size:19px;flex:1}
-header a{color:#fff;opacity:.85;font-size:14px}
-main{max-width:860px;margin:28px auto;padding:0 16px;display:grid;gap:18px}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--body)}
+h1,h2,h3{font-family:var(--display);margin:0;letter-spacing:-.01em}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.hidden{display:none!important}
+/* login */
+.login{min-height:100%;display:grid;place-items:center;padding:20px}
+.login .card{width:100%;max-width:420px}
+/* shell */
+.shell{display:grid;grid-template-columns:240px 1fr;min-height:100%}
+.side{background:var(--nav);color:#c9d2e3;padding:18px 12px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh}
+.brand{display:flex;align-items:center;gap:10px;color:#fff;font:700 18px var(--display);padding:4px 10px 16px}
+.brand svg{flex:none}
+.nav a{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;border-radius:10px;color:#c9d2e3;text-decoration:none;font-weight:500}
+.nav a:hover{background:rgba(255,255,255,.06);color:#fff}
+.nav a.on{background:rgba(255,90,54,.16);color:#fff}
+.nav .badge{background:var(--amber);color:#fff;border-radius:999px;font-size:12px;padding:0 8px;line-height:20px}
+.nav .badge:empty{display:none}
+.side .foot{margin-top:auto;display:grid;gap:6px;padding:10px}
+.side .foot a,.side .foot button{color:#c9d2e3;background:none;border:0;text-align:left;padding:0;cursor:pointer;text-decoration:none;font-size:14px}
+.side .foot a:hover,.side .foot button:hover{color:#fff}
+main{padding:24px clamp(16px,3vw,40px) 60px;display:grid;gap:18px;align-content:start;min-width:0}
+.pagehead{display:flex;align-items:end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.pagehead h1{font-size:26px}
+.pagehead p{margin:4px 0 0;color:var(--muted);font-size:14px}
+.card{background:var(--surface);border-radius:16px;box-shadow:var(--shadow);padding:20px}
 .card h2{font-size:18px;margin-bottom:4px}
-.muted{color:var(--muted);font-size:14px;margin:0 0 14px}
-label.f{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px;font-weight:500}
-input[type=text],input[type=password]{width:100%;height:42px;border:1px solid var(--line);border-radius:8px;padding:0 12px;background:var(--bg);font:inherit;color:inherit}
-input:focus-visible,button:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
-.btn{border:0;border-radius:8px;padding:10px 18px;font:600 15px var(--body);cursor:pointer}
-.btn-amber{background:var(--amber);color:var(--amber-ink)}
-.btn-line{background:var(--surface);border:1px solid var(--line);color:var(--ink)}
+.muted{color:var(--muted);font-size:14px;margin:0 0 12px}
+/* form bits */
+label.f{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px;font-weight:600}
+input[type=text],input[type=password],input[type=number],input[type=search],select,textarea{width:100%;height:42px;border:1.5px solid transparent;border-radius:10px;padding:0 12px;background:var(--soft)}
+textarea{height:auto;min-height:80px;padding:10px 12px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--amber);background:var(--surface)}
+.btn{border:1px solid transparent;border-radius:999px;padding:9px 16px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;text-decoration:none;white-space:nowrap}
 .btn:disabled{opacity:.5;cursor:wait}
-.row{display:grid;grid-template-columns:auto 1fr 220px;gap:14px;align-items:center;padding:14px 0;border-top:1px solid var(--line)}
-.row:first-of-type{border-top:0}
-.row b{display:block}
-.row small{color:var(--muted)}
-.master{display:flex;align-items:center;gap:16px;padding:16px;border-radius:10px;background:var(--bg)}
-.master b{font-size:17px}
-.state{font-weight:600}
-.state.on{color:var(--good)}.state.off{color:var(--bad)}
+.btn-amber{background:var(--amber);color:#fff}
+.btn-line{background:var(--surface);border-color:var(--line);color:var(--ink)}
+.btn-good{background:var(--good);color:#fff}
+.btn-bad{background:var(--surface);border-color:var(--bad);color:var(--bad)}
+.btn-ink{background:var(--ink);color:#fff}
+.btn-sm{padding:5px 12px;font-size:13px}
+.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.msg{padding:10px 14px;border-radius:10px;font-weight:500;display:none}
+.msg.ok{display:block;background:#e3f4ea;color:var(--good)}
+.msg.err{display:block;background:#fbe6e8;color:var(--bad)}
+.msg.warn{display:block;background:#fff4dc;color:#7a5200}
 /* switch */
-.sw{position:relative;width:52px;height:30px;flex:none}
+.sw{position:relative;width:52px;height:30px;flex:none;display:inline-block}
 .sw input{opacity:0;width:0;height:0;position:absolute}
 .sw span{position:absolute;inset:0;background:#c5ccd5;border-radius:99px;transition:.2s;cursor:pointer}
 .sw span::before{content:"";position:absolute;width:24px;height:24px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
 .sw input:checked+span{background:var(--good)}
 .sw input:checked+span::before{transform:translateX(22px)}
 .sw input:focus-visible+span{outline:3px solid var(--amber);outline-offset:2px}
-.disabled-group{opacity:.45;pointer-events:none}
-.msg{padding:10px 14px;border-radius:8px;font-weight:500;display:none}
-.msg.ok{display:block;background:#e3f4ea;color:var(--good)}
-.msg.err{display:block;background:#fbe6e8;color:var(--bad)}
-.msg.warn{display:block;background:#fff4dc;color:#7a5200}
-.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.bar .muted{margin:0}
-.hidden{display:none}
-.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
-.tab{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:6px 14px;font:500 14px var(--body);cursor:pointer}
-.tab.on{background:var(--road);color:#fff;border-color:var(--road)}
-.tab span{opacity:.75;margin-left:2px}
-.li{border-top:1px solid var(--line);padding:14px 0;display:grid;gap:6px}
-.li h3{margin:0;font:600 16px var(--body)}
+.toggle-row{display:flex;align-items:center;gap:14px;padding:14px 0;border-top:1px solid var(--line)}
+.toggle-row:first-of-type{border-top:0}
+.toggle-row b{display:block}
+.toggle-row small{color:var(--muted)}
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px}
+.stat{background:var(--surface);border-radius:16px;box-shadow:var(--shadow);padding:16px 18px;text-decoration:none;color:inherit;display:block}
+.stat small{color:var(--muted);font-weight:500;display:block}
+.stat b{font:700 30px var(--display);font-variant-numeric:tabular-nums;display:block;margin-top:2px}
+.stat.alert b{color:var(--amber)}
+.stat.good b{color:var(--good)}
+.chart{display:flex;align-items:flex-end;gap:6px;height:140px;padding-top:10px}
+.chart .c{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+.chart .b{width:100%;max-width:34px;background:linear-gradient(180deg,var(--amber),#ff8a5c);border-radius:6px 6px 2px 2px;min-height:3px}
+.chart .v{font-size:12px;font-weight:600;font-variant-numeric:tabular-nums}
+.chart .d{font-size:11px;color:var(--muted)}
+.checklist{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.checklist li{display:flex;gap:10px;align-items:flex-start}
+.checklist .dot{flex:none;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:12px;font-weight:700;margin-top:2px}
+.dot.ok{background:var(--good)}.dot.no{background:var(--warn)}
+/* tables / lists */
+.toolbar{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:6px 14px;font-weight:500;font-size:14px;cursor:pointer}
+.tab.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tab span{opacity:.7;margin-left:2px}
+.li{border-top:1px solid var(--line);padding:16px 0;display:grid;grid-template-columns:120px 1fr;gap:16px}
+.li:first-child{border-top:0}
+.li .thumb{width:120px;height:90px;border-radius:10px;object-fit:cover;background:var(--soft);display:grid;place-items:center;color:var(--muted);font-size:12px}
+.li h3{font:600 16px var(--body)}
+.li h3 a{color:inherit}
 .li .meta{color:var(--muted);font-size:13px}
-.li .note{background:var(--bg);border-radius:8px;padding:8px 10px;font-size:14px;white-space:pre-line}
-.li .acts{display:flex;gap:8px;flex-wrap:wrap}
-.btn-good{background:var(--good);color:#fff}
-.btn-bad{background:var(--surface);border:1px solid var(--bad);color:var(--bad)}
-.empty{color:var(--muted);padding:18px 0;text-align:center}
-.aphs{display:flex;flex-wrap:wrap;gap:8px}
-.aph{display:grid;gap:4px;width:120px}
-.aph img{width:120px;height:90px;object-fit:cover;border-radius:8px;display:block}
-.aph .btn{padding:4px 8px;font-size:12px}
+.li .acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:1px 9px;border-radius:99px;margin-left:6px;vertical-align:2px}
+.pill.live{background:#dff3e7;color:#1f6b3d}.pill.hid{background:#fbe3e5;color:#a1232d}.pill.sold{background:var(--ink);color:#fff}.pill.ban{background:#fbe3e5;color:#a1232d}.pill.open{background:#fff1d0;color:#7a5200}.pill.done{background:var(--soft);color:var(--muted)}
+.empty{color:var(--muted);padding:24px 0;text-align:center}
+.aphs{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.aph{display:grid;gap:4px;width:110px}
+.aph img{width:110px;height:82px;object-fit:cover;border-radius:8px;display:block}
+.edit-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px 12px;margin-top:10px;background:var(--bg);border-radius:12px;padding:12px}
+.edit-grid .full{grid-column:1/-1}
+.edit-grid label.f{margin-top:6px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:13px}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+/* links */
 .lk-top{display:grid;grid-template-columns:1fr 180px;gap:14px;align-items:end;margin-bottom:8px}
-.lk-top select{height:42px;border:1px solid var(--line);border-radius:8px;padding:0 10px;background:var(--bg);font:inherit}
 .lk-row{display:grid;grid-template-columns:28px 1fr 1.6fr auto auto;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
 .lk-row .n{color:var(--muted);font-size:13px;text-align:center}
-.lk-row input[type=text]{height:38px}
 .lk-row .nf{display:flex;align-items:center;gap:4px;font-size:13px;white-space:nowrap}
 .lk-row .acts{display:flex;gap:4px}
 .lk-row .acts button{border:1px solid var(--line);background:var(--surface);border-radius:6px;width:30px;height:30px;cursor:pointer}
-.lk-empty{color:var(--muted);padding:12px 0}
-@media (max-width:640px){.lk-top{grid-template-columns:1fr}.lk-row{grid-template-columns:24px 1fr;}.lk-row .url,.lk-row .nf,.lk-row .acts{grid-column:2}}
-@media (max-width:640px){.row{grid-template-columns:auto 1fr}.row input[type=text]{grid-column:1/-1}}
+/* ads */
+.row{display:grid;grid-template-columns:auto 1fr 220px;gap:14px;align-items:center;padding:14px 0;border-top:1px solid var(--line)}
+.row b{display:block}.row small{color:var(--muted)}
+.disabled-group{opacity:.45;pointer-events:none}
+@media (max-width:860px){
+  .shell{grid-template-columns:1fr}
+  .side{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;padding:10px}
+  .brand{padding:4px 8px}
+  .nav{display:flex;flex-wrap:wrap;gap:2px}
+  .nav a{padding:6px 10px;font-size:14px}
+  .side .foot{margin:0;flex-direction:row;display:flex;gap:14px}
+  .toolbar{grid-template-columns:1fr}
+  .li{grid-template-columns:80px 1fr}.li .thumb{width:80px;height:60px}
+  .edit-grid{grid-template-columns:1fr 1fr}
+  .lk-top{grid-template-columns:1fr}.lk-row{grid-template-columns:24px 1fr}.lk-row .url,.lk-row .nf,.lk-row .acts{grid-column:2}
+  .row{grid-template-columns:auto 1fr}.row input{grid-column:1/-1}
+}
 @media (prefers-reduced-motion:reduce){.sw span,.sw span::before{transition:none}}
 </style>
 </head>
 <body>
-<header><h1>แอดมิน ขับต่อ</h1><a href="/">ดูหน้าเว็บ</a></header>
-<main>
-  <section class="card" id="loginCard">
-    <h2>เข้าสู่ระบบ</h2>
-    <p class="muted">ใส่รหัสผ่านแอดมินที่ตั้งไว้ใน Cloudflare (ตัวแปร ADMIN_PASSWORD)</p>
+<div class="login" id="loginView">
+  <section class="card">
+    <h1 style="font-size:22px;margin-bottom:4px">หลังบ้าน ขับต่อ</h1>
+    <p class="muted">ใส่รหัสผ่านแอดมินที่ตั้งไว้ใน Cloudflare (ADMIN_PASSWORD)</p>
     <form id="loginForm" class="bar">
-      <input type="password" id="pw" autocomplete="current-password" placeholder="รหัสผ่าน" style="flex:1;min-width:220px" required>
+      <input type="password" id="pw" autocomplete="current-password" placeholder="รหัสผ่าน" style="flex:1;min-width:200px" required>
       <button class="btn btn-amber" id="loginBtn" type="submit">เข้าสู่ระบบ</button>
     </form>
     <div class="msg" id="loginMsg" style="margin-top:12px"></div>
   </section>
+</div>
 
-  <div id="panel" class="hidden" style="display:grid;gap:18px">
+<div class="shell hidden" id="app">
+  <aside class="side">
+    <div class="brand"><svg width="30" height="30" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="10" fill="#ff5a36"/><circle cx="17" cy="17" r="9" fill="none" stroke="#fff" stroke-width="3"/><circle cx="17" cy="17" r="2.6" fill="#fff"/><path d="M17 8v6M17 20v6M8 17h6M20 17h6" stroke="#fff" stroke-width="2"/></svg>หลังบ้าน</div>
+    <nav class="nav" aria-label="เมนูหลังบ้าน">
+      <a href="#dashboard" data-view="dashboard">ภาพรวม</a>
+      <a href="#listings" data-view="listings">ประกาศ <span class="badge" id="navListings"></span></a>
+      <a href="#users" data-view="users">ผู้ใช้</a>
+      <a href="#reports" data-view="reports">รายงาน <span class="badge" id="navReports"></span></a>
+      <a href="#links" data-view="links">ลิงก์ฟุตเตอร์</a>
+      <a href="#ads" data-view="ads">โฆษณา</a>
+      <a href="#site" data-view="site">ตั้งค่าเว็บ</a>
+    </nav>
+    <div class="foot"><a href="/" target="_blank" rel="noopener">เปิดหน้าเว็บ ↗</a><button type="button" id="logoutBtn">ออกจากระบบ</button></div>
+  </aside>
+
+  <main>
     <div class="msg" id="kvWarn"></div>
 
-    <section class="card">
-      <div class="bar" style="justify-content:space-between"><h2>ประกาศขายรถจากผู้ใช้</h2><button class="btn btn-line" id="reloadL" type="button">โหลดใหม่</button></div>
-      <p class="muted">ประกาศขึ้นเว็บทันทีที่ผู้ขายกดลง ถ้าเจอประกาศผิดกฎหรือน่าสงสัย กดซ่อนหรือลบได้ ประกาศที่ซ่อนจะไปอยู่แท็บ "ซ่อนแล้ว"</p>
-      <div class="tabs" role="tablist">
-        <button type="button" class="tab on" data-f="approved">เผยแพร่อยู่ <span id="cApproved">0</span></button>
-        <button type="button" class="tab" data-f="rejected">ซ่อนแล้ว <span id="cRejected">0</span></button>
-        <button type="button" class="tab hidden" data-f="pending">รอตรวจ <span id="cPending">0</span></button>
-      </div>
-      <div id="lList"></div>
-      <div class="msg" id="lMsg" style="margin-top:12px"></div>
+    <!-- ภาพรวม -->
+    <section data-section="dashboard" class="hidden" style="display:grid;gap:18px">
+      <div class="pagehead"><div><h1>ภาพรวม</h1><p id="dashTime">กำลังโหลด...</p></div><button class="btn btn-line" type="button" id="dashReload">โหลดใหม่</button></div>
+      <div class="stats" id="stats"></div>
+      <div class="card"><h2>ประกาศใหม่ 14 วันล่าสุด</h2><div class="chart" id="chart" role="img" aria-label="กราฟจำนวนประกาศใหม่รายวัน"></div></div>
+      <div class="card"><h2>ความพร้อมก่อนสมัคร AdSense</h2><p class="muted">Google อนุมัติง่ายขึ้นเมื่อเว็บมีเนื้อหาจริงพอ</p><ul class="checklist" id="checklist"></ul></div>
+      <div class="card"><div class="bar" style="justify-content:space-between"><h2>ประกาศล่าสุด</h2><a class="btn btn-line btn-sm" href="#listings">ดูทั้งหมด</a></div><div id="recent"></div></div>
     </section>
 
-    <section class="card" id="linksCard">
-      <h2>ลิงก์ฟุตเตอร์ (แลกลิงก์)</h2>
-      <p class="muted">ลิงก์จะแสดงท้ายเว็บในกล่อง "เว็บไซต์พันธมิตร" และฝังใน HTML ฝั่งเซิร์ฟเวอร์ Google จึงเห็นลิงก์จริง บันทึกแล้วขึ้นเว็บภายในราว 30 วินาที</p>
-      <div class="lk-top">
-        <div><label class="f" for="lkTitle">หัวข้อกล่อง</label><input type="text" id="lkTitle" maxlength="60"></div>
-        <div><label class="f" for="lkScope">แสดงที่</label><select id="lkScope" style="width:100%"><option value="all">ทุกหน้า</option><option value="home">เฉพาะหน้าแรก</option></select></div>
-      </div>
-      <div id="lkList"></div>
-      <div class="bar" style="margin-top:10px">
-        <button class="btn btn-line" type="button" id="lkAdd">+ เพิ่มลิงก์</button>
-        <button class="btn btn-amber" type="button" id="lkSave">บันทึกลิงก์</button>
-      </div>
-      <div class="msg" id="lkMsg" style="margin-top:12px"></div>
-      <p class="muted" style="margin:12px 0 0;font-size:13px">ข้อแนะนำ SEO: แลกกับเว็บที่เนื้อหาเกี่ยวข้องกับรถหรือการเงิน และไม่ควรมีลิงก์เยอะเกินไป Google มองว่าการแลกลิงก์จำนวนมากเป็นการปั่นอันดับ ลิงก์ที่จ่ายเงินซื้อหรือเว็บที่ไม่แน่ใจให้ติ๊ก <b>nofollow</b> ไว้</p>
-    </section>
-
-    <h2 style="font-size:20px;margin:6px 0 -4px">โฆษณา</h2>
-
-    <section class="card">
-      <div class="master">
-        <label class="sw"><input type="checkbox" id="adsOn"><span></span></label>
-        <div style="flex:1"><b>โฆษณาทั้งเว็บ</b><span class="state" id="adsState"></span></div>
-      </div>
-      <p class="muted" style="margin:10px 0 0">ปิดสวิตช์นี้แล้วโฆษณาจะหายจากทุกหน้า รวมถึง Auto ads เพราะระบบจะไม่โหลดสคริปต์ AdSense เลย</p>
-    </section>
-
-    <section class="card" id="cfgCard">
-      <h2>รหัส Google AdSense</h2>
-      <p class="muted">ดูได้ที่ AdSense > บัญชี > ข้อมูลบัญชี ใส่แล้วระบบจะอัปเดตไฟล์ ads.txt ให้เอง</p>
-      <label class="f" for="client">Publisher ID</label>
-      <input type="text" id="client" placeholder="ca-pub-1234567890123456" inputmode="text" autocomplete="off">
-
-      <h2 style="margin-top:22px">ตำแหน่งโฆษณา</h2>
-      <p class="muted">เปิดหรือปิดได้ทีละตำแหน่ง ใส่รหัสหน่วยโฆษณา (data-ad-slot) จาก AdSense > โฆษณา > ตามหน่วยโฆษณา ถ้าไม่ใส่ ตำแหน่งนั้นจะไม่แสดง (Auto ads ยังทำงานตามที่ตั้งใน AdSense)</p>
-      <div id="positions"></div>
-
-      <div class="row" style="border-top:1px solid var(--line)">
-        <label class="sw"><input type="checkbox" id="ph"><span></span></label>
-        <div><b>แสดงกรอบ "พื้นที่โฆษณา"</b><small>ใช้ดูตำแหน่งตอนยังไม่มีรหัส AdSense กรอบจะหายเองเมื่อใส่รหัสแล้ว</small></div>
-        <span></span>
+    <!-- ประกาศ -->
+    <section data-section="listings" class="hidden" style="display:grid;gap:18px">
+      <div class="pagehead"><div><h1>ประกาศขายรถ</h1><p>ประกาศขึ้นเว็บทันทีที่ผู้ขายกดลง แก้ไข ซ่อน ทำเครื่องหมายขายแล้ว หรือลบได้ที่นี่</p></div></div>
+      <div class="card" style="display:grid;gap:12px">
+        <div class="toolbar">
+          <input type="search" id="lSearch" placeholder="ค้นหายี่ห้อ รุ่น จังหวัด ชื่อผู้ขาย เบอร์โทร หรืออีเมล" aria-label="ค้นหาประกาศ">
+          <select id="lSort" aria-label="เรียงตาม"><option value="new">ใหม่สุด</option><option value="old">เก่าสุด</option><option value="pDesc">ราคาสูงสุด</option><option value="pAsc">ราคาต่ำสุด</option></select>
+          <button class="btn btn-line" type="button" id="lReload">โหลดใหม่</button>
+        </div>
+        <div class="tabs" role="tablist" id="lTabs">
+          <button type="button" class="tab on" data-f="live">เผยแพร่อยู่ <span id="cLive">0</span></button>
+          <button type="button" class="tab" data-f="sold">ขายแล้ว <span id="cSold">0</span></button>
+          <button type="button" class="tab" data-f="hidden">ซ่อนอยู่ <span id="cHidden">0</span></button>
+          <button type="button" class="tab" data-f="all">ทั้งหมด <span id="cAll">0</span></button>
+        </div>
+        <div class="msg" id="lMsg"></div>
+        <div id="lList"></div>
       </div>
     </section>
 
-    <section class="card">
-      <div class="bar">
-        <button class="btn btn-amber" id="saveBtn" type="button">บันทึกการตั้งค่า</button>
-        <button class="btn btn-line" id="logoutBtn" type="button">ออกจากระบบ</button>
-        <p class="muted" id="updated"></p>
+    <!-- ผู้ใช้ -->
+    <section data-section="users" class="hidden" style="display:grid;gap:18px">
+      <div class="pagehead"><div><h1>ผู้ใช้</h1><p>บัญชี Google ที่เคยล็อกอินเพื่อลงประกาศ ระงับบัญชีแล้วจะล็อกอิน ลงประกาศ และอัปโหลดรูปไม่ได้</p></div></div>
+      <div class="card" style="display:grid;gap:12px">
+        <div class="toolbar"><input type="search" id="uSearch" placeholder="ค้นหาชื่อหรืออีเมล" aria-label="ค้นหาผู้ใช้"><select id="uFilter" aria-label="กรองผู้ใช้"><option value="all">ทุกบัญชี</option><option value="banned">ถูกระงับ</option></select><button class="btn btn-line" type="button" id="uReload">โหลดใหม่</button></div>
+        <div class="msg" id="uMsg"></div>
+        <div class="tablewrap"><table><thead><tr><th>ผู้ใช้</th><th>ประกาศ</th><th>ใช้งานครั้งแรก</th><th>ล่าสุด</th><th>สถานะ</th><th></th></tr></thead><tbody id="uBody"></tbody></table></div>
       </div>
-      <div class="msg" id="saveMsg" style="margin-top:12px"></div>
-      <p class="muted" style="margin:12px 0 0">หน้าเว็บอาจใช้เวลาราว 30 วินาทีถึง 1 นาทีกว่าจะเห็นค่าที่เปลี่ยน</p>
     </section>
-  </div>
-</main>
+
+    <!-- รายงาน -->
+    <section data-section="reports" class="hidden" style="display:grid;gap:18px">
+      <div class="pagehead"><div><h1>รายงานจากผู้ใช้</h1><p>ผู้เข้าชมกด "แจ้งประกาศไม่เหมาะสม" ในหน้าประกาศ ตรวจแล้วกด "จัดการแล้ว"</p></div><button class="btn btn-line" type="button" id="rReload">โหลดใหม่</button></div>
+      <div class="card" style="display:grid;gap:12px">
+        <div class="tabs" id="rTabs"><button type="button" class="tab on" data-f="open">รอดำเนินการ <span id="cOpen">0</span></button><button type="button" class="tab" data-f="done">จัดการแล้ว <span id="cDone">0</span></button></div>
+        <div class="msg" id="rMsg"></div>
+        <div id="rList"></div>
+      </div>
+    </section>
+
+    <!-- ลิงก์ -->
+    <section data-section="links" class="hidden" style="display:grid;gap:18px">
+      <div class="pagehead"><div><h1>ลิงก์ฟุตเตอร์ (แลกลิงก์)</h1><p>แสดงท้ายเว็บในกล่อง "เว็บไซต์พันธมิตร" ฝังใน HTML ฝั่งเซิร์ฟเวอร์ Google จึงเห็นลิงก์จริง</p></div></div>
+      <div class="card">
+        <div class="lk-top">
+          <div><label class="f" for="lkTitle">หัวข้อกล่อง</label><input type="text" id="lkTitle" maxlength="60"></div>
+          <div><label class="f" for="lkScope">แสดงที่</label><select id="lkScope"><option value="all">ทุกหน้า</option><option value="home">เฉพาะหน้าแรก</option></select></div>
+        </div>
+        <div id="lkList"></div>
+        <div class="bar" style="margin-top:10px"><button class="btn btn-line" type="button" id="lkAdd">+ เพิ่มลิงก์</button><button class="btn btn-amber" type="button" id="lkSave">บันทึกลิงก์</button></div>
+        <div class="msg" id="lkMsg" style="margin-top:12px"></div>
+        <p class="muted" style="margin:12px 0 0;font-size:13px">ข้อแนะนำ SEO: แลกกับเว็บที่เกี่ยวข้องกับรถหรือการเงิน ไม่ควรเกิน 10 ถึง 20 ลิงก์ ลิงก์ที่จ่ายเงินซื้อหรือเว็บที่ไม่แน่ใจให้ติ๊ก <b>nofollow</b></p>
+      </div>
+    </section>
+
+    <!-- โฆษณา -->
+    <section data-section="ads" class="hidden" style="display:grid;gap:18px">
+      <div class="pagehead"><div><h1>โฆษณา</h1><p>ปิดสวิตช์หลักแล้วเว็บจะไม่โหลดสคริปต์ AdSense เลย รวมถึง Auto ads</p></div></div>
+      <div class="card"><div class="toggle-row"><label class="sw"><input type="checkbox" id="adsOn"><span></span></label><div><b>โฆษณาทั้งเว็บ</b><small id="adsState"></small></div></div></div>
+      <div class="card" id="cfgCard">
+        <h2>รหัส Google AdSense</h2>
+        <p class="muted">ดูได้ที่ AdSense > บัญชี > ข้อมูลบัญชี ระบบอัปเดตไฟล์ ads.txt ให้เอง</p>
+        <label class="f" for="client">Publisher ID</label><input type="text" id="client" placeholder="ca-pub-1234567890123456" autocomplete="off">
+        <h2 style="margin-top:22px">ตำแหน่งโฆษณา</h2>
+        <p class="muted">ใส่รหัสหน่วยโฆษณา (data-ad-slot) จาก AdSense ถ้าไม่ใส่ ตำแหน่งนั้นจะไม่แสดง (Auto ads ยังทำงาน)</p>
+        <div id="positions"></div>
+        <div class="row"><label class="sw"><input type="checkbox" id="ph"><span></span></label><div><b>แสดงกรอบ "พื้นที่โฆษณา"</b><small>ใช้ดูตำแหน่งตอนยังไม่มีรหัส AdSense</small></div><span></span></div>
+      </div>
+      <div class="card"><div class="bar"><button class="btn btn-amber" id="adsSave" type="button">บันทึกการตั้งค่าโฆษณา</button><span class="muted" id="adsUpdated" style="margin:0"></span></div><div class="msg" id="adsMsg" style="margin-top:12px"></div></div>
+    </section>
+
+    <!-- ตั้งค่าเว็บ -->
+    <section data-section="site" class="hidden" style="display:grid;gap:18px">
+      <div class="pagehead"><div><h1>ตั้งค่าเว็บ</h1><p>มีผลกับทุกหน้าภายในราว 30 วินาทีหลังบันทึก</p></div></div>
+      <div class="card">
+        <h2>รถตัวอย่าง</h2>
+        <div class="toggle-row"><label class="sw"><input type="checkbox" id="sDemo"><span></span></label><div><b>แสดงรถตัวอย่าง 24 คัน</b><small>ปิดเมื่อมีประกาศจริงแล้ว และ<b>ต้องปิดก่อนสมัคร AdSense</b> ปิดแล้วหน้ารถตัวอย่าง หน้ายี่ห้อ และหน้าจังหวัดจะตอบ 404 และถูกตัดออกจาก sitemap</small></div></div>
+      </div>
+      <div class="card">
+        <h2>แถบประกาศด้านบนเว็บ</h2>
+        <p class="muted">แสดงเป็นแถบสีส้มใต้หัวเว็บทุกหน้า เว้นว่างไว้เพื่อซ่อน</p>
+        <label class="f" for="sAnn">ข้อความ</label><input type="text" id="sAnn" maxlength="200" placeholder="เช่น ลงขายรถฟรี ไม่มีค่าธรรมเนียมตลอดปี 2569">
+        <label class="f" for="sAnnLink">ลิงก์เมื่อกด (ไม่บังคับ)</label><input type="text" id="sAnnLink" maxlength="300" placeholder="เช่น /#sell หรือ https://...">
+      </div>
+      <div class="card">
+        <h2>ข้อมูลติดต่อ</h2>
+        <p class="muted">แสดงที่ท้ายเว็บและหน้าเกี่ยวกับเรา เว้นว่างไว้เพื่อใช้ค่าเดิม</p>
+        <label class="f" for="sPhone">เบอร์โทร</label><input type="text" id="sPhone" maxlength="40" placeholder="02-000-0000">
+        <label class="f" for="sEmail">อีเมล</label><input type="text" id="sEmail" maxlength="120" placeholder="hello@khaptor.com">
+      </div>
+      <div class="card"><div class="bar"><button class="btn btn-amber" type="button" id="siteSave">บันทึกการตั้งค่าเว็บ</button><span class="muted" id="siteUpdated" style="margin:0"></span></div><div class="msg" id="siteMsg" style="margin-top:12px"></div></div>
+      <div class="card"><h2>รหัสผ่านหลังบ้าน</h2><p class="muted" style="margin:0">เปลี่ยนได้ที่ Cloudflare > Workers & Pages > khaptor > Settings > Variables and Secrets > ADMIN_PASSWORD แล้วกด Retry deployment</p></div>
+    </section>
+  </main>
+</div>
 
 <script>
-var POS=[
-  ["leaderboard","แบนเนอร์ใต้แถบยี่ห้อ","หน้าแรก หน้ายี่ห้อ และหน้าจังหวัด"],
-  ["sidebar","ใต้ตัวกรอง","คอลัมน์ซ้ายของหน้าแรก"],
-  ["infeed","ในรายการรถ","แทรกหลังรถคันที่ 6"],
-  ["article","ในบทความและหน้ารถ","หลังย่อหน้าที่ 2 ของบทความ และข้างสเปกรถ"]
-];
 var $=function(id){return document.getElementById(id)};
-var pw="";
-try{pw=sessionStorage.getItem("kt-admin")||""}catch(e){}
-
-$("positions").innerHTML=POS.map(function(p){
-  return '<div class="row"><label class="sw"><input type="checkbox" id="on-'+p[0]+'" aria-label="เปิดตำแหน่ง '+p[1]+'"><span></span></label>'+
-    '<div><b>'+p[1]+'</b><small>'+p[2]+'</small></div>'+
-    '<input type="text" id="slot-'+p[0]+'" placeholder="รหัสหน่วยโฆษณา" inputmode="numeric" aria-label="รหัสหน่วยโฆษณา '+p[1]+'"></div>';
-}).join("");
-
+var pw="";try{pw=sessionStorage.getItem("kt-admin")||""}catch(e){}
+function escH(t){return String(t==null?"":t).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function fmt(n){return Number(n||0).toLocaleString("th-TH")}
+function dt(s){return s?new Date(s).toLocaleString("th-TH",{dateStyle:"medium",timeStyle:"short"}):"-"}
 function show(el,cls,text){el.className="msg "+cls;el.textContent=text}
 function hide(el){el.className="msg"}
-
-function api(body){
-  return fetch("/api/settings",{method:"POST",headers:{"content-type":"application/json","x-admin-password":pw},body:JSON.stringify(body)})
+function call(path,body){
+  return fetch(path,{method:"POST",headers:{"content-type":"application/json","x-admin-password":pw},body:JSON.stringify(body)})
     .then(function(r){return r.json().catch(function(){return{ok:false,error:"เซิร์ฟเวอร์ตอบกลับผิดรูปแบบ (HTTP "+r.status+")"}})})
     .catch(function(){return{ok:false,error:"เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง"}});
 }
+function confirmClick(b,label){if(b.getAttribute("data-c")==="1")return true;b.setAttribute("data-c","1");b.textContent=label||"กดอีกครั้งเพื่อยืนยัน";setTimeout(function(){if(b.isConnected){b.removeAttribute("data-c")}},4000);return false}
 
-function fill(s,kv){
-  $("adsOn").checked=s.ads_enabled;
-  $("client").value=s.adsense_client||"";
-  $("ph").checked=!!s.placeholders;
-  POS.forEach(function(p){var v=s.positions[p[0]]||{};$("on-"+p[0]).checked=v.on!==false;$("slot-"+p[0]).value=v.slot||""});
-  $("updated").textContent=s.updated_at?"บันทึกล่าสุด "+new Date(s.updated_at).toLocaleString("th-TH"):"ยังไม่เคยบันทึก (ใช้ค่าเริ่มต้น)";
-  if(!kv)show($("kvWarn"),"warn","ยังไม่ได้ผูก KV ชื่อ SETTINGS กับโปรเจกต์ใน Cloudflare จึงยังบันทึกไม่ได้ ดูวิธีตั้งค่าใน README");
-  else hide($("kvWarn"));
-  sync();
+/* ---------- routing ---------- */
+var LOADERS={};
+function route(){
+  var v=(location.hash||"#dashboard").slice(1);if(!document.querySelector('[data-section="'+v+'"]'))v="dashboard";
+  [].forEach.call(document.querySelectorAll("[data-section]"),function(s){s.classList.toggle("hidden",s.getAttribute("data-section")!==v)});
+  [].forEach.call(document.querySelectorAll(".nav a"),function(a){a.classList.toggle("on",a.getAttribute("data-view")===v)});
+  if(LOADERS[v])LOADERS[v]();
 }
-function sync(){
-  var on=$("adsOn").checked;
-  $("adsState").textContent=on?" · เปิดอยู่":" · ปิดอยู่";
-  $("adsState").className="state "+(on?"on":"off");
-  $("cfgCard").classList.toggle("disabled-group",!on);
-}
-$("adsOn").addEventListener("change",sync);
+window.addEventListener("hashchange",route);
 
-var LISTINGS=[],FILTER="approved";
-function escH(t){return String(t==null?"":t).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
-function adminApi(body){
-  return fetch("/api/admin/listings",{method:"POST",headers:{"content-type":"application/json","x-admin-password":pw},body:JSON.stringify(body)})
-    .then(function(r){return r.json().catch(function(){return{ok:false,error:"HTTP "+r.status}})}).catch(function(){return{ok:false,error:"เชื่อมต่อไม่ได้"}});
-}
-function loadListings(){
-  adminApi({action:"list"}).then(function(r){
-    if(!r.ok){show($("lMsg"),"err",r.error||"โหลดประกาศไม่ได้");return}
-    hide($("lMsg"));LISTINGS=r.listings||[];renderListings();
+/* ---------- login ---------- */
+function enter(r){$("loginView").classList.add("hidden");$("app").classList.remove("hidden");
+  if(!r.kv)show($("kvWarn"),"warn","ยังไม่ได้ผูก KV ชื่อ SETTINGS กับโปรเจกต์ใน Cloudflare จึงบันทึกอะไรไม่ได้");
+  ADS=r.settings;route();refreshBadges()}
+$("loginForm").addEventListener("submit",function(e){e.preventDefault();pw=$("pw").value;$("loginBtn").disabled=true;hide($("loginMsg"));
+  call("/api/settings",{action:"login"}).then(function(r){$("loginBtn").disabled=false;if(!r.ok){show($("loginMsg"),"err",r.error||"เข้าสู่ระบบไม่สำเร็จ");return}try{sessionStorage.setItem("kt-admin",pw)}catch(e){}enter(r)})});
+$("logoutBtn").addEventListener("click",function(){try{sessionStorage.removeItem("kt-admin")}catch(e){}location.hash="";location.reload()});
+function refreshBadges(){call("/api/admin/stats",{}).then(function(r){if(!r.ok)return;$("navReports").textContent=r.stats.reports_open||"";$("navListings").textContent=r.stats.today||""})}
+
+/* ---------- dashboard ---------- */
+LOADERS.dashboard=function(){
+  $("dashTime").textContent="กำลังโหลด...";
+  call("/api/admin/stats",{}).then(function(r){
+    if(!r.ok){$("dashTime").textContent=r.error||"โหลดไม่ได้";return}
+    var s=r.stats;$("dashTime").textContent="อัปเดต "+dt(new Date().toISOString());
+    var tiles=[["ประกาศเผยแพร่อยู่",s.live,"#listings","good"],["ประกาศใหม่วันนี้",s.today,"#listings",""],["ขายแล้ว",s.sold,"#listings",""],["ซ่อนอยู่",s.hidden,"#listings",""],
+      ["ผู้ใช้ทั้งหมด",s.users,"#users",""],["บัญชีถูกระงับ",s.banned,"#users",""],["รายงานรอดำเนินการ",s.reports_open,"#reports",s.reports_open?"alert":""],["รูปทั้งหมด",s.photos,"#listings",""]];
+    $("stats").innerHTML=tiles.map(function(t){return '<a class="stat '+t[3]+'" href="'+t[2]+'"><small>'+t[0]+'</small><b>'+fmt(t[1])+'</b></a>'}).join("");
+    var max=Math.max.apply(null,s.per_day.map(function(d){return d.n}).concat([1]));
+    $("chart").innerHTML=s.per_day.map(function(d){var p=d.day.split("-");return '<div class="c"><span class="v">'+(d.n||"")+'</span><div class="b" style="height:'+Math.max(2,Math.round(d.n/max*100))+'px"></div><span class="d">'+(+p[2])+'/'+(+p[1])+'</span></div>'}).join("");
+    var checks=[[!s.show_demo,"ปิดรถตัวอย่างแล้ว (ตั้งค่าเว็บ)"],[s.live>=10,"มีประกาศจริงเผยแพร่อย่างน้อย 10 คัน (ตอนนี้ "+s.live+")"],[true,"มีหน้านโยบายความเป็นส่วนตัว เกี่ยวกับเรา และติดต่อ"],[true,"มีบทความลงอัตโนมัติสัปดาห์ละ 3 เรื่อง"],[s.ads_client,"ใส่รหัส AdSense แล้ว (เมนูโฆษณา)"]];
+    $("checklist").innerHTML=checks.map(function(c){return '<li><span class="dot '+(c[0]?"ok":"no")+'">'+(c[0]?"✓":"!")+'</span><span>'+escH(c[1])+'</span></li>'}).join("");
+    $("recent").innerHTML=s.recent.length?s.recent.map(function(l){return '<div class="li" style="grid-template-columns:1fr auto"><div><h3><a href="/l/'+escH(l.id)+'" target="_blank" rel="noopener">'+escH(l.title)+'</a>'+statusPill(l)+'</h3><div class="meta">฿'+fmt(l.price)+' · '+dt(l.created_at)+'</div></div></div>'}).join(""):'<div class="empty">ยังไม่มีประกาศจากผู้ใช้</div>';
+    $("navReports").textContent=s.reports_open||"";$("navListings").textContent=s.today||"";
   });
-}
-function renderListings(){
-  var n={pending:0,approved:0,rejected:0};LISTINGS.forEach(function(l){n[l.status]=(n[l.status]||0)+1});
-  $("cPending").textContent=n.pending;$("cApproved").textContent=n.approved;$("cRejected").textContent=n.rejected;
-  var rows=LISTINGS.filter(function(l){return l.status===FILTER});
+};
+$("dashReload").addEventListener("click",function(){LOADERS.dashboard()});
+function statusPill(l){return l.sold?'<span class="pill sold">ขายแล้ว</span>':l.status==="approved"?'<span class="pill live">เผยแพร่</span>':'<span class="pill hid">ซ่อน</span>'}
+
+/* ---------- listings ---------- */
+var LST=[],LF="live",EDIT=null;
+var BRANDS=["BMW","BYD","Chevrolet","Ford","Honda","Hyundai","Isuzu","Kia","Mazda","Mercedes-Benz","MG","Mitsubishi","Nissan","Subaru","Suzuki","Toyota","Volvo","อื่นๆ"];
+var PROVS=["กรุงเทพมหานคร","นนทบุรี","ปทุมธานี","สมุทรปราการ","ชลบุรี","เชียงใหม่","ขอนแก่น","นครราชสีมา","ภูเก็ต","สงขลา","อื่นๆ"];
+var BODY={sedan:"เก๋ง",hatch:"แฮทช์แบ็ก",suv:"SUV / PPV",pickup:"กระบะ",van:"รถตู้"};
+LOADERS.listings=function(){call("/api/admin/listings",{action:"list"}).then(function(r){if(!r.ok){show($("lMsg"),"err",r.error||"โหลดประกาศไม่ได้");return}LST=r.listings||[];renderL()})};
+function lCat(l){return l.status!=="approved"?"hidden":l.sold?"sold":"live"}
+function renderL(){
+  var c={live:0,sold:0,hidden:0};LST.forEach(function(l){c[lCat(l)]++});
+  $("cLive").textContent=c.live;$("cSold").textContent=c.sold;$("cHidden").textContent=c.hidden;$("cAll").textContent=LST.length;
+  var q=$("lSearch").value.trim().toLowerCase(),srt=$("lSort").value;
+  var rows=LST.filter(function(l){return (LF==="all"||lCat(l)===LF)&&(!q||[l.brand,l.model,l.sub,l.prov,l.name,l.tel,(l.owner||{}).email,l.id].join(" ").toLowerCase().indexOf(q)>=0)});
+  rows.sort(function(a,b){return srt==="old"?Date.parse(a.created_at)-Date.parse(b.created_at):srt==="pDesc"?b.price-a.price:srt==="pAsc"?a.price-b.price:Date.parse(b.created_at)-Date.parse(a.created_at)});
   if(!rows.length){$("lList").innerHTML='<div class="empty">ไม่มีประกาศในหมวดนี้</div>';return}
   $("lList").innerHTML=rows.map(function(l){
-    var o=l.owner||{};
-    return '<div class="li"><h3>'+escH(l.year+" "+l.brand+" "+l.model+" "+(l.sub||""))+' · ฿'+Number(l.price).toLocaleString("th-TH")+'</h3>'+
-      '<div class="meta">'+escH(Number(l.km).toLocaleString("th-TH")+" กม. · "+l.gear+" · "+l.fuel+" · สี"+l.color+" · "+l.prov)+'</div>'+
-      (l.sold?'<div class="meta" style="color:var(--bad);font-weight:600">ผู้ขายแจ้งว่าขายแล้ว</div>':'')+'<div class="meta">ผู้ขาย '+escH(l.name)+' โทร '+escH(l.tel)+' · บัญชี Google '+escH(o.email||"-")+' · ส่งเมื่อ '+new Date(l.created_at).toLocaleString("th-TH")+'</div>'+
-      (l.note?'<div class="note">'+escH(l.note)+'</div>':'')+
-      ((l.photos&&l.photos.length)?'<div class="aphs">'+l.photos.map(function(p){return '<span class="aph"><a href="/p/'+escH(p)+'.jpg" target="_blank" rel="noopener"><img src="/p/'+escH(p)+'-t.jpg" alt=""></a><button class="btn btn-bad" data-a="remove_photo" data-id="'+escH(l.id)+'" data-photo="'+escH(p)+'">ลบรูป</button></span>'}).join('')+'</div>':'')+
-      '<div class="acts">'+
-        (l.status!=="approved"?'<button class="btn btn-good" data-a="approve" data-id="'+escH(l.id)+'">'+(l.status==="rejected"?"แสดงอีกครั้ง":"อนุมัติ")+'</button>':'')+
-        (l.status!=="rejected"?'<button class="btn btn-bad" data-a="reject" data-id="'+escH(l.id)+'">'+(l.status==="approved"?"ซ่อนประกาศ":"ไม่อนุมัติ")+'</button>':'')+
-        '<button class="btn btn-line" data-a="delete" data-id="'+escH(l.id)+'">ลบถาวร</button>'+
-      '</div></div>';
+    var o=l.owner||{},ph=l.photos||[],id=escH(l.id);
+    return '<div class="li" id="row-'+id+'">'+(ph.length?'<img class="thumb" src="/p/'+escH(ph[0])+'-t.jpg" alt="">':'<div class="thumb">ไม่มีรูป</div>')+
+      '<div><h3><a href="/l/'+id+'" target="_blank" rel="noopener">'+escH(l.year+" "+l.brand+" "+l.model+" "+(l.sub||""))+'</a>'+statusPill(l)+'</h3>'+
+      '<div class="meta">฿'+fmt(l.price)+' · '+fmt(l.km)+' กม. · '+escH(l.gear+" · "+l.fuel+" · สี"+l.color+" · "+l.prov)+'</div>'+
+      '<div class="meta">ผู้ขาย '+escH(l.name)+' โทร '+escH(l.tel)+' · บัญชี '+escH(o.email||"-")+' · ลงเมื่อ '+dt(l.created_at)+(l.edited_at?' · แก้ไขโดยแอดมิน '+dt(l.edited_at):'')+'</div>'+
+      (l.note?'<div class="meta" style="white-space:pre-line;margin-top:4px;color:var(--ink)">'+escH(l.note)+'</div>':'')+
+      (ph.length>1?'<div class="aphs">'+ph.map(function(p){return '<span class="aph"><a href="/p/'+escH(p)+'.jpg" target="_blank" rel="noopener"><img src="/p/'+escH(p)+'-t.jpg" alt=""></a><button class="btn btn-bad btn-sm" data-a="remove_photo" data-id="'+id+'" data-photo="'+escH(p)+'">ลบรูป</button></span>'}).join("")+'</div>':
+       ph.length===1?'<div class="aphs"><span class="aph"><button class="btn btn-bad btn-sm" data-a="remove_photo" data-id="'+id+'" data-photo="'+escH(ph[0])+'">ลบรูปนี้</button></span></div>':'')+
+      '<div class="acts"><button class="btn btn-line btn-sm" data-edit="'+id+'">แก้ไขข้อมูล</button>'+
+        (l.status==="approved"?'<button class="btn btn-bad btn-sm" data-a="reject" data-id="'+id+'">ซ่อนประกาศ</button>':'<button class="btn btn-good btn-sm" data-a="approve" data-id="'+id+'">แสดงอีกครั้ง</button>')+
+        '<button class="btn btn-line btn-sm" data-a="'+(l.sold?"unsold":"sold")+'" data-id="'+id+'">'+(l.sold?"ยกเลิกขายแล้ว":"ทำเครื่องหมายขายแล้ว")+'</button>'+
+        (o.sub?'<a class="btn btn-line btn-sm" href="#users" data-goto-user="'+escH(o.email||"")+'">ดูผู้ใช้</a>':'')+
+        '<button class="btn btn-line btn-sm" data-a="delete" data-id="'+id+'">ลบถาวร</button></div>'+
+      '<div id="edit-'+id+'"></div></div></div>';
   }).join("");
 }
-document.querySelector(".tabs").addEventListener("click",function(e){
-  var t=e.target.closest(".tab");if(!t)return;FILTER=t.getAttribute("data-f");
-  [].forEach.call(document.querySelectorAll(".tab"),function(x){x.classList.toggle("on",x===t)});renderListings();
-});
-$("reloadL").addEventListener("click",loadListings);
+function editForm(l){
+  var opt=function(list,v,map){return list.map(function(x){var val=map?x[0]:x,lab=map?x[1]:x;return '<option value="'+escH(val)+'"'+(String(v)===String(val)?" selected":"")+'>'+escH(lab)+'</option>'}).join("")};
+  return '<form class="edit-grid" data-editform="'+escH(l.id)+'">'+
+    '<div><label class="f">ยี่ห้อ</label><select name="brand">'+opt(BRANDS,l.brand)+'</select></div>'+
+    '<div><label class="f">รุ่น</label><input type="text" name="model" maxlength="40" value="'+escH(l.model)+'"></div>'+
+    '<div class="full" style="grid-column:span 2"><label class="f">รุ่นย่อย</label><input type="text" name="sub" maxlength="60" value="'+escH(l.sub||"")+'"></div>'+
+    '<div><label class="f">ปี</label><input type="number" name="year" value="'+escH(l.year)+'"></div>'+
+    '<div><label class="f">เลขไมล์</label><input type="number" name="km" value="'+escH(l.km)+'"></div>'+
+    '<div><label class="f">ราคา</label><input type="number" name="price" value="'+escH(l.price)+'"></div>'+
+    '<div><label class="f">จังหวัด</label><select name="prov">'+opt(PROVS,l.prov)+'</select></div>'+
+    '<div><label class="f">ประเภท</label><select name="body">'+opt(Object.keys(BODY).map(function(k){return[k,BODY[k]]}),l.body,true)+'</select></div>'+
+    '<div><label class="f">เกียร์</label><select name="gear">'+opt(["อัตโนมัติ","ธรรมดา"],l.gear)+'</select></div>'+
+    '<div><label class="f">เชื้อเพลิง</label><select name="fuel">'+opt(["เบนซิน","ดีเซล","ไฮบริด","ไฟฟ้า"],l.fuel)+'</select></div>'+
+    '<div><label class="f">สี</label><select name="color">'+opt(["ขาว","ดำ","เทา","เงิน","แดง","น้ำเงิน","น้ำตาล"],l.color)+'</select></div>'+
+    '<div><label class="f">ชื่อผู้ขาย</label><input type="text" name="name" maxlength="50" value="'+escH(l.name)+'"></div>'+
+    '<div><label class="f">เบอร์โทร</label><input type="text" name="tel" value="'+escH(l.tel)+'"></div>'+
+    '<div class="full"><label class="f">รายละเอียด</label><textarea name="note" maxlength="600">'+escH(l.note||"")+'</textarea></div>'+
+    '<div class="full bar" style="margin-top:6px"><button class="btn btn-amber btn-sm" type="submit">บันทึกการแก้ไข</button><button class="btn btn-line btn-sm" type="button" data-cancel-edit>ยกเลิก</button></div></form>';
+}
 $("lList").addEventListener("click",function(e){
+  var ed=e.target.closest("[data-edit]");
+  if(ed){var id=ed.getAttribute("data-edit"),box=$("edit-"+id);if(box.innerHTML){box.innerHTML="";return}var l=LST.find(function(x){return x.id===id});box.innerHTML=editForm(l);return}
+  if(e.target.closest("[data-cancel-edit]")){e.target.closest("form").parentNode.innerHTML="";return}
+  var gu=e.target.closest("[data-goto-user]");if(gu){$("uSearch").value=gu.getAttribute("data-goto-user");return}
   var b=e.target.closest("button[data-a]");if(!b)return;
-  var a=b.getAttribute("data-a"),id=b.getAttribute("data-id");
-  if(a==="delete"&&b.getAttribute("data-c")!=="1"){b.setAttribute("data-c","1");b.textContent="กดอีกครั้งเพื่อลบ";return}
+  var a=b.getAttribute("data-a");
+  if((a==="delete"||a==="remove_photo")&&!confirmClick(b))return;
   b.disabled=true;
-  adminApi({action:a,id:id,photo:b.getAttribute("data-photo")}).then(function(r){
+  call("/api/admin/listings",{action:a,id:b.getAttribute("data-id"),photo:b.getAttribute("data-photo")}).then(function(r){
     if(!r.ok){show($("lMsg"),"err",r.error||"ทำรายการไม่สำเร็จ");b.disabled=false;return}
-    show($("lMsg"),"ok",{approve:"แสดงประกาศบนเว็บแล้ว",reject:"ซ่อนประกาศแล้ว",delete:"ลบประกาศแล้ว",remove_photo:"ลบรูปแล้ว"}[a]);
-    loadListings();
+    show($("lMsg"),"ok",{approve:"แสดงประกาศบนเว็บแล้ว",reject:"ซ่อนประกาศแล้ว",delete:"ลบประกาศแล้ว",remove_photo:"ลบรูปแล้ว",sold:"ทำเครื่องหมายขายแล้ว",unsold:"ยกเลิกขายแล้ว"}[a]);
+    LOADERS.listings();
   });
 });
+$("lList").addEventListener("submit",function(e){
+  var f=e.target.closest("[data-editform]");if(!f)return;e.preventDefault();
+  var fields={};[].forEach.call(f.elements,function(el){if(el.name)fields[el.name]=el.value});
+  var btn=f.querySelector("button[type=submit]");btn.disabled=true;
+  call("/api/admin/listings",{action:"update",id:f.getAttribute("data-editform"),fields:fields}).then(function(r){
+    btn.disabled=false;if(!r.ok){show($("lMsg"),"err",r.error||"บันทึกไม่สำเร็จ");return}
+    show($("lMsg"),"ok","บันทึกการแก้ไขแล้ว");LOADERS.listings();
+  });
+});
+$("lTabs").addEventListener("click",function(e){var t=e.target.closest(".tab");if(!t)return;LF=t.getAttribute("data-f");[].forEach.call($("lTabs").children,function(x){x.classList.toggle("on",x===t)});renderL()});
+$("lSearch").addEventListener("input",renderL);$("lSort").addEventListener("change",renderL);$("lReload").addEventListener("click",function(){LOADERS.listings()});
 
-/* ---- ลิงก์ฟุตเตอร์ ---- */
-var LINKS=[];
-function lkApi(body){
-  return fetch("/api/admin/links",{method:"POST",headers:{"content-type":"application/json","x-admin-password":pw},body:JSON.stringify(body)})
-    .then(function(r){return r.json().catch(function(){return{ok:false,error:"HTTP "+r.status}})}).catch(function(){return{ok:false,error:"เชื่อมต่อไม่ได้"}});
+/* ---------- users ---------- */
+var USERS=[];
+LOADERS.users=function(){call("/api/admin/users",{action:"list"}).then(function(r){if(!r.ok){show($("uMsg"),"err",r.error||"โหลดผู้ใช้ไม่ได้");return}USERS=r.users||[];renderU()})};
+function renderU(){
+  var q=$("uSearch").value.trim().toLowerCase(),f=$("uFilter").value;
+  var rows=USERS.filter(function(u){return (f==="all"||u.banned)&&(!q||((u.name||"")+" "+(u.email||"")).toLowerCase().indexOf(q)>=0)});
+  if(!rows.length){$("uBody").innerHTML='<tr><td colspan="6" class="empty">ยังไม่มีผู้ใช้'+(q||f!=="all"?"ที่ตรงเงื่อนไข":"")+'</td></tr>';return}
+  $("uBody").innerHTML=rows.map(function(u){var s=escH(u.sub);
+    return '<tr><td><b>'+escH(u.name||"-")+'</b><br><span class="muted" style="margin:0">'+escH(u.email)+'</span>'+(u.banned&&u.ban_reason?'<br><small style="color:var(--bad)">เหตุผล: '+escH(u.ban_reason)+'</small>':'')+'</td>'+
+      '<td class="num">'+fmt(u.listings)+'</td><td>'+dt(u.first_seen)+'</td><td>'+dt(u.last_seen)+'</td>'+
+      '<td>'+(u.banned?'<span class="pill ban">ถูกระงับ</span>':'<span class="pill live">ปกติ</span>')+'</td>'+
+      '<td>'+(u.banned?'<button class="btn btn-good btn-sm" data-u="unban" data-sub="'+s+'">ยกเลิกระงับ</button>':'<button class="btn btn-bad btn-sm" data-u="ban" data-sub="'+s+'">ระงับบัญชี</button>')+
+      ' <a class="btn btn-line btn-sm" href="#listings" data-ul="'+escH(u.email)+'">ดูประกาศ</a></td></tr>'}).join("");
 }
+$("uBody").addEventListener("click",function(e){
+  var l=e.target.closest("[data-ul]");if(l){$("lSearch").value=l.getAttribute("data-ul");LF="all";[].forEach.call($("lTabs").children,function(x){x.classList.toggle("on",x.getAttribute("data-f")==="all")});return}
+  var b=e.target.closest("[data-u]");if(!b)return;var a=b.getAttribute("data-u"),body={action:a,sub:b.getAttribute("data-sub")};
+  if(a==="ban"){var reason=window.prompt?prompt("เหตุผลที่ระงับ (ไม่บังคับ)",""):"";if(reason===null)return;body.reason=reason;body.hide_listings=true}
+  b.disabled=true;
+  call("/api/admin/users",body).then(function(r){if(!r.ok){show($("uMsg"),"err",r.error||"ทำรายการไม่สำเร็จ");b.disabled=false;return}
+    show($("uMsg"),"ok",a==="ban"?"ระงับบัญชีแล้ว"+(r.hidden?" และซ่อนประกาศของบัญชีนี้ "+r.hidden+" ประกาศ":""):"ยกเลิกการระงับแล้ว (ประกาศที่ถูกซ่อนไว้ กดแสดงอีกครั้งได้ที่เมนูประกาศ)");LOADERS.users()});
+});
+$("uSearch").addEventListener("input",renderU);$("uFilter").addEventListener("change",renderU);$("uReload").addEventListener("click",function(){LOADERS.users()});
+
+/* ---------- reports ---------- */
+var REP=[],RF="open",REASONS={};
+LOADERS.reports=function(){call("/api/admin/reports",{action:"list"}).then(function(r){if(!r.ok){show($("rMsg"),"err",r.error||"โหลดรายงานไม่ได้");return}REP=r.reports||[];REASONS=r.reasons||{};renderR()})};
+function renderR(){
+  $("cOpen").textContent=REP.filter(function(x){return x.status==="open"}).length;$("cDone").textContent=REP.filter(function(x){return x.status!=="open"}).length;
+  $("navReports").textContent=$("cOpen").textContent==="0"?"":$("cOpen").textContent;
+  var rows=REP.filter(function(x){return RF==="open"?x.status==="open":x.status!=="open"});
+  if(!rows.length){$("rList").innerHTML='<div class="empty">'+(RF==="open"?"ไม่มีรายงานค้างอยู่":"ยังไม่มีรายงานที่จัดการแล้ว")+'</div>';return}
+  $("rList").innerHTML=rows.map(function(x){var l=x.listing,id=escH(x.id);
+    return '<div class="li" style="grid-template-columns:1fr"><div><h3>'+escH(REASONS[x.reason]||x.reason)+' <span class="pill '+(x.status==="open"?"open":"done")+'">'+(x.status==="open"?"รอดำเนินการ":"จัดการแล้ว")+'</span></h3>'+
+      '<div class="meta">ประกาศ: '+(l?'<a href="/l/'+escH(l.id)+'" target="_blank" rel="noopener">'+escH(l.title)+'</a> '+statusPill(l)+' · เจ้าของ '+escH(l.owner||"-"):'<i>ประกาศถูกลบแล้ว</i>')+' · แจ้งเมื่อ '+dt(x.created_at)+'</div>'+
+      (x.detail?'<div class="meta" style="color:var(--ink);margin-top:4px">'+escH(x.detail)+'</div>':'')+
+      '<div class="acts">'+(l&&l.status==="approved"?'<button class="btn btn-bad btn-sm" data-ra="hide" data-lid="'+escH(l.id)+'" data-id="'+id+'">ซ่อนประกาศนี้</button>':'')+
+      (l&&l.owner_sub?'<button class="btn btn-bad btn-sm" data-ra="ban" data-sub="'+escH(l.owner_sub)+'" data-id="'+id+'">ระงับเจ้าของประกาศ</button>':'')+
+      (x.status==="open"?'<button class="btn btn-good btn-sm" data-ra="resolve" data-id="'+id+'">จัดการแล้ว</button>':'<button class="btn btn-line btn-sm" data-ra="reopen" data-id="'+id+'">เปิดใหม่</button>')+
+      '<button class="btn btn-line btn-sm" data-ra="delete" data-id="'+id+'">ลบรายงาน</button></div></div></div>'}).join("");
+}
+$("rList").addEventListener("click",function(e){
+  var b=e.target.closest("[data-ra]");if(!b)return;var a=b.getAttribute("data-ra"),id=b.getAttribute("data-id");
+  if((a==="ban"||a==="delete")&&!confirmClick(b))return;b.disabled=true;
+  var p=a==="hide"?call("/api/admin/listings",{action:"reject",id:b.getAttribute("data-lid")}):a==="ban"?call("/api/admin/users",{action:"ban",sub:b.getAttribute("data-sub"),reason:"ถูกรายงานโดยผู้ใช้",hide_listings:true}):call("/api/admin/reports",{action:a,id:id});
+  p.then(function(r){if(!r.ok){show($("rMsg"),"err",r.error||"ทำรายการไม่สำเร็จ");b.disabled=false;return}
+    if(a==="hide"||a==="ban")return call("/api/admin/reports",{action:"resolve",id:id});}).then(function(){if(!b.disabled)return;
+    show($("rMsg"),"ok",{hide:"ซ่อนประกาศและปิดรายงานแล้ว",ban:"ระงับบัญชี ซ่อนประกาศ และปิดรายงานแล้ว",resolve:"ปิดรายงานแล้ว",reopen:"เปิดรายงานใหม่แล้ว",delete:"ลบรายงานแล้ว"}[a]);LOADERS.reports()});
+});
+$("rTabs").addEventListener("click",function(e){var t=e.target.closest(".tab");if(!t)return;RF=t.getAttribute("data-f");[].forEach.call($("rTabs").children,function(x){x.classList.toggle("on",x===t)});renderR()});
+$("rReload").addEventListener("click",function(){LOADERS.reports()});
+
+/* ---------- footer links ---------- */
+var LINKS=[];
+LOADERS.links=function(){call("/api/admin/links",{action:"get"}).then(function(r){if(!r.ok){show($("lkMsg"),"err",r.error||"โหลดลิงก์ไม่ได้");return}$("lkTitle").value=r.data.title;$("lkScope").value=r.data.scope;LINKS=r.data.links||[];lkRender()})};
 function lkSync(){[].forEach.call(document.querySelectorAll(".lk-row"),function(row,i){LINKS[i].name=row.querySelector(".name").value;LINKS[i].url=row.querySelector(".url").value;LINKS[i].nofollow=row.querySelector(".nfc").checked})}
 function lkRender(){
-  if(!LINKS.length){$("lkList").innerHTML='<div class="lk-empty">ยังไม่มีลิงก์ กด "+ เพิ่มลิงก์" เพื่อเริ่ม</div>';return}
-  $("lkList").innerHTML=LINKS.map(function(l,i){
-    return '<div class="lk-row"><span class="n">'+(i+1)+'</span>'+
-      '<input type="text" class="name" placeholder="ชื่อเว็บ เช่น ตรวจหวย" maxlength="60" value="'+escH(l.name||"")+'" aria-label="ชื่อเว็บลำดับ '+(i+1)+'">'+
-      '<input type="text" class="url" placeholder="https://example.com" maxlength="300" value="'+escH(l.url||"")+'" aria-label="URL ลำดับ '+(i+1)+'">'+
-      '<label class="nf"><input type="checkbox" class="nfc"'+(l.nofollow?" checked":"")+'> nofollow</label>'+
-      '<span class="acts"><button type="button" data-lk="up" data-i="'+i+'" aria-label="เลื่อนขึ้น">↑</button><button type="button" data-lk="down" data-i="'+i+'" aria-label="เลื่อนลง">↓</button><button type="button" data-lk="del" data-i="'+i+'" aria-label="ลบลิงก์">✕</button></span></div>';
-  }).join("");
+  if(!LINKS.length){$("lkList").innerHTML='<div class="empty">ยังไม่มีลิงก์ กด "+ เพิ่มลิงก์" เพื่อเริ่ม</div>';return}
+  $("lkList").innerHTML=LINKS.map(function(l,i){return '<div class="lk-row"><span class="n">'+(i+1)+'</span>'+
+    '<input type="text" class="name" placeholder="ชื่อเว็บ" maxlength="60" value="'+escH(l.name||"")+'" aria-label="ชื่อเว็บลำดับ '+(i+1)+'">'+
+    '<input type="text" class="url" placeholder="https://example.com" maxlength="300" value="'+escH(l.url||"")+'" aria-label="URL ลำดับ '+(i+1)+'">'+
+    '<label class="nf"><input type="checkbox" class="nfc"'+(l.nofollow?" checked":"")+'> nofollow</label>'+
+    '<span class="acts"><button type="button" data-lk="up" data-i="'+i+'" aria-label="เลื่อนขึ้น">↑</button><button type="button" data-lk="down" data-i="'+i+'" aria-label="เลื่อนลง">↓</button><button type="button" data-lk="del" data-i="'+i+'" aria-label="ลบลิงก์">✕</button></span></div>'}).join("");
 }
-$("lkList").addEventListener("click",function(e){
-  var b=e.target.closest("[data-lk]");if(!b)return;lkSync();
-  var i=+b.getAttribute("data-i"),a=b.getAttribute("data-lk");
-  if(a==="del")LINKS.splice(i,1);
-  else if(a==="up"&&i>0)LINKS.splice(i-1,0,LINKS.splice(i,1)[0]);
-  else if(a==="down"&&i<LINKS.length-1)LINKS.splice(i+1,0,LINKS.splice(i,1)[0]);
-  lkRender();
-});
+$("lkList").addEventListener("click",function(e){var b=e.target.closest("[data-lk]");if(!b)return;lkSync();var i=+b.getAttribute("data-i"),a=b.getAttribute("data-lk");
+  if(a==="del")LINKS.splice(i,1);else if(a==="up"&&i>0)LINKS.splice(i-1,0,LINKS.splice(i,1)[0]);else if(a==="down"&&i<LINKS.length-1)LINKS.splice(i+1,0,LINKS.splice(i,1)[0]);lkRender()});
 $("lkAdd").addEventListener("click",function(){lkSync();LINKS.push({name:"",url:"",nofollow:false});lkRender();var r=document.querySelectorAll(".lk-row .name");r[r.length-1].focus()});
-$("lkSave").addEventListener("click",function(){
-  lkSync();$("lkSave").disabled=true;hide($("lkMsg"));
-  lkApi({action:"save",data:{title:$("lkTitle").value,scope:$("lkScope").value,links:LINKS}}).then(function(r){
-    $("lkSave").disabled=false;
-    if(!r.ok){show($("lkMsg"),"err",r.error||"บันทึกไม่สำเร็จ");return}
-    LINKS=r.data.links;lkRender();show($("lkMsg"),"ok","บันทึกแล้ว "+LINKS.length+" ลิงก์ จะขึ้นท้ายเว็บภายในราว 30 วินาที");
-  });
-});
-function loadLinks(){lkApi({action:"get"}).then(function(r){if(!r.ok){show($("lkMsg"),"err",r.error||"โหลดลิงก์ไม่ได้");return}$("lkTitle").value=r.data.title;$("lkScope").value=r.data.scope;LINKS=r.data.links||[];lkRender()})}
+$("lkSave").addEventListener("click",function(){lkSync();$("lkSave").disabled=true;hide($("lkMsg"));
+  call("/api/admin/links",{action:"save",data:{title:$("lkTitle").value,scope:$("lkScope").value,links:LINKS}}).then(function(r){$("lkSave").disabled=false;
+    if(!r.ok){show($("lkMsg"),"err",r.error||"บันทึกไม่สำเร็จ");return}LINKS=r.data.links;lkRender();show($("lkMsg"),"ok","บันทึกแล้ว "+LINKS.length+" ลิงก์ จะขึ้นท้ายเว็บภายในราว 30 วินาที")})});
 
-function enter(res){
-  $("loginCard").classList.add("hidden");
-  $("panel").classList.remove("hidden");
-  fill(res.settings,res.kv);
-  loadListings();
-  loadLinks();
-}
-
-$("loginForm").addEventListener("submit",function(e){
-  e.preventDefault();
-  pw=$("pw").value;$("loginBtn").disabled=true;hide($("loginMsg"));
-  api({action:"login"}).then(function(r){
-    $("loginBtn").disabled=false;
-    if(!r.ok){show($("loginMsg"),"err",r.error||"เข้าสู่ระบบไม่สำเร็จ");return}
-    try{sessionStorage.setItem("kt-admin",pw)}catch(e){}
-    enter(r);
-  });
-});
-
-$("saveBtn").addEventListener("click",function(){
+/* ---------- ads ---------- */
+var ADS=null;
+var POS=[["leaderboard","แบนเนอร์ใต้แถบยี่ห้อ","หน้าแรก หน้ายี่ห้อ และหน้าจังหวัด"],["sidebar","ใต้ตัวกรองและข้างบทความ","คอลัมน์ข้างของหน้าแรกและหน้าบทความ"],["infeed","ในรายการรถ","แทรกหลังรถคันที่ 6"],["article","ในบทความและหน้ารถ","หลังย่อหน้าที่ 2 ของบทความ และข้างสเปกรถ"]];
+$("positions").innerHTML=POS.map(function(p){return '<div class="row"><label class="sw"><input type="checkbox" id="on-'+p[0]+'" aria-label="เปิดตำแหน่ง '+p[1]+'"><span></span></label><div><b>'+p[1]+'</b><small>'+p[2]+'</small></div><input type="text" id="slot-'+p[0]+'" placeholder="รหัสหน่วยโฆษณา" inputmode="numeric" aria-label="รหัสหน่วยโฆษณา '+p[1]+'"></div>'}).join("");
+function adsSync(){var on=$("adsOn").checked;$("adsState").textContent=on?"เปิดอยู่":"ปิดอยู่";$("adsState").style.color=on?"var(--good)":"var(--bad)";$("cfgCard").classList.toggle("disabled-group",!on)}
+$("adsOn").addEventListener("change",adsSync);
+LOADERS.ads=function(){call("/api/settings",{action:"login"}).then(function(r){if(!r.ok)return;var s=ADS=r.settings;
+  $("adsOn").checked=s.ads_enabled;$("client").value=s.adsense_client||"";$("ph").checked=!!s.placeholders;
+  POS.forEach(function(p){var v=s.positions[p[0]]||{};$("on-"+p[0]).checked=v.on!==false;$("slot-"+p[0]).value=v.slot||""});
+  $("adsUpdated").textContent=s.updated_at?"บันทึกล่าสุด "+dt(s.updated_at):"ยังไม่เคยบันทึก";adsSync()})};
+$("adsSave").addEventListener("click",function(){
   var s={ads_enabled:$("adsOn").checked,adsense_client:$("client").value.trim(),placeholders:$("ph").checked,positions:{}};
   POS.forEach(function(p){s.positions[p[0]]={on:$("on-"+p[0]).checked,slot:$("slot-"+p[0]).value.trim()}});
-  $("saveBtn").disabled=true;hide($("saveMsg"));
-  api({action:"save",settings:s}).then(function(r){
-    $("saveBtn").disabled=false;
-    if(!r.ok){show($("saveMsg"),"err",r.error||"บันทึกไม่สำเร็จ");return}
-    fill(r.settings,r.kv);
-    show($("saveMsg"),"ok",r.settings.ads_enabled?"บันทึกแล้ว โฆษณาเปิดอยู่":"บันทึกแล้ว ปิดโฆษณาทั้งเว็บแล้ว");
-  });
-});
+  $("adsSave").disabled=true;hide($("adsMsg"));
+  call("/api/settings",{action:"save",settings:s}).then(function(r){$("adsSave").disabled=false;if(!r.ok){show($("adsMsg"),"err",r.error||"บันทึกไม่สำเร็จ");return}
+    show($("adsMsg"),"ok",r.settings.ads_enabled?"บันทึกแล้ว โฆษณาเปิดอยู่":"บันทึกแล้ว ปิดโฆษณาทั้งเว็บแล้ว");LOADERS.ads()})});
 
-$("logoutBtn").addEventListener("click",function(){
-  try{sessionStorage.removeItem("kt-admin")}catch(e){}
-  pw="";location.reload();
-});
+/* ---------- site settings ---------- */
+LOADERS.site=function(){call("/api/admin/site",{action:"get"}).then(function(r){if(!r.ok){show($("siteMsg"),"err",r.error||"โหลดไม่ได้");return}var d=r.data;
+  $("sDemo").checked=d.show_demo;$("sAnn").value=d.announcement||"";$("sAnnLink").value=d.announcement_link||"";$("sPhone").value=d.contact_phone||"";$("sEmail").value=d.contact_email||"";
+  $("siteUpdated").textContent=d.updated_at?"บันทึกล่าสุด "+dt(d.updated_at):"ยังไม่เคยบันทึก (ใช้ค่าเริ่มต้น)"})};
+$("siteSave").addEventListener("click",function(){$("siteSave").disabled=true;hide($("siteMsg"));
+  call("/api/admin/site",{action:"save",data:{show_demo:$("sDemo").checked,announcement:$("sAnn").value,announcement_link:$("sAnnLink").value,contact_phone:$("sPhone").value,contact_email:$("sEmail").value}}).then(function(r){
+    $("siteSave").disabled=false;if(!r.ok){show($("siteMsg"),"err",r.error||"บันทึกไม่สำเร็จ");return}
+    show($("siteMsg"),"ok","บันทึกแล้ว"+(r.data.show_demo?"":" ซ่อนรถตัวอย่างแล้ว")+" หน้าเว็บจะอัปเดตภายในราว 30 วินาที");LOADERS.site()})});
 
-if(pw){api({action:"login"}).then(function(r){if(r.ok)enter(r);else{try{sessionStorage.removeItem("kt-admin")}catch(e){}pw=""}})}
+/* ---------- auto login ---------- */
+if(pw){call("/api/settings",{action:"login"}).then(function(r){if(r.ok)enter(r);else{try{sessionStorage.removeItem("kt-admin")}catch(e){}pw=""}})}
 </script>
 </body>
 </html>

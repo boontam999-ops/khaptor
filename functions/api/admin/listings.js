@@ -1,5 +1,5 @@
 import { checkAuth, json } from "../../../lib/settings.js";
-import { listAll, getListing, saveListing, indexRemove, rebuildPublic } from "../../../lib/listings.js";
+import { listAll, getListing, saveListing, indexRemove, rebuildPublic, validateListing } from "../../../lib/listings.js";
 import { deletePhotos } from "../../../lib/photos.js";
 
 // POST /api/admin/listings  {action:"list"} | {action:"approve"|"reject"|"delete", id}  ต้องมี X-Admin-Password
@@ -20,6 +20,15 @@ export async function onRequestPost({ request, env }) {
     await env.SETTINGS.delete("listing:" + l.id);
     await indexRemove(env, l);
     await deletePhotos(env, l.photos);
+  } else if (b.action === "update") {
+    const v = validateListing({ ...l, ...(b.fields || {}), consent: true });
+    if (typeof v === "string") return json({ ok: false, error: v }, 400);
+    Object.assign(l, v, { edited_at: new Date().toISOString() });
+    await saveListing(env, l);
+  } else if (b.action === "sold" || b.action === "unsold") {
+    l.sold = b.action === "sold";
+    l.sold_at = l.sold ? new Date().toISOString() : null;
+    await saveListing(env, l);
   } else if (b.action === "remove_photo") {
     const pid = String(b.photo || "");
     l.photos = (l.photos || []).filter(x => x !== pid);

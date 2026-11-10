@@ -72,6 +72,7 @@ export async function onRequestGet({ request, env, params }) {
         <a class="sh sh-x" data-share="x" href="https://twitter.com/intent/tweet?url=${u}&amp;text=${t}" target="_blank" rel="noopener" aria-label="แชร์ไปที่ X">X</a>
         <button type="button" class="sh sh-copy" data-share="copy">คัดลอกลิงก์</button>
       </div>
+      <button type="button" class="report-link" data-report="${id}">แจ้งประกาศไม่เหมาะสม</button>
     </div>
   </div>
   <div class="car-cols">

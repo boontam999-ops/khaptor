@@ -1,6 +1,7 @@
 import { readSession, sameOrigin } from "../../lib/auth.js";
 import { json } from "../../lib/settings.js";
 import { newPhotoId, isJpeg, MAX_FULL, MAX_THUMB, MAX_PER_DAY } from "../../lib/photos.js";
+import { isBanned } from "../../lib/users.js";
 
 // POST /api/photos  multipart: full (JPEG), thumb (JPEG)  ต้องล็อกอิน  คืน {id}
 // รูปถูกย่อและลบข้อมูล EXIF/GPS ในเบราว์เซอร์ก่อนส่งแล้ว
@@ -8,6 +9,7 @@ export async function onRequestPost({ request, env }) {
   if (!sameOrigin(request)) return json({ ok: false, error: "คำขอไม่ได้มาจากเว็บนี้" }, 403);
   const user = await readSession(request, env);
   if (!user) return json({ ok: false, error: "กรุณาล็อกอินก่อนอัปโหลดรูป" }, 401);
+  if (await isBanned(env, user.sub)) return json({ ok: false, error: "บัญชีนี้ถูกระงับการใช้งาน" }, 403);
   const len = +(request.headers.get("content-length") || 0);
   if (len > MAX_FULL + MAX_THUMB + 4096) return json({ ok: false, error: "รูปใหญ่เกินไป" }, 413);
 

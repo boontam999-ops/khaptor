@@ -131,6 +131,25 @@
   }
   if(standalone())document.documentElement.classList.add("in-app");
 
+  /* ---- แจ้งประกาศไม่เหมาะสม ---- */
+  var REASONS=[["scam","สงสัยหลอกลวง"],["wrong","ข้อมูลหรือราคาไม่ตรงความจริง"],["sold","รถขายไปแล้ว"],["photo","รูปไม่เหมาะสมหรือไม่ใช่รถคันนี้"],["dup","ประกาศซ้ำ"],["other","อื่นๆ"]];
+  function reportDialog(id){
+    var old=document.getElementById("ktReport");if(old)old.remove();
+    var d=document.createElement("div");d.id="ktReport";d.className="install-help";d.setAttribute("role","dialog");d.setAttribute("aria-label","แจ้งประกาศไม่เหมาะสม");
+    d.innerHTML='<form class="install-card report-card"><button type="button" class="install-x" aria-label="ปิด">✕</button><h3>แจ้งประกาศไม่เหมาะสม</h3><p>ทีมงานจะตรวจสอบและซ่อนประกาศที่ผิดกฎ</p>'+
+      REASONS.map(function(r,i){return '<label class="rr"><input type="radio" name="reason" value="'+r[0]+'"'+(i?'':' checked')+'> '+r[1]+'</label>'}).join("")+
+      '<textarea name="detail" maxlength="500" placeholder="รายละเอียดเพิ่มเติม (ไม่บังคับ)"></textarea><button class="btn btn-amber" type="submit">ส่งรายงาน</button><div class="rmsg" role="status"></div></form>';
+    d.addEventListener("click",function(e){if(e.target===d||e.target.closest(".install-x"))d.remove()});
+    d.querySelector("form").addEventListener("submit",function(e){
+      e.preventDefault();var f=e.target,btn=f.querySelector("button[type=submit]"),msg=f.querySelector(".rmsg");btn.disabled=true;
+      fetch("/api/report",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({listing_id:id,reason:f.reason.value,detail:f.detail.value})})
+        .then(function(r){return r.json().catch(function(){return{ok:false,error:"ส่งไม่สำเร็จ"}})}).catch(function(){return{ok:false,error:"เชื่อมต่อไม่ได้"}})
+        .then(function(j){if(j.ok){f.innerHTML='<h3>ขอบคุณที่แจ้งเรา</h3><p>ทีมงานได้รับรายงานแล้ว และจะตรวจสอบโดยเร็ว</p>';window.ktTrack("report_listing",{reason:f.reason?f.reason.value:""});setTimeout(function(){d.remove()},2200)}else{msg.textContent=j.error||"ส่งไม่สำเร็จ";btn.disabled=false}});
+    });
+    document.body.appendChild(d);
+  }
+  document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("[data-report]");if(!b)return;e.preventDefault();reportDialog(b.getAttribute("data-report"))});
+
   function init(){
     window.ktInitShare();
     var choice=getChoice();
