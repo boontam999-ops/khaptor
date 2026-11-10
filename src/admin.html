@@ -261,6 +261,12 @@ td.num{font-variant-numeric:tabular-nums}
         <div class="toggle-row"><label class="sw"><input type="checkbox" id="sDemo"><span></span></label><div><b>แสดงรถตัวอย่าง 24 คัน</b><small>ปิดเมื่อมีประกาศจริงแล้ว และ<b>ต้องปิดก่อนสมัคร AdSense</b> ปิดแล้วหน้ารถตัวอย่าง หน้ายี่ห้อ และหน้าจังหวัดจะตอบ 404 และถูกตัดออกจาก sitemap</small></div></div>
       </div>
       <div class="card">
+        <h2>ผู้ช่วย AI</h2>
+        <div class="toggle-row"><label class="sw"><input type="checkbox" id="sAi"><span></span></label><div><b>เปิดค้นหาด้วยประโยค และตัวช่วยเขียนรายละเอียดประกาศ</b><small>ปิดแล้วช่องค้นหายังใช้ได้ด้วยกฎในเครื่อง ส่วนปุ่ม "ให้ AI ช่วยเรียบเรียง" จะหายไป</small></div></div>
+        <div class="field" style="max-width:260px;margin-top:12px"><label for="sAiCap">เพดานการเรียก AI ต่อวัน (ครั้ง)</label><input type="number" id="sAiCap" min="0" max="5000" step="10"></div>
+        <p class="muted" id="aiStat" style="margin:8px 0 0"></p>
+      </div>
+      <div class="card">
         <h2>แถบประกาศด้านบนเว็บ</h2>
         <p class="muted">แสดงเป็นแถบสีส้มใต้หัวเว็บทุกหน้า เว้นว่างไว้เพื่อซ่อน</p>
         <label class="f" for="sAnn">ข้อความ</label><input type="text" id="sAnn" maxlength="200" placeholder="เช่น ลงขายรถฟรี ไม่มีค่าธรรมเนียมตลอดปี 2569">
@@ -500,9 +506,11 @@ $("adsSave").addEventListener("click",function(){
 /* ---------- site settings ---------- */
 LOADERS.site=function(){call("/api/admin/site",{action:"get"}).then(function(r){if(!r.ok){show($("siteMsg"),"err",r.error||"โหลดไม่ได้");return}var d=r.data;
   $("sDemo").checked=d.show_demo;$("sAnn").value=d.announcement||"";$("sAnnLink").value=d.announcement_link||"";$("sPhone").value=d.contact_phone||"";$("sEmail").value=d.contact_email||"";
+  $("sAi").checked=d.ai_enabled!==false;$("sAiCap").value=d.ai_daily_cap==null?200:d.ai_daily_cap;
+  call("/api/admin/ai",{}).then(function(a){if(!a.ok)return;var x=a.data;$("aiStat").textContent=!x.bound?"ยังไม่ได้ผูก Workers AI กับโปรเจกต์ (Settings → Bindings → Workers AI ชื่อ AI)":"วันนี้ใช้ไป "+x.used+" / "+x.cap+" ครั้ง"+(x.enabled?"":" (ปิดอยู่)")});
   $("siteUpdated").textContent=d.updated_at?"บันทึกล่าสุด "+dt(d.updated_at):"ยังไม่เคยบันทึก (ใช้ค่าเริ่มต้น)"})};
 $("siteSave").addEventListener("click",function(){$("siteSave").disabled=true;hide($("siteMsg"));
-  call("/api/admin/site",{action:"save",data:{show_demo:$("sDemo").checked,announcement:$("sAnn").value,announcement_link:$("sAnnLink").value,contact_phone:$("sPhone").value,contact_email:$("sEmail").value}}).then(function(r){
+  call("/api/admin/site",{action:"save",data:{show_demo:$("sDemo").checked,announcement:$("sAnn").value,announcement_link:$("sAnnLink").value,contact_phone:$("sPhone").value,contact_email:$("sEmail").value,ai_enabled:$("sAi").checked,ai_daily_cap:+$("sAiCap").value}}).then(function(r){
     $("siteSave").disabled=false;if(!r.ok){show($("siteMsg"),"err",r.error||"บันทึกไม่สำเร็จ");return}
     show($("siteMsg"),"ok","บันทึกแล้ว"+(r.data.show_demo?"":" ซ่อนรถตัวอย่างแล้ว")+" หน้าเว็บจะอัปเดตภายในราว 30 วินาที");LOADERS.site()})});
 

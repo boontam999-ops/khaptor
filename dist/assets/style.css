@@ -637,3 +637,25 @@ fieldset.plain legend{font-weight:700;padding-right:8px}
 .ck-group li.bad .ck-flag{background:#c0303a;border-color:#c0303a;color:#fff}
 @media (max-width:960px){.ck-bar{top:60px}}
 @media print{.ck-bar{position:static}.ck-group{border:0;padding:0}.cmp-bar{display:none!important}}
+/* AI search + writer */
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.askbox{display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:18px;padding:8px 8px 8px 16px;box-shadow:var(--shadow-lg);max-width:980px;margin:22px 0 10px;border:2px solid transparent;transition:border-color .15s}
+.askbox:focus-within{border-color:var(--amber)}
+.ask-ico{color:var(--amber);flex:none}
+.askbox input{flex:1;min-width:0;border:0;background:none;font:inherit;font-size:16px;color:var(--ink);padding:10px 0;outline:none}
+.askbox .btn{flex:none}
+.ask-eg{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;font-size:13px;opacity:.95;margin-bottom:14px}
+.ask-eg button{border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.12);color:inherit;border-radius:999px;padding:4px 12px;font:inherit;cursor:pointer}
+.ask-eg button:hover{background:rgba(255,255,255,.25)}
+.ask-out{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between;max-width:980px;background:rgba(255,255,255,.14);border-radius:14px;padding:10px 14px;margin-bottom:14px;font-size:14px}
+.ask-out[hidden]{display:none}
+.ask-out button{border:0;background:#fff;color:var(--ink);border-radius:999px;padding:4px 12px;font:inherit;font-size:13px;cursor:pointer}
+.btn.loading{opacity:.7;pointer-events:none;position:relative}
+.btn.loading::after{content:"";width:14px;height:14px;margin-left:8px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;display:inline-block;vertical-align:-2px;animation:ktspin .7s linear infinite}
+@keyframes ktspin{to{transform:rotate(360deg)}}
+.ai-write{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;margin-top:8px}
+.ai-write[hidden]{display:none}
+.ai-write small{color:var(--muted);font-size:12.5px;flex:1 1 220px}
+.linkbtn{border:0;background:none;color:var(--amber);font:inherit;font-weight:600;cursor:pointer;padding:0;text-decoration:underline}
+@media (max-width:640px){.askbox{padding:6px 6px 6px 12px}.askbox input{font-size:15px}.ask-eg button:nth-child(n+3){display:none}}
+#slNote{min-height:110px;resize:vertical}

@@ -22,6 +22,14 @@
   <div class="wrap">
     <h1>หารถมือสองคันถัดไปของคุณ</h1>
     <p>รถจากเต็นท์และเจ้าของขายเองทั่วประเทศ เทียบราคา ดูสเปก และคำนวณค่างวดได้ในที่เดียว</p>
+    <form class="askbox" id="askForm" role="search">
+      <label for="askQ" class="sr-only">พิมพ์รถที่อยากได้</label>
+      <svg class="ask-ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8z"/><path d="M19 15l.8 1.7 1.7.8-1.7.8L19 20l-.8-1.7-1.7-.8 1.7-.8z"/></svg>
+      <input id="askQ" type="search" maxlength="160" autocomplete="off" placeholder="พิมพ์รถที่อยากได้ เช่น รถครอบครัว 7 ที่นั่ง งบไม่เกิน 6 แสน ประหยัดน้ำมัน">
+      <button class="btn btn-amber" id="askBtn" type="submit">ค้นหา</button>
+    </form>
+    <div class="ask-eg">ลองพิมพ์: <button type="button" data-ask="กระบะดีเซล ไม่เกิน 6 แสน">กระบะดีเซล ไม่เกิน 6 แสน</button><button type="button" data-ask="รถเล็กประหยัดน้ำมัน ขับในเมือง งบ 4 แสน">รถเล็กขับในเมือง งบ 4 แสน</button><button type="button" data-ask="SUV ไฮบริด ปี 2020 ขึ้นไป">SUV ไฮบริด ปี 2020 ขึ้นไป</button></div>
+    <div class="ask-out" id="askOut" hidden aria-live="polite"></div>
     <form class="searchbox" id="searchForm">
       <div class="field"><label for="sBrand">ยี่ห้อ</label><select id="sBrand"><option value="">ทุกยี่ห้อ</option></select></div>
       <div class="field"><label for="sModel">รุ่น</label><select id="sModel"><option value="">ทุกรุ่น</option></select></div>
@@ -136,7 +144,7 @@
         <div class="field"><label for="slProv">จังหวัด</label><select id="slProv" required></select></div>
         <div class="field"><label for="slName">ชื่อผู้ขาย</label><input id="slName" required maxlength="50"></div>
         <div class="field"><label for="slTel">เบอร์โทร</label><input id="slTel" type="tel" inputmode="tel" required placeholder="0812345678"></div>
-        <div class="field full note-field"><label for="slNote">รายละเอียดเพิ่มเติม</label><textarea id="slNote" maxlength="600" placeholder="เช่น เจ้าของมือเดียว เข้าศูนย์ตลอด ไม่มีชน"></textarea></div>
+        <div class="field full note-field"><label for="slNote">รายละเอียดเพิ่มเติม</label><textarea id="slNote" maxlength="1000" placeholder="เช่น เจ้าของมือเดียว เข้าศูนย์ตลอด ไม่มีชน"></textarea><div class="ai-write"><button type="button" class="btn btn-line btn-sm" id="aiWrite">✦ ให้ AI ช่วยเรียบเรียง</button><small id="aiMsg" aria-live="polite">พิมพ์จุดเด่นสั้น ๆ แล้วกดปุ่ม AI จะเขียนเป็นคำบรรยายที่อ่านง่าย</small></div></div>
         <div class="field full"><span class="flabel">รูปรถ <small>สูงสุด 8 รูป · รูปแรกเป็นรูปปก</small></span><div id="slPhotos" class="ph-grid"></div><p class="note" style="margin-top:6px">ถ่ายให้เห็นด้านหน้า ด้านข้าง ด้านหลัง ภายใน หน้าปัดเลขไมล์ และห้องเครื่อง ระบบลบตำแหน่ง GPS ออกจากรูปให้อัตโนมัติ</p></div>
         <label class="full sell-consent"><input type="checkbox" id="slConsent"> ยินยอมให้แสดงชื่อและเบอร์โทรนี้ในประกาศ เพื่อให้ผู้ซื้อติดต่อได้</label>
         <button class="btn btn-road full" type="submit" id="sellBtn">ลงประกาศ</button>

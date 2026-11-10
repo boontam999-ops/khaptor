@@ -40,7 +40,7 @@ export async function onRequest(ctx) {
 
   const s = await getSettings(ctx.env);
   const auth = { googleClientId: googleClientId(ctx.env) };
-  let head = `<script>window.KT_ADS=${JSON.stringify(publicView(s)).replace(/</g, "\\u003c")};window.KT_AUTH=${JSON.stringify(auth).replace(/</g, "\\u003c")};window.KT_SITE=${JSON.stringify(publicSite(site)).replace(/</g, "\\u003c")}</script>`;
+  let head = `<script>window.KT_ADS=${JSON.stringify(publicView(s)).replace(/</g, "\\u003c")};window.KT_AUTH=${JSON.stringify(auth).replace(/</g, "\\u003c")};window.KT_SITE=${JSON.stringify(publicSite(site, ctx.env)).replace(/</g, "\\u003c")}</script>`;
   if (s.ads_enabled && s.adsense_client) {
     const c = esc(s.adsense_client);
     head += `<meta name="google-adsense-account" content="${c}">` +

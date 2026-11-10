@@ -90,7 +90,7 @@ function picHTML(c){
 const brands=[...new Set(CARS.map(c=>c.brand))].sort();
 function fillSelect(el,items,first){el.innerHTML=(first?`<option value="">${first}</option>`:"")+items.map(v=>typeof v==="object"?`<option value="${v[0]}">${v[1]}</option>`:`<option>${v}</option>`).join("")}
 fillSelect($("sBrand"),brands,"ทุกยี่ห้อ");
-fillSelect($("sYear"),Array.from({length:11},(_,i)=>2025-i).map(y=>[y,"ตั้งแต่ "+y]),"ทุกปี");
+fillSelect($("sYear"),Array.from({length:16},(_,i)=>new Date().getFullYear()-i).map(y=>[y,"ตั้งแต่ "+y]),"ทุกปี");
 fillSelect($("sProv"),PROVS,"ทุกจังหวัด");
 const SELL_BRANDS=["BMW","BYD","Chevrolet","Ford","Honda","Hyundai","Isuzu","Kia","Mazda","Mercedes-Benz","MG","Mitsubishi","Nissan","Subaru","Suzuki","Toyota","Volvo","อื่นๆ"];
 fillSelect($("slBrand"),SELL_BRANDS,"เลือกยี่ห้อ");
@@ -104,7 +104,7 @@ function refreshModels(){const b=$("sBrand").value;const ms=[...new Set(CARS.fil
 refreshModels();
 $("sBrand").addEventListener("change",refreshModels);
 
-const state={brand:"",model:"",maxPrice:0,year:0,prov:"",body:new Set(),gear:new Set(),fuel:new Set(),seller:new Set(),km:200000,cert:false,sort:"new",onlyFav:false};
+const state={brand:"",model:"",minPrice:0,maxPrice:0,year:0,prov:"",body:new Set(),gear:new Set(),fuel:new Set(),seller:new Set(),km:200000,cert:false,sort:"new",onlyFav:false};
 
 function checkboxGroup(elId,key,values,labelFn){
   $(elId).innerHTML=values.map(v=>`<label class="ck"><input type="checkbox" data-k="${key}" value="${v}"> ${labelFn?labelFn(v):v}<span data-count="${key}:${v}"></span></label>`).join("");
@@ -136,6 +136,7 @@ function matches(c,skip){
   if(state.brand&&c.brand!==state.brand)return false;
   if(state.model&&c.model!==state.model)return false;
   if(state.maxPrice&&c.price>state.maxPrice)return false;
+  if(state.minPrice&&c.price<state.minPrice)return false;
   if(state.year&&c.year<state.year)return false;
   if(state.prov&&c.prov!==state.prov)return false;
   if(c.km>state.km)return false;
@@ -200,6 +201,7 @@ function render(){
   if(state.onlyFav)chips.push(["onlyFav","เฉพาะรถที่ถูกใจ"]);
   if(state.brand)chips.push(["brand",state.brand]);
   if(state.model)chips.push(["model",state.model]);
+  if(state.minPrice)chips.push(["minPrice","ตั้งแต่ ฿"+fmt(state.minPrice)]);
   if(state.maxPrice)chips.push(["maxPrice","ไม่เกิน ฿"+fmt(state.maxPrice)]);
   if(state.year)chips.push(["year","ปี "+state.year+" ขึ้นไป"]);
   if(state.prov)chips.push(["prov",state.prov]);
@@ -208,10 +210,10 @@ function render(){
   $("activeChips").innerHTML=chips.map(([k,l])=>`<button type="button" data-rm="${k}">${l} ✕</button>`).join("");
 }
 $("activeChips").addEventListener("click",e=>{const k=e.target.dataset.rm;if(!k)return;
-  if(k==="onlyFav")state.onlyFav=false;else{state[k]=typeof state[k]==="number"?0:"";const map={brand:"sBrand",model:"sModel",maxPrice:"sMaxPrice",year:"sYear",prov:"sProv"};$(map[k]).value="";if(k==="brand"){state.model="";refreshModels()}}
+  if(k==="onlyFav")state.onlyFav=false;else{state[k]=typeof state[k]==="number"?0:"";const map={brand:"sBrand",model:"sModel",maxPrice:"sMaxPrice",year:"sYear",prov:"sProv"};if(map[k])$(map[k]).value="";if(k==="brand"){state.model="";refreshModels()}}
   render()});
 $("clearAll").addEventListener("click",()=>{
-  Object.assign(state,{brand:"",model:"",maxPrice:0,year:0,prov:"",km:200000,cert:false,onlyFav:false});
+  Object.assign(state,{brand:"",model:"",minPrice:0,maxPrice:0,year:0,prov:"",km:200000,cert:false,onlyFav:false});
   ["body","gear","fuel","seller"].forEach(k=>state[k].clear());
   document.querySelectorAll("aside input[type=checkbox]").forEach(i=>i.checked=false);
   $("fKm").value=200000;$("fKmVal").textContent="200,000 กม.";
@@ -498,4 +500,92 @@ setFilters(!mqSmall.matches);
 
 let tt;function toast(t){const el=$("toast");el.textContent=t;el.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>el.classList.remove("show"),1800)}
 (function(){const mx=+new URLSearchParams(location.search).get("max");if(mx>0){state.maxPrice=mx;const sel=$("sMaxPrice");if(![...sel.options].some(o=>+o.value===mx)){const o=document.createElement("option");o.value=mx;o.textContent=fmt(mx)+" บาท";sel.appendChild(o)}sel.value=String(mx)}})();
+/* ======== ค้นหาด้วยประโยค (กฎในเครื่อง + AI) ======== */
+const TH_BRAND={"โตโยต้า":"Toyota","ฮอนด้า":"Honda","อีซูซุ":"Isuzu","มาสด้า":"Mazda","นิสสัน":"Nissan","มิตซู":"Mitsubishi","ฟอร์ด":"Ford","เบนซ์":"Mercedes-Benz","บีเอ็ม":"BMW","ซูซูกิ":"Suzuki","เอ็มจี":"MG","บีวายดี":"BYD","เกีย":"Kia","ฮุนได":"Hyundai","เชฟ":"Chevrolet","ซูบารุ":"Subaru","วอลโว่":"Volvo","เลกซัส":"Lexus","ออดี้":"Audi","จีลี่":"Geely","เกรท":"GWM","ฮาวาล":"GWM","โอร่า":"GWM"};
+function parseMoney(t){const m=t.match(/(\d+(?:\.\d+)?)\s*(ล้าน|แสน|หมื่น|k\b|K\b)?/);if(!m)return 0;let n=+m[1];const u=m[2];if(u==="ล้าน")n*=1e6;else if(u==="แสน")n*=1e5;else if(u==="หมื่น")n*=1e4;else if(u&&/k/i.test(u))n*=1e3;return n>=10000?Math.round(n):0}
+function ruleParse(q){
+  const t=q.toLowerCase(),f={brand:"",model:"",body:[],fuel:[],gear:[],minPrice:0,maxPrice:0,minYear:0,maxKm:0,prov:"",sort:"",cert:false};
+  const brands=[...new Set(CARS.map(c=>c.brand))];
+  f.brand=brands.find(b=>t.includes(b.toLowerCase()))||"";
+  if(!f.brand)for(const [th,en] of Object.entries(TH_BRAND))if(t.includes(th)&&brands.includes(en)){f.brand=en;break}
+  const ms=[...new Set(CARS.filter(c=>!f.brand||c.brand===f.brand).map(c=>c.model))].sort((a,b)=>b.length-a.length);
+  const tok=" "+t.replace(/[^\p{L}\p{N}.-]+/gu," ")+" ";const mm=ms.find(m=>tok.includes(" "+m.toLowerCase()+" "));if(mm){f.model=mm;if(!f.brand)f.brand=(CARS.find(c=>c.model===mm)||{}).brand||""}
+  const B=[[/เก๋ง|ซีดาน|sedan/,"sedan"],[/แฮทช์|hatch|รถเล็ก|อีโค|eco ?car/,"hatch"],[/suv|ppv|อเนกประสงค์|7 ?ที่นั่ง|ครอบครัว/,"suv"],[/กระบะ|ปิคอัพ|pick ?up|ขนของ/,"pickup"],[/ตู้|van|7 ?ที่นั่ง|ครอบครัว|10 ?ที่นั่ง/,"van"]];
+  B.forEach(([r,v])=>{if(r.test(t)&&!f.body.includes(v))f.body.push(v)});
+  if(/ไฟฟ้า|\bev\b/.test(t))f.fuel.push("ไฟฟ้า");if(/ไฮบริด|hybrid/.test(t))f.fuel.push("ไฮบริด");if(/ดีเซล|diesel/.test(t))f.fuel.push("ดีเซล");if(/เบนซิน/.test(t))f.fuel.push("เบนซิน");
+  if(/ประหยัด/.test(t)&&!f.fuel.length)f.fuel.push("ไฮบริด","เบนซิน","ไฟฟ้า");
+  if(/ออโต้|อัตโนมัติ|auto/.test(t))f.gear.push("อัตโนมัติ");if(/ธรรมดา|manual|เกียร์มือ/.test(t))f.gear.push("ธรรมดา");
+  const money=[...t.matchAll(/(ไม่เกิน|ต่ำกว่า|งบ|ไม่ถึง|ราคา|ตั้งแต่|มากกว่า|ขึ้นไป|เกิน|ถึง|-)?\s*(\d+(?:\.\d+)?\s*(?:ล้าน|แสน|หมื่น|k\b)?)\s*(บาท)?\s*(ขึ้นไป)?/g)];
+  money.forEach(m=>{const n=parseMoney(m[2]);if(!n||(n>=1900&&n<=2600&&!/[ล้านแสนหมื่นk]/.test(m[2])))return;if(/ตั้งแต่|มากกว่า|เกิน/.test(m[1]||"")&&!/ไม่เกิน/.test(m[1]||"")||m[4])f.minPrice=n;else f.maxPrice=n});
+  const y=t.match(/(?:ปี\s*)?\b((?:19|20)\d\d|25\d\d)\b/);if(y){let yy=+y[1];if(yy>2400)yy-=543;f.minYear=yy}
+  const age=t.match(/(?:ไม่เกิน|อายุไม่เกิน)\s*(\d+)\s*ปี/);if(age)f.minYear=new Date().getFullYear()-+age[1];
+  if(/ไมล์น้อย/.test(t)){f.maxKm=60000;f.sort="kmAsc"}
+  const km=t.match(/(?:ไมล์|วิ่ง)\s*(?:ไม่เกิน)?\s*(\d+(?:\.\d+)?)\s*(หมื่น|พัน|k)?/);if(km){let n=+km[1];if(km[2]==="หมื่น")n*=1e4;else if(km[2]==="พัน"||km[2]==="k")n*=1e3;if(n>=1000)f.maxKm=n}
+  if(/ถูกสุด|ราคาถูก/.test(t))f.sort="pAsc";if(/ใหม่สุด|ใหม่ๆ/.test(t))f.sort="yDesc";
+  if(/ตรวจสภาพ|ผ่านการตรวจ/.test(t))f.cert=true;
+  f.prov=PROVS.find(p=>t.includes(p))||(/กรุงเทพ|กทม/.test(t)?"กรุงเทพมหานคร":"");
+  return f;
+}
+function applyFilters(f){
+  Object.assign(state,{brand:f.brand||"",model:f.model||"",minPrice:f.minPrice||0,maxPrice:f.maxPrice||0,year:f.minYear||0,prov:f.prov||"",km:f.maxKm&&f.maxKm<200000?f.maxKm:200000,cert:!!f.cert,onlyFav:false});
+  ["body","gear","fuel","seller"].forEach(k=>state[k].clear());(f.body||[]).forEach(v=>state.body.add(v));(f.fuel||[]).forEach(v=>state.fuel.add(v));(f.gear||[]).forEach(v=>state.gear.add(v));
+  document.querySelectorAll("aside input[type=checkbox][data-k]").forEach(i=>i.checked=state[i.dataset.k]&&state[i.dataset.k].has(i.value));
+  $("fCert").checked=state.cert;$("fKm").value=state.km;$("fKmVal").textContent=fmt(state.km)+" กม.";
+  $("sBrand").value=state.brand;refreshModels();$("sModel").value=state.model;$("sProv").value=state.prov;
+  const ensure=(sel,v,label)=>{if(!v){sel.value="";return}if(![...sel.options].some(o=>+o.value===v)){const o=document.createElement("option");o.value=v;o.textContent=label;sel.appendChild(o)}sel.value=String(v)};
+  ensure($("sMaxPrice"),state.maxPrice,fmt(state.maxPrice)+" บาท");ensure($("sYear"),state.year,"ตั้งแต่ "+state.year);
+  if(f.sort){state.sort=f.sort;$("sort").value=f.sort}
+  render();
+}
+function describeFilters(f){const p=[];if(f.brand)p.push(f.brand+(f.model?" "+f.model:""));if(f.body&&f.body.length)p.push(f.body.map(b=>BODY[b]).join("/"));if(f.fuel&&f.fuel.length)p.push(f.fuel.join("/"));if(f.gear&&f.gear.length)p.push("เกียร์"+f.gear.join("/"));if(f.minPrice)p.push("ตั้งแต่ ฿"+fmt(f.minPrice));if(f.maxPrice)p.push("ไม่เกิน ฿"+fmt(f.maxPrice));if(f.minYear)p.push("ปี "+f.minYear+" ขึ้นไป");if(f.maxKm)p.push("ไมล์ไม่เกิน "+fmt(f.maxKm));if(f.prov)p.push(f.prov);if(f.cert)p.push("ผ่านการตรวจสภาพ");return p.join(" · ")}
+const hasAny=f=>!!(f.brand||f.body.length||f.fuel.length||f.gear.length||f.minPrice||f.maxPrice||f.minYear||f.maxKm||f.prov||f.cert);
+$("askForm").addEventListener("submit",async e=>{
+  e.preventDefault();const q=$("askQ").value.trim();if(q.length<2)return;
+  const btn=$("askBtn"),out=$("askOut");btn.disabled=true;btn.classList.add("loading");
+  let f=ruleParse(q),via="rule";
+  if(window.KT_SITE&&window.KT_SITE.ai){
+    try{
+      const brands=[...new Set(CARS.map(c=>c.brand))].sort(),models={};brands.forEach(b=>models[b]=[...new Set(CARS.filter(c=>c.brand===b).map(c=>c.model))]);
+      const provs=[...new Set(CARS.map(c=>c.prov))];
+      const r=await fetch("/api/ai/search",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({q,brands,models,provs})});
+      const j=await r.json();
+      if(j.ok&&hasAny(j.filters)){f=j.filters;via="ai"}
+    }catch(err){}
+  }
+  btn.disabled=false;btn.classList.remove("loading");
+  track("ai_search",{via,search_term:q.slice(0,100)});
+  if(!hasAny(f)){out.hidden=false;out.innerHTML=`ยังไม่เข้าใจคำค้นนี้ ลองระบุยี่ห้อ ประเภทรถ หรืองบ เช่น "กระบะดีเซล ไม่เกิน 5 แสน"`;return}
+  applyFilters(f);
+  const n=CARS.filter(c=>matches(c)).length;
+  out.hidden=false;out.innerHTML=`<span>${via==="ai"?"✦ ":""}ค้นหา: <b>${esc(describeFilters(f))}</b> พบ ${n} คัน</span><button type="button" id="askClear">ล้าง</button>`;
+  $("askClear").onclick=()=>{$("clearAll").click();out.hidden=true;$("askQ").value=""};
+  document.getElementById("buy").scrollIntoView({behavior:"smooth"});
+});
+document.querySelectorAll("[data-ask]").forEach(b=>b.addEventListener("click",()=>{$("askQ").value=b.dataset.ask;$("askForm").requestSubmit()}));
+
+/* ======== AI ช่วยเขียนรายละเอียดประกาศ ======== */
+(function(){
+  const val=id=>($(id)?$(id).value.trim():"");
+  const btn=$("aiWrite");if(!btn)return;
+  if(!(window.KT_SITE&&window.KT_SITE.ai)){btn.closest(".ai-write").hidden=true;return}
+  let prev="";
+  btn.addEventListener("click",async()=>{
+    const notes=$("slNote").value.trim(),msg=$("aiMsg");
+    if(!val("slBrand")||!val("slModel")){msg.textContent="เลือกยี่ห้อและรุ่นก่อน";return}
+    if(notes.length<4){msg.textContent="พิมพ์จุดเด่นสั้น ๆ ในช่องด้านบนก่อน เช่น เข้าศูนย์ตลอด ไม่เคยชน ยางใหม่";$("slNote").focus();return}
+    btn.disabled=true;btn.classList.add("loading");msg.textContent="กำลังเรียบเรียง...";
+    try{
+      const car={brand:val("slBrand"),model:val("slModel"),sub:val("slSub"),year:val("slYear"),km:val("slKm"),body:val("slBody"),gear:val("slGear"),fuel:val("slFuel"),color:val("slColor"),prov:val("slProv")};
+      const r=await fetch("/api/ai/describe",{method:"POST",headers:{"content-type":"application/json"},credentials:"same-origin",body:JSON.stringify({car,notes})});
+      const j=await r.json();
+      if(!j.ok){msg.textContent=j.error||"ใช้งานไม่ได้ชั่วคราว";return}
+      prev=notes;const ta=$("slNote");ta.value=j.text.slice(0,1000);ta.style.height="auto";ta.style.height=Math.min(ta.scrollHeight+4,420)+"px";$("slNote").dispatchEvent(new Event("input"));
+      msg.innerHTML='เขียนให้แล้ว ตรวจและแก้ให้ตรงกับรถจริงก่อนส่ง <button type="button" class="linkbtn" id="aiUndo">ใช้ข้อความเดิม</button>';
+      $("aiUndo").onclick=()=>{$("slNote").value=prev;msg.textContent=""};
+      track("ai_describe",{});
+    }catch(e){msg.textContent="เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง"}
+    finally{btn.disabled=false;btn.classList.remove("loading")}
+  });
+})();
+
 saveFavs();render();cmpBar();initGoogle();loadListings();
