@@ -660,3 +660,6 @@ fieldset.plain legend{font-weight:700;padding-right:8px}
 @media (max-width:640px){.askbox{padding:6px 6px 6px 12px}.askbox input{font-size:15px}.ask-eg button:nth-child(n+3){display:none}}
 #slNote{min-height:110px;resize:vertical}
 .ask-thinking{opacity:.75;font-style:normal;font-size:13px;margin-left:6px}
+.ai-badge{flex:none;font:800 11px/1 var(--display,inherit);letter-spacing:.06em;color:#fff;background:linear-gradient(135deg,#7c3aed,#ff5a36);padding:5px 8px;border-radius:999px}
+.ask-lead{font-weight:700;margin-right:4px}
+@media (max-width:640px){.ai-badge{display:none}.ask-lead{flex-basis:100%}}

@@ -26,9 +26,9 @@
       <label for="askQ" class="sr-only">พิมพ์รถที่อยากได้</label>
       <svg class="ask-ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8z"/><path d="M19 15l.8 1.7 1.7.8-1.7.8L19 20l-.8-1.7-1.7-.8 1.7-.8z"/></svg>
       <input id="askQ" type="search" maxlength="160" autocomplete="off" placeholder="พิมพ์รถที่อยากได้ เช่น รถครอบครัว 7 ที่นั่ง งบไม่เกิน 6 แสน ประหยัดน้ำมัน">
-      <button class="btn btn-amber" id="askBtn" type="submit">ค้นหา</button>
+      <span class="ai-badge" aria-hidden="true">AI</span><button class="btn btn-amber" id="askBtn" type="submit">ค้นหาด้วย AI</button>
     </form>
-    <div class="ask-eg">ลองพิมพ์: <button type="button" data-ask="กระบะดีเซล ไม่เกิน 6 แสน">กระบะดีเซล ไม่เกิน 6 แสน</button><button type="button" data-ask="รถเล็กประหยัดน้ำมัน ขับในเมือง งบ 4 แสน">รถเล็กขับในเมือง งบ 4 แสน</button><button type="button" data-ask="SUV ไฮบริด ปี 2020 ขึ้นไป">SUV ไฮบริด ปี 2020 ขึ้นไป</button></div>
+    <div class="ask-eg"><b class="ask-lead">✦ ค้นหาด้วย AI พิมพ์แบบพูดได้เลย</b> ลองพิมพ์: <button type="button" data-ask="กระบะดีเซล ไม่เกิน 6 แสน">กระบะดีเซล ไม่เกิน 6 แสน</button><button type="button" data-ask="รถเล็กประหยัดน้ำมัน ขับในเมือง งบ 4 แสน">รถเล็กขับในเมือง งบ 4 แสน</button><button type="button" data-ask="SUV ไฮบริด ปี 2020 ขึ้นไป">SUV ไฮบริด ปี 2020 ขึ้นไป</button></div>
     <div class="ask-out" id="askOut" hidden aria-live="polite"></div>
     <form class="searchbox" id="searchForm">
       <div class="field"><label for="sBrand">ยี่ห้อ</label><select id="sBrand"><option value="">ทุกยี่ห้อ</option></select></div>
