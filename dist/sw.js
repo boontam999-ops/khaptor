@@ -1,6 +1,6 @@
 /* ขับต่อ service worker — ทำให้ติดตั้งเป็นแอปได้และเปิดได้ตอนออฟไลน์
    เวอร์ชันถูกแทนที่ตอน build ทุกครั้ง แอปที่ติดตั้งแล้วจะอัปเดตเอง */
-const VERSION = "20261111004608";
+const VERSION = "20261111062430";
 const STATIC = "kt-static-" + VERSION;
 const PAGES = "kt-pages-" + VERSION;
 const PHOTOS = "kt-photos-v1";
