@@ -36,7 +36,7 @@ C = CONFIG
 D = C["DOMAIN"].rstrip("/")
 E = html.escape
 import hashlib
-ASSET_V = hashlib.md5(b"".join((Path(__file__).parent / "src" / n).read_bytes() for n in ("style.css", "site.js", "app.js", "tools.js"))).hexdigest()[:8]
+ASSET_V = hashlib.md5(b"".join((Path(__file__).parent / "src" / n).read_bytes() for n in ("style.css", "site.js", "app.js", "tools.js", "car-art.js"))).hexdigest()[:8]
 
 # ---------- data (read from app.js so there is one source of truth) ----------
 app_js = (SRC / "app.js").read_text(encoding="utf-8")
@@ -79,24 +79,37 @@ W = {
  "van": "M36 50 Q38 32 54 30 L100 30 L100 52 L36 52Z M108 30 L160 30 L160 52 L108 52Z M168 30 L240 29 Q258 30 264 50 L168 52Z"}
 
 
-def car_svg(c, attrs='viewBox="0 0 300 130"'):
-    col = COLORS.get(c["color"], "#999")
-    glass = "#9fb7cc" if c["color"] in ("ดำ", "น้ำเงิน", "น้ำตาล", "แดง") else "#3d5266"
-    wheels = "".join(f'<circle cx="{x}" cy="100" r="17" fill="#1c1f24"/><circle cx="{x}" cy="100" r="8" fill="#b9c0c8"/><circle cx="{x}" cy="100" r="2.5" fill="#1c1f24"/>' for x in (70, 230))
-    return (f'<svg {attrs} xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ภาพประกอบ {E(c["brand"])} {E(c["model"])} สี{c["color"]}">'
-            f'<ellipse cx="150" cy="112" rx="132" ry="7" fill="rgba(0,0,0,.18)"/>'
-            f'<path d="{P[c["body"]]}" fill="{col}" stroke="rgba(0,0,0,.35)" stroke-width="1.5"/>'
-            f'<path d="{W[c["body"]]}" fill="{glass}" opacity=".9"/>'
-            f'<path d="M30 82 L270 82" stroke="rgba(0,0,0,.12)" stroke-width="2"/>'
-            f'<rect x="270" y="72" width="12" height="6" rx="2" fill="#ffd27a"/><rect x="18" y="74" width="8" height="6" rx="2" fill="#d9454f"/>'
-            f'{wheels}</svg>')
+CAR_ART = (Path(__file__).parent / "src" / "car-art.js").read_text(encoding="utf-8")
+_ART = CAR_ART[CAR_ART.index("/*CAR-ART-START*/"):CAR_ART.index("/*CAR-ART-END*/")]
+# lib/car-svg.js สร้างจาก src/car-art.js ทุกครั้งที่ build ให้ภาพหน้าประกาศจริงตรงกับหน้าเว็บ
+(Path(__file__).parent / "lib" / "car-svg.js").write_text(
+    "// สร้างอัตโนมัติจาก src/car-art.js โดย build.py — อย่าแก้ไฟล์นี้ตรง ๆ\n"
+    'export const COLORS = { "ขาว": "#eef1f4", "ดำ": "#23272e", "เทา": "#7d8792", "เงิน": "#c3c9cf", "แดง": "#b8232f", "น้ำเงิน": "#24477f", "น้ำตาล": "#6e4f36" };\n'
+    'export const COLOR_SLUG = { "ขาว": "white", "ดำ": "black", "เทา": "gray", "เงิน": "silver", "แดง": "red", "น้ำเงิน": "blue", "น้ำตาล": "brown" };\n'
+    + _ART + "\nexport function carSVG(body, color, label) { return carArt(body, color, label, \"hero\"); }\n", encoding="utf-8")
+_SVG_CACHE = {}
+
+
+def _render_svgs(cars):
+    """เรนเดอร์ภาพรถด้วย node จากต้นฉบับเดียวกับหน้าเว็บ"""
+    import subprocess
+    job = [[c["id"], c["body"], c["color"], f'ภาพประกอบ {c["brand"]} {c["model"]} สี{c["color"]}'] for c in cars]
+    script = _ART + ";let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{const o={};for(const [id,b,c,l] of JSON.parse(d))o[id]=carArt(b,c,l.replace(/[<>\"&]/g,''),'s'+id);process.stdout.write(JSON.stringify(o))})"
+    out = subprocess.run(["node", "-e", script], input=json.dumps(job, ensure_ascii=False), capture_output=True, text=True, check=True).stdout
+    _SVG_CACHE.update({int(k): v for k, v in json.loads(out).items()})
+
+
+def car_svg(c, attrs=None):
+    if not _SVG_CACHE:
+        _render_svgs(CARS)
+    return _SVG_CACHE[c["id"]]
 
 
 def pic_bg(c): return f"hsl({(c['id']*37) % 360} 22% 91%)"
 
 
 def static_card(c, base):
-    tags = "".join([
+    tags = "".join(['<span class="tag demo">ตัวอย่าง</span>',
         '<span class="tag cert">ผ่านการตรวจสภาพ</span>' if c["cert"] else "",
         '<span class="tag ev">EV</span>' if c["fuel"] == "ไฟฟ้า" else ""])
     return f'''<article class="card" data-id="{c["id"]}" data-demo>
@@ -351,7 +364,7 @@ def build():
     (DIST / "assets").mkdir(parents=True)
     shutil.copy(SRC / "style.css", DIST / "assets/style.css")
     shutil.copy(SRC / "site.js", DIST / "assets/site.js")
-    shutil.copy(SRC / "app.js", DIST / "assets/app.js")
+    (DIST / "assets/app.js").write_text(CAR_ART + "\n" + (SRC / "app.js").read_text(encoding="utf-8"), encoding="utf-8")
     shutil.copy(SRC / "tools.js", DIST / "assets/tools.js")
     (DIST / "assets/cars.json").write_text(json.dumps([{k: c[k] for k in ("brand", "model", "sub", "year", "price", "km")} | {"url": f"/cars/{car_slug(c)}.html"} for c in CARS], ensure_ascii=False), encoding="utf-8")
     shutil.copy(SRC / "admin.html", DIST / "admin.html")
@@ -431,7 +444,7 @@ def build():
         body = f'''<main class="wrap carpage">
   {bc_html}
   <div class="car-top">
-    <div class="pic car-hero" style="background:{pic_bg(c)}">{car_svg(c)}</div>
+    <div class="pic car-hero" style="background:{pic_bg(c)}">{car_svg(c)}<div class="tags"><span class="tag demo">ประกาศตัวอย่าง · ภาพประกอบ</span></div></div>
     <div class="car-info">
       <div class="sub" style="color:var(--muted);font-size:13px">{seller} · {c["prov"]} · ลงประกาศ {listed_date(c).strftime("%d/%m/%Y")}</div>
       <h1>{E(name)} <span>{E(c["sub"])}</span></h1>
