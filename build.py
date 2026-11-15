@@ -43,6 +43,10 @@ app_js = (SRC / "app.js").read_text(encoding="utf-8")
 RAW = json.loads(re.search(r"const RAW=(\[.*?\n\]);", app_js, re.S).group(1))
 KEYS = "brand model sub year price km body gear fuel color prov seller cert days plate".split()
 CARS = [dict(zip(KEYS, r), id=i + 1) for i, r in enumerate(RAW)]
+# ภาพจริงจาก Wikimedia Commons (ใบอนุญาตเสรี ต้องแสดงเครดิต) สำหรับรถตัวอย่าง
+DEMO_PHOTOS = json.loads((Path(__file__).parent / "src" / "demo_photos.json").read_text(encoding="utf-8"))
+for _c in CARS:
+    _c["wm"] = DEMO_PHOTOS.get(str(_c["id"]))
 
 BODY = {"sedan": "เก๋ง", "hatch": "แฮทช์แบ็ก", "suv": "SUV / PPV", "pickup": "กระบะ", "van": "รถตู้"}
 BODY_SCHEMA = {"sedan": "Sedan", "hatch": "Hatchback", "suv": "SUV", "pickup": "Pickup truck", "van": "Van"}
@@ -105,6 +109,15 @@ def car_svg(c, attrs=None):
     return _SVG_CACHE[c["id"]]
 
 
+def wm_html(c, big=False):
+    w = c.get("wm")
+    if not w:
+        return None
+    src = w["src"].replace("{w}", "960" if big else "500")
+    return (f'<img src="{src}" alt="ภาพประกอบ {E(c["brand"])} {E(c["model"])}" loading="{"eager" if big else "lazy"}" referrerpolicy="no-referrer">'
+            f'<a class="wm-credit" href="{w["page"]}" target="_blank" rel="noopener">ภาพ: {E(w["by"])} · {w["lic"]} · Wikimedia Commons</a>')
+
+
 def pic_bg(c): return f"hsl({(c['id']*37) % 360} 22% 91%)"
 
 
@@ -113,7 +126,7 @@ def static_card(c, base):
         '<span class="tag cert">ผ่านการตรวจสภาพ</span>' if c["cert"] else "",
         '<span class="tag ev">EV</span>' if c["fuel"] == "ไฟฟ้า" else ""])
     return f'''<article class="card" data-id="{c["id"]}" data-demo>
-  <div class="pic" style="background:{pic_bg(c)}">{car_svg(c)}<div class="tags">{tags}</div></div>
+  <div class="pic{' has-photo wm' if c.get('wm') else ''}" style="background:{pic_bg(c)}">{wm_html(c) or car_svg(c)}<div class="tags">{tags}</div></div>
   <div class="cbody">
     <h3><a class="cardlink" href="{base}cars/{car_slug(c)}.html">{E(car_name(c))}</a></h3>
     <div class="sub">{E(c["sub"])}</div>
@@ -364,7 +377,7 @@ def build():
     (DIST / "assets").mkdir(parents=True)
     shutil.copy(SRC / "style.css", DIST / "assets/style.css")
     shutil.copy(SRC / "site.js", DIST / "assets/site.js")
-    (DIST / "assets/app.js").write_text(CAR_ART + "\n" + (SRC / "app.js").read_text(encoding="utf-8"), encoding="utf-8")
+    (DIST / "assets/app.js").write_text(CAR_ART + "\nconst DEMO_PHOTOS=" + json.dumps(DEMO_PHOTOS, ensure_ascii=False) + ";\n" + (SRC / "app.js").read_text(encoding="utf-8"), encoding="utf-8")
     shutil.copy(SRC / "tools.js", DIST / "assets/tools.js")
     (DIST / "assets/cars.json").write_text(json.dumps([{k: c[k] for k in ("brand", "model", "sub", "year", "price", "km")} | {"url": f"/cars/{car_slug(c)}.html"} for c in CARS], ensure_ascii=False), encoding="utf-8")
     shutil.copy(SRC / "admin.html", DIST / "admin.html")
@@ -444,7 +457,7 @@ def build():
         body = f'''<main class="wrap carpage">
   {bc_html}
   <div class="car-top">
-    <div class="pic car-hero" style="background:{pic_bg(c)}">{car_svg(c)}<div class="tags"><span class="tag demo">ประกาศตัวอย่าง · ภาพประกอบ</span></div></div>
+    <div class="pic car-hero{' has-photo wm' if c.get('wm') else ''}" style="background:{pic_bg(c)}">{wm_html(c, True) or car_svg(c)}<div class="tags"><span class="tag demo">ประกาศตัวอย่าง · ภาพประกอบรุ่นนี้</span></div></div>
     <div class="car-info">
       <div class="sub" style="color:var(--muted);font-size:13px">{seller} · {c["prov"]} · ลงประกาศ {listed_date(c).strftime("%d/%m/%Y")}</div>
       <h1>{E(name)} <span>{E(c["sub"])}</span></h1>
@@ -579,6 +592,7 @@ def build():
 <h2>คุกกี้ที่ใช้</h2>
 <p><b>คุกกี้ที่จำเป็น</b> ใช้จดจำการตั้งค่าคุกกี้ รายการรถที่คุณบันทึกไว้ และสถานะการล็อกอิน (คุกกี้ kt_session อายุ 30 วัน)</p>
 <p><b>คุกกี้วิเคราะห์ (Google Analytics)</b> ช่วยให้เรารู้ว่าผู้ใช้ค้นหาและดูรถแบบไหน เพื่อปรับปรุงเว็บไซต์ ข้อมูลถูกประมวลผลโดย Google</p>
+<p><b>ภาพจาก Wikimedia Commons</b> ภาพประกอบในประกาศตัวอย่างโหลดจากเซิร์ฟเวอร์ของ Wikimedia Foundation โดยตรง เบราว์เซอร์ของคุณจึงส่งที่อยู่ IP ไปยัง Wikimedia เพื่อแสดงภาพ เราไม่ส่งข้อมูลอ้างอิงหน้าเว็บ (referrer) ไปด้วย ภาพแต่ละภาพแสดงชื่อผู้ถ่ายและสัญญาอนุญาตไว้ใต้ภาพ</p>
 <p><b>คุกกี้โฆษณา (Google AdSense)</b> ผู้ให้บริการบุคคลที่สามรวมถึง Google ใช้คุกกี้เพื่อแสดงโฆษณาตามการเข้าชมเว็บไซต์นี้และเว็บไซต์อื่นของคุณ คุณปิดโฆษณาที่ปรับตามความสนใจได้ที่ <a href="https://adssettings.google.com">การตั้งค่าโฆษณาของ Google</a> และอ่านวิธีที่ Google ใช้ข้อมูลได้ที่ <a href="https://policies.google.com/technologies/partner-sites">policies.google.com/technologies/partner-sites</a></p>
 <p>คุณเปลี่ยนการยินยอมได้ทุกเมื่อที่ <a href="#" data-consent-open>ตั้งค่าคุกกี้</a></p>
 <h2>สิทธิของคุณ</h2><p>คุณขอเข้าถึง แก้ไข ลบ หรือคัดค้านการประมวลผลข้อมูลส่วนบุคคลของคุณได้ โดยติดต่อ {E(C["CONTACT_EMAIL"])} เราจะตอบกลับภายใน 30 วัน</p>

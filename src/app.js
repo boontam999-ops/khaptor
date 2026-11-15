@@ -29,7 +29,8 @@ const RAW=[
 ["Nissan","Navara","2.5 Calibre E Single Cab",2018,349000,132000,"pickup","ธรรมดา","ดีเซล","ขาว","ขอนแก่น","owner",0,8,"ผพ 2047"],
 ["Honda","Civic","1.5 Turbo RS",2021,889000,44000,"sedan","อัตโนมัติ","เบนซิน","เทา","สมุทรปราการ","dealer",1,1,"4กธ 9915"]
 ];
-const CARS=RAW.map((r,i)=>({id:i+1,brand:r[0],model:r[1],sub:r[2],year:r[3],price:r[4],km:r[5],body:r[6],gear:r[7],fuel:r[8],color:r[9],prov:r[10],seller:r[11],cert:!!r[12],days:r[13],plate:r[14]}));
+const WM=typeof DEMO_PHOTOS!=="undefined"?DEMO_PHOTOS:{};
+const CARS=RAW.map((r,i)=>({id:i+1,brand:r[0],model:r[1],sub:r[2],year:r[3],price:r[4],km:r[5],body:r[6],gear:r[7],fuel:r[8],color:r[9],prov:r[10],seller:r[11],cert:!!r[12],days:r[13],plate:r[14],wm:WM[i+1]||null}));
 /* รถตัวอย่างถูกปิดในหลังบ้าน */
 if(window.KT_SITE&&window.KT_SITE.show_demo===false)CARS.length=0;
 
@@ -52,7 +53,9 @@ function monthly(price,downPct=15,rate=3.49,months=72){
 
 /* SVG car drawing by body type */
 function carSVG(c){return carArt(c.body,c.color,"ภาพประกอบ "+c.brand+" "+c.model+" สี"+c.color,c.id)}
-function picHTML(c){
+function wmCredit(w){return `<a class="wm-credit" href="${w.page}" target="_blank" rel="noopener" title="ดูที่มาของภาพ">ภาพ: ${esc(w.by)} · ${esc(w.lic)} · Wikimedia Commons</a>`}
+function picHTML(c,big,noWm){
+  if(c.wm&&!noWm&&!(c.photos&&c.photos.length))return `<div class="pic has-photo wm"><img src="${c.wm.src.replace(/\{w\}/g,big?960:500)}" alt="ภาพประกอบ ${esc(c.brand+" "+c.model)}" loading="lazy" referrerpolicy="no-referrer">${wmCredit(c.wm)}`;
   if(c.photos&&c.photos.length)return `<div class="pic has-photo"><img src="/p/${esc(c.photos[0])}-t.jpg" alt="${esc(c.year+" "+c.brand+" "+c.model)}" loading="lazy">${c.photos.length>1?`<span class="ph-count">${c.photos.length} รูป</span>`:""}`;
   const bg=`hsl(${(c.id*37)%360} 22% ${document.documentElement.dataset.theme==="dark"?"22%":"91%"})`;
   return `<div class="pic" style="background:linear-gradient(180deg,${bg},color-mix(in srgb,${bg} 70%,#000 6%))">${carSVG(c)}`;
@@ -198,6 +201,7 @@ function toggleFav(id){track(favs.has(id)?"remove_from_wishlist":"add_to_wishlis
 $("grid").addEventListener("click",e=>{
   const f=e.target.closest("[data-fav]");if(f){e.stopPropagation();toggleFav(+f.dataset.fav);return}
   const cb=e.target.closest("[data-cmp]");if(cb){e.stopPropagation();toggleCmp(+cb.dataset.cmp);return}
+  if(e.target.closest(".wm-credit"))return;
   if(e.target.closest(".cardlink")&&(e.ctrlKey||e.metaKey||e.button===1))return;
   const c=e.target.closest(".card");if(c){e.preventDefault();openCar(+c.dataset.id)}
 });
@@ -223,7 +227,7 @@ function openCar(id){
   const c=CARS.find(x=>x.id===id);lastFocus=lastFocus||document.activeElement;
   const m=monthly(c.price);
   track("view_item",{currency:"THB",value:c.price,items:[{item_id:"KT-"+c.id,item_name:c.year+" "+c.brand+" "+c.model,item_brand:c.brand,price:c.price}]});
-  $("sheet").innerHTML=`${c.photos&&c.photos.length?`<div class="sheet-media">${galleryHTML(c.photos,c.year+" "+c.brand+" "+c.model)}</div>`:picHTML(c)+"</div>"}
+  $("sheet").innerHTML=`${c.photos&&c.photos.length?`<div class="sheet-media">${galleryHTML(c.photos,c.year+" "+c.brand+" "+c.model)}</div>`:picHTML(c,true)+"</div>"}
   <div class="info">
     <button class="x" type="button" id="mClose" aria-label="ปิด">✕</button>
     <div><div class="sub" style="color:var(--muted);font-size:13px">${c.seller==="dealer"?"เต็นท์รถ":"เจ้าของขายเอง"} · ${c.prov}</div>
@@ -606,7 +610,7 @@ const TOOL_HINTS=[[/ภาษี|ต่อทะเบียน|พ\.?ร\.?บ/
     const list=CARS.filter(c=>matchF(c,f)).sort((a,b)=>a.price-b.price),n=list.length;
     const say=via==="ai"&&f.explain?esc(f.explain):"หา "+esc(describeFilters(f));
     let html=`${say} ${n?`เจอ <b>${n}</b> คันครับ`:"ยังไม่มีรถที่ตรงทุกเงื่อนไขครับ ลองขยายงบหรือตัดบางเงื่อนไขออก"}`;
-    if(n)html+=`<div class="kt-cars">${list.slice(0,3).map(c=>`<button type="button" class="kt-car" data-open="${c.id}">${picHTML(c)}</div><span><b>${esc(c.year+" "+c.brand+" "+c.model)}</b><small>${fmt(c.km)} กม. · ${esc(c.prov||"")}</small><em>฿${fmt(c.price)}</em></span></button>`).join("")}</div>
+    if(n)html+=`<div class="kt-cars">${list.slice(0,3).map(c=>`<button type="button" class="kt-car" data-open="${c.id}">${picHTML(c,false,true)}</div><span><b>${esc(c.year+" "+c.brand+" "+c.model)}</b><small>${fmt(c.km)} กม. · ${esc(c.prov||"")}</small><em>฿${fmt(c.price)}</em></span></button>`).join("")}</div>
       <button type="button" class="btn btn-amber btn-sm" data-apply='${esc(JSON.stringify(f))}'>ดูทั้งหมด ${n} คันในหน้ารวมรถ</button>`;
     if(tool)html+=`<div class="kt-tool">ดูเพิ่ม: <a class="kt-link" href="${BASE}${tool[1]}">${tool[2]}</a></div>`;
     add(html,"bot");
