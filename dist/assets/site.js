@@ -160,3 +160,17 @@
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
 })();
+
+/* ปุ่ม "ถาม AI หารถ" บนหน้าอื่น: พาไปหน้าแรกแล้วเปิดผู้ช่วย */
+(function(){
+  function go(){
+    if(document.getElementById("aiFab")||document.querySelector(".kt-ai"))return;
+    if(/\/admin/.test(location.pathname))return;
+    if(document.querySelector('[data-tool="contract"]'))return; // หน้าสัญญาใช้พื้นที่พิมพ์
+    var base=document.body.dataset.base||"/";
+    var a=document.createElement("a");a.className="kt-ai-fab kt-ai-solo";a.href=base+"index.html#ai";
+    a.innerHTML='<span aria-hidden="true">✨</span> ถาม AI หารถ';
+    document.body.appendChild(a);
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(go,0)});else setTimeout(go,0);
+})();

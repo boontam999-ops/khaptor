@@ -577,6 +577,72 @@ $("askForm").addEventListener("submit",async e=>{
 });
 document.querySelectorAll("[data-ask]").forEach(b=>b.addEventListener("click",()=>{$("askQ").value=b.dataset.ask;$("askForm").requestSubmit()}));
 
+/* ======== ผู้ช่วย AI มุมขวาล่าง (แชท) ======== */
+async function aiFilters(q){
+  const rules=ruleParse(q);
+  if(!(window.KT_SITE&&window.KT_SITE.ai))return {f:rules,via:"rule"};
+  try{
+    const brands=[...new Set(CARS.map(c=>c.brand))].sort(),models={};brands.forEach(b=>models[b]=[...new Set(CARS.filter(c=>c.brand===b).map(c=>c.model))]);
+    const provs=[...new Set(CARS.map(c=>c.prov))];
+    const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),15000);
+    const r=await fetch("/api/ai/search",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({q,brands,models,provs}),signal:ctl.signal});
+    clearTimeout(to);const j=await r.json();
+    if(j.ok&&hasAny(j.filters))return {f:j.filters,via:"ai"};
+  }catch(e){}
+  return {f:rules,via:"rule"};
+}
+function matchF(c,f){
+  if(c.sold)return false;
+  if(f.brand&&c.brand!==f.brand)return false;if(f.model&&c.model!==f.model)return false;
+  if(f.body&&f.body.length&&!f.body.includes(c.body))return false;if(f.fuel&&f.fuel.length&&!f.fuel.includes(c.fuel))return false;if(f.gear&&f.gear.length&&!f.gear.includes(c.gear))return false;
+  if(f.minPrice&&c.price<f.minPrice)return false;if(f.maxPrice&&c.price>f.maxPrice)return false;
+  if(f.minYear&&c.year<f.minYear)return false;if(f.maxKm&&c.km>f.maxKm)return false;
+  if(f.prov&&c.prov!==f.prov)return false;if(f.cert&&!c.cert)return false;
+  return true;
+}
+const TOOL_HINTS=[[/ภาษี|ต่อทะเบียน|พ\.?ร\.?บ/,"tools/car-tax.html","คำนวณภาษีรถยนต์ประจำปี"],[/โอน|อากร/,"tools/transfer-fee.html","คำนวณค่าโอนรถ"],[/เงินเดือน|ผ่อน|งวด|ดาวน์|ไฟแนนซ์/,"tools/afford.html","เงินเดือนเท่าไหร่ผ่อนรถได้"],[/สัญญา/,"tools/contract.html","สัญญาซื้อขายรถยนต์"],[/ตรวจ|เช็ก|เช็ค|น้ำท่วม|ชน/,"tools/checklist.html","เช็กลิสต์ตรวจรถมือสอง"],[/ราคากลาง|ประเมิน|ควรขาย|ตั้งราคา/,"tools/price-estimate.html","ประเมินราคารถมือสอง"],[/น้ำมัน|ค่าไฟ|ev.*คุ้ม|คุ้ม.*ev/i,"tools/fuel-cost.html","ค่าน้ำมันเทียบรถไฟฟ้า"],[/ขาย|ลงประกาศ/,"#sell","ลงประกาศขายรถฟรี"]];
+(function(){
+  const box=document.createElement("div");box.className="kt-ai";box.innerHTML=`
+<button type="button" class="kt-ai-fab" id="aiFab" aria-expanded="false" aria-controls="aiPanel"><span aria-hidden="true">✨</span> ถาม AI หารถ</button>
+<section class="kt-ai-panel" id="aiPanel" hidden aria-label="ผู้ช่วย AI">
+  <header><span class="ask-av" aria-hidden="true">✦</span><div><b>ผู้ช่วย AI ขับต่อ</b><small>บอกรถที่อยากได้ ช่วยหาจากประกาศจริง</small></div><button type="button" class="kt-ai-x" id="aiClose" aria-label="ปิด">✕</button></header>
+  <div class="kt-ai-log" id="aiLog" aria-live="polite"></div>
+  <form class="kt-ai-in" id="aiForm"><input id="aiQ" maxlength="160" autocomplete="off" placeholder="เช่น SUV ดีเซล งบไม่เกิน 9 แสน"><button type="submit" aria-label="ส่ง">➤</button></form>
+</section>`;
+  document.body.appendChild(box);
+  const log=$("aiLog"),panel=$("aiPanel"),fab=$("aiFab");
+  const add=(html,who)=>{const d=document.createElement("div");d.className="kt-msg "+who;d.innerHTML=html;log.appendChild(d);log.scrollTop=log.scrollHeight;return d};
+  const hello=()=>{if(log.childElementCount)return;add(`สวัสดีครับ อยากได้รถแบบไหน พิมพ์แบบพูดได้เลย ระบุงบ ประเภท ยี่ห้อ หรือจังหวัดก็ได้`,"bot");
+    add(["รถครอบครัว 7 ที่นั่ง งบ 8 แสน","กระบะดีเซล ไม่เกิน 6 แสน","รถเล็กประหยัดน้ำมัน งบ 4 แสน","คำนวณภาษีรถ"].map(t=>`<button type="button" class="kt-chip" data-q="${t}">${t}</button>`).join(""),"chips")};
+  const open=o=>{panel.hidden=!o;fab.setAttribute("aria-expanded",String(o));box.classList.toggle("open",o);if(o){hello();setTimeout(()=>$("aiQ").focus(),50);track("ai_chat_open",{})}};
+  fab.onclick=()=>open(panel.hidden);$("aiClose").onclick=()=>open(false);
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!panel.hidden)open(false)});
+  log.addEventListener("click",e=>{
+    const c=e.target.closest("[data-q]");if(c){ask(c.dataset.q);return}
+    const o=e.target.closest("[data-open]");if(o){openCar(+o.dataset.open);return}
+    const a=e.target.closest("[data-apply]");if(a){applyFilters(JSON.parse(a.dataset.apply));if(innerWidth<760)open(false);document.getElementById("buy").scrollIntoView({behavior:"smooth"})}
+  });
+  $("aiForm").onsubmit=e=>{e.preventDefault();const q=$("aiQ").value.trim();if(q.length<2)return;$("aiQ").value="";ask(q)};
+  async function ask(q){
+    add(esc(q),"me");const wait=add('<span class="kt-dots"><i></i><i></i><i></i></span>',"bot");
+    const tool=TOOL_HINTS.find(([r])=>r.test(q));
+    if(tool&&!hasAny(ruleParse(q))){wait.remove();add(`เรื่องนี้ใช้เครื่องมือฟรีของเราได้เลยครับ <a class="kt-link" href="${BASE}${tool[1]}">${tool[2]} →</a>`,"bot");track("ai_search",{via:"tool",search_term:q.slice(0,100),surface:"chat"});return}
+    const {f,via}=await aiFilters(q);
+    wait.remove();track("ai_search",{via,search_term:q.slice(0,100),surface:"chat"});
+    if(!hasAny(f)){
+      add(tool?`เรื่องนี้ใช้เครื่องมือนี้ได้เลยครับ <a class="kt-link" href="${BASE}${tool[1]}">${tool[2]} →</a>`:`ยังไม่เข้าใจครับ ลองบอกงบ ประเภทรถ หรือยี่ห้อ เช่น "เก๋งออโต้ ไม่เกิน 5 แสน"`,"bot");return}
+    const list=CARS.filter(c=>matchF(c,f)).sort((a,b)=>a.price-b.price),n=list.length;
+    const say=via==="ai"&&f.explain?esc(f.explain):"หา "+esc(describeFilters(f));
+    let html=`${say} ${n?`เจอ <b>${n}</b> คันครับ`:"ยังไม่มีรถที่ตรงทุกเงื่อนไขครับ ลองขยายงบหรือตัดบางเงื่อนไขออก"}`;
+    if(n)html+=`<div class="kt-cars">${list.slice(0,3).map(c=>`<button type="button" class="kt-car" data-open="${c.id}">${picHTML(c)}</div><span><b>${esc(c.year+" "+c.brand+" "+c.model)}</b><small>${fmt(c.km)} กม. · ${esc(c.prov||"")}</small><em>฿${fmt(c.price)}</em></span></button>`).join("")}</div>
+      <button type="button" class="btn btn-amber btn-sm" data-apply='${esc(JSON.stringify(f))}'>ดูทั้งหมด ${n} คันในหน้ารวมรถ</button>`;
+    if(tool)html+=`<div class="kt-tool">ดูเพิ่ม: <a class="kt-link" href="${BASE}${tool[1]}">${tool[2]}</a></div>`;
+    add(html,"bot");
+  }
+  window.ktAiOpen=open;
+  if(location.hash==="#ai")open(true);
+})();
+
 /* ======== AI ช่วยเขียนรายละเอียดประกาศ ======== */
 (function(){
   const val=id=>($(id)?$(id).value.trim():"");
