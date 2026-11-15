@@ -186,11 +186,12 @@ function card(c){
   </article>`;
 }
 
+const SORTS={new:(a,b)=>a.days-b.days,pAsc:(a,b)=>a.price-b.price,pDesc:(a,b)=>b.price-a.price,yDesc:(a,b)=>b.year-a.year,kmAsc:(a,b)=>a.km-b.km};
+const sortFn=(a,b)=>(a.sold?1:0)-(b.sold?1:0)||(SORTS[state.sort]||SORTS.new)(a,b);
 function render(){
   brandChips();
   let list=CARS.filter(c=>matches(c));
-  const S={new:(a,b)=>a.days-b.days,pAsc:(a,b)=>a.price-b.price,pDesc:(a,b)=>b.price-a.price,yDesc:(a,b)=>b.year-a.year,kmAsc:(a,b)=>a.km-b.km};
-  list.sort((a,b)=>(a.sold?1:0)-(b.sold?1:0)||S[state.sort](a,b));
+  list.sort(sortFn);
   const title=state.onlyFav?"รถที่ถูกใจ":[state.brand||"รถมือสอง",state.model].filter(Boolean).join(" ")+(state.prov?" ใน"+state.prov:"");
   $("resultTitle").innerHTML=`${title}<small>${list.length} คัน</small>`;
   $("grid").innerHTML=list.length?list.map((c,i)=>card(c)+(i===5&&list.length>8?'<div class="ad-slot ad-infeed" data-ad="infeed"></div>':"")).join(""):(CARS.length?`<div class="empty">ไม่พบรถที่ตรงกับเงื่อนไข ลองขยายช่วงราคาหรือเอาตัวกรองบางอันออก</div>`:`<div class="empty">ยังไม่มีประกาศขายรถ <a href="#sell">ลงประกาศคันแรกฟรี</a></div>`);
@@ -542,17 +543,24 @@ const hasAny=f=>!!(f.brand||f.body.length||f.fuel.length||f.gear.length||f.minPr
 let askSeq=0;
 function showAsk(f,via,q){
   const out=$("askOut");out.hidden=false;
-  if(!hasAny(f)){out.innerHTML=`ยังไม่เข้าใจคำค้นนี้ ลองระบุยี่ห้อ ประเภทรถ หรืองบ เช่น "กระบะดีเซล ไม่เกิน 5 แสน"`;return}
+  const head=`<div class="ask-head"><span class="ask-av" aria-hidden="true">✦</span><b>ผู้ช่วย AI</b><button type="button" class="ask-x" id="askClear" aria-label="ปิดและล้างการค้นหา">✕</button></div>`;
+  if(!hasAny(f)){out.innerHTML=head+`<p class="ask-say">ยังไม่เข้าใจคำค้นนี้ ลองบอกยี่ห้อ ประเภทรถ หรืองบ เช่น "กระบะดีเซล ไม่เกิน 5 แสน"</p>`;bindAskClear();return}
   applyFilters(f);
-  const n=CARS.filter(c=>matches(c)).length;
-  out.innerHTML=`<span>${via==="ai"?"✦ ":""}ค้นหา: <b>${esc(describeFilters(f))}</b> พบ ${n} คัน${via==="wait"?' <i class="ask-thinking">AI กำลังปรับผลให้ตรงขึ้น…</i>':""}</span><button type="button" id="askClear">ล้าง</button>`;
-  $("askClear").onclick=()=>{askSeq++;$("clearAll").click();out.hidden=true;$("askQ").value=""};
+  const list=CARS.filter(c=>matches(c)).sort(sortFn),n=list.length;
+  const say=via==="ai"&&f.explain?esc(f.explain):"กรอง "+esc(describeFilters(f));
+  const items=list.slice(0,4).map(c=>`<button type="button" class="ask-car" data-open="${c.id}">${picHTML(c)}</div><span class="ask-car-t"><b>${esc(c.year+" "+c.brand+" "+c.model)}</b><small>${fmt(c.km)} กม. · ${esc(c.prov||"")}</small><em>฿${fmt(c.price)}</em></span></button>`).join("");
+  out.innerHTML=head+`<p class="ask-say">${say} ${n?`เจอ <b>${n}</b> คัน`:"ยังไม่มีรถที่ตรงทั้งหมด ลองขยายงบหรือเอาบางเงื่อนไขออก"}${via==="wait"?' <i class="ask-thinking">กำลังปรับผลให้ตรงขึ้น…</i>':""}</p>`+
+    (n?`<div class="ask-cars">${items}</div>`:"")+
+    `<div class="ask-foot">${n>4?`<button type="button" class="btn btn-amber btn-sm" id="askAll">ดูทั้งหมด ${n} คัน</button>`:""}<span class="ask-tags">${esc(describeFilters(f))}</span></div>`;
+  bindAskClear();
+  out.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>openCar(+b.dataset.open));
+  const all=$("askAll");if(all)all.onclick=()=>document.getElementById("buy").scrollIntoView({behavior:"smooth"});
 }
+function bindAskClear(){$("askClear").onclick=()=>{askSeq++;$("clearAll").click();$("askOut").hidden=true;$("askQ").value="";$("askQ").focus()}}
 $("askForm").addEventListener("submit",async e=>{
   e.preventDefault();const q=$("askQ").value.trim();if(q.length<2)return;
   const seq=++askSeq,rules=ruleParse(q),useAI=!!(window.KT_SITE&&window.KT_SITE.ai);
   showAsk(rules,useAI?"wait":"rule",q);
-  if(hasAny(rules)||useAI)document.getElementById("buy").scrollIntoView({behavior:"smooth"});
   let via="rule";
   if(useAI){
     try{
