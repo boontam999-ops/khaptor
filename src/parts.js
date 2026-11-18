@@ -34,13 +34,15 @@ function match(l){
 function cardP(l){
   const days=Math.max(0,Math.floor((Date.now()-Date.parse(l.created_at))/864e5));
   const ph=(l.photos||[])[0];
-  return `<a class="pcard${l.sold?" sold":""}" href="/l/${esc(l.id)}">
-    <div class="pimg">${ph?`<img src="/p/${esc(ph)}-t.jpg" alt="${esc(l.title)}" loading="lazy">`:`<span>${CAT_ICON[l.cat]||"…"}</span>`}${l.sold?'<span class="tag sold-tag">ขายแล้ว</span>':`<span class="tag">${esc(l.cond)}</span>`}</div>
+  const img=l.wm?`<img src="${esc(l.wm.src.replace(/\{w\}/g,500))}" alt="ภาพประกอบ ${esc(l.title)}" loading="lazy" referrerpolicy="no-referrer"><span class="wm-credit">ภาพ: ${esc(l.wm.by)} · ${esc(l.wm.lic)} · Wikimedia Commons</span>`
+    :ph?`<img src="/p/${esc(ph)}-t.jpg" alt="${esc(l.title)}" loading="lazy">`:`<span>${CAT_ICON[l.cat]||"…"}</span>`;
+  return `<a class="pcard${l.sold?" sold":""}" href="${l.demo?"/parts/demo/"+esc(l.id.replace(/^demo-/,""))+".html":"/l/"+esc(l.id)}">
+    <div class="pimg">${img}${l.sold?'<span class="tag sold-tag">ขายแล้ว</span>':`<span class="tag">${esc(l.cond)}</span>`}${l.demo?'<span class="tag demo">ตัวอย่าง</span>':""}</div>
     <div class="pbody"><b>${esc(l.title)}</b><small>${esc(CATS[l.cat]||"")}${fits(l)?" · ใส่กับ "+esc(fits(l)):""}</small>
     <div class="pfoot"><span class="price">฿${fmt(l.price)}</span><small>${esc(l.prov)} · ${days?days+" วันก่อน":"วันนี้"}</small></div></div></a>`;
 }
 function render(){
-  const list=PARTS.filter(match).sort((a,b)=>(a.sold?1:0)-(b.sold?1:0)||(st.sort==="pAsc"?a.price-b.price:st.sort==="pDesc"?b.price-a.price:Date.parse(b.created_at)-Date.parse(a.created_at)));
+  const list=PARTS.filter(match).sort((a,b)=>(a.sold?1:0)-(b.sold?1:0)||(st.sort==="new"?(a.demo?1:0)-(b.demo?1:0):0)||(st.sort==="pAsc"?a.price-b.price:st.sort==="pDesc"?b.price-a.price:Date.parse(b.created_at)-Date.parse(a.created_at)));
   $("pTitle").innerHTML=`${st.cat?esc(CATS[st.cat]):"อะไหล่ทั้งหมด"} <small>${list.length} รายการ</small>`;
   document.querySelectorAll("[data-cat]").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.cat===st.cat)));
   $("pGrid").innerHTML=list.length?list.map(cardP).join(""):`<div class="parts-empty"><b>${PARTS.length?"ยังไม่มีอะไหล่ที่ตรงกับตัวกรอง":"ยังไม่มีประกาศอะไหล่"}</b><p>${PARTS.length?"ลองล้างตัวกรองหรือค้นด้วยคำอื่น":"เป็นคนแรกที่ลงขาย ลงฟรีและขึ้นหน้าเว็บทันที"}</p><a class="btn btn-amber" href="#sellPart">ลงขายอะไหล่ฟรี</a></div>`;
@@ -60,7 +62,9 @@ function initFilters(){
 }
 async function loadParts(redraw){
   const j=await api("/api/listings");
-  PARTS=(j.ok&&j.listings||[]).filter(l=>l.kind==="part");
+  const real=(j.ok&&j.listings||[]).filter(l=>l.kind==="part");
+  const demo=(typeof DEMO_PARTS!=="undefined"&&!(window.KT_SITE&&window.KT_SITE.show_demo===false))?DEMO_PARTS.map(d=>({...d,created_at:new Date(Date.now()-d.days*864e5).toISOString()})):[];
+  PARTS=[...real,...demo];
   redraw();render();
 }
 

@@ -782,3 +782,6 @@ fieldset.plain legend{font-weight:700;padding-right:8px}
 @media (max-width:860px){.parts-sell{grid-template-columns:1fr}}
 @media (max-width:560px){.parts-filter{grid-template-columns:repeat(2,minmax(0,1fr))}.parts-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.pbody{padding:10px}.pfoot{flex-direction:column;align-items:flex-start}}
 #pSort{border:1px solid var(--line);border-radius:12px;padding:8px 12px;font:inherit;font-size:14px;background:var(--surface);color:var(--ink)}
+.demo-note{margin:12px 0;padding:10px 14px;border-radius:12px;background:var(--soft);color:var(--muted);font-size:13.5px;line-height:1.55}
+.pimg .tag.demo{left:auto;right:10px}
+.pimg .wm-credit{font-size:9.5px}

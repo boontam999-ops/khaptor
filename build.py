@@ -119,6 +119,40 @@ def wm_html(c, big=False):
             f'<a class="wm-credit" href="{w["page"]}" target="_blank" rel="noopener">ภาพ: {E(w["by"])} · {w["lic"]} · Wikimedia Commons</a>')
 
 
+PART_CATS = {"wheel": "ล้อและยาง", "audio": "เครื่องเสียงและจอ", "exterior": "ชุดแต่งภายนอก", "light": "ไฟและโคม", "interior": "ภายในห้องโดยสาร", "engine": "เครื่องยนต์และช่วงล่าง", "other": "อื่น ๆ"}
+
+
+def build_demo_parts(page, crumbs, ad, items):
+    """หน้าประกาศอะไหล่ตัวอย่าง (noindex) ภาพจาก Wikimedia Commons พร้อมเครดิต"""
+    for p in items:
+        slug = p["id"].replace("demo-", "")
+        w = p["wm"]
+        cat = PART_CATS[p["cat"]]
+        y = f'{p["yearFrom"]}–{p["yearTo"]}' if p.get("yearFrom") and p.get("yearTo") else ""
+        fit = " ".join(x for x in [("ใส่ได้หลายยี่ห้อ" if p["brand"] == "ทุกยี่ห้อ" else p["brand"]), p.get("model") or "", ("ปี " + y) if y else ""] if x)
+        bc_html, _ = crumbs([("หน้าแรก", "index.html"), ("อะไหล่และของแต่ง", "parts/index.html"), (p["title"], None)], "../../")
+        body = f'''<main class="wrap carpage">
+  {bc_html}
+  <div class="car-top">
+    <div class="pic car-hero has-photo wm"><img src="{w["src"].replace("{w}", "960")}" alt="ภาพประกอบ {E(p["title"])}" referrerpolicy="no-referrer"><a class="wm-credit" href="{w["page"]}" target="_blank" rel="noopener">ภาพ: {E(w["by"])} · {w["lic"]} · Wikimedia Commons</a><div class="tags"><span class="tag demo">ประกาศตัวอย่าง · ภาพประกอบ</span></div></div>
+    <div class="car-info">
+      <div class="sub" style="color:var(--muted);font-size:13px">{cat} · {E(p["prov"])}</div>
+      <h1>{E(p["title"])}</h1>
+      <div class="part-tags"><span class="pill">{E(p["cond"])}</span><span class="pill">ใส่กับ {E(fit)}</span></div>
+      <div class="price" style="font-size:30px">฿{p["price"]:,}</div>
+      <div class="demo-note">นี่คือประกาศตัวอย่างเพื่อแสดงหน้าตาของหมวดอะไหล่ ไม่มีผู้ขายจริงและติดต่อซื้อไม่ได้ ภาพเป็นภาพประกอบจาก Wikimedia Commons</div>
+      <div class="contact"><a class="btn btn-amber" href="../index.html#sellPart">ลงขายอะไหล่ของคุณฟรี</a><a class="btn btn-line" href="../?cat={p["cat"]}">ดูอะไหล่หมวดนี้</a></div>
+    </div>
+  </div>
+  <div class="car-cols"><div>
+    <h2>รายละเอียดสินค้า</h2>
+    <div class="spec-table"><div><span>หมวด</span><b>{cat}</b></div><div><span>สภาพ</span><b>{E(p["cond"])}</b></div><div><span>ใส่กับรถ</span><b>{E(fit)}</b></div><div><span>จังหวัด</span><b>{E(p["prov"])}</b></div></div>
+    <div class="prose" style="margin-top:16px"><p>{E(p["note"])}</p><p style="color:var(--muted);font-size:13px">ภาพ: <a href="{w["page"]}" rel="noopener" target="_blank">{E(w["by"])}</a>, สัญญาอนุญาต <a href="{w["licUrl"]}" rel="noopener license" target="_blank">{w["lic"]}</a> ผ่าน Wikimedia Commons</p></div>
+  </div><aside>{ad("article")}</aside></div>
+</main>'''
+        page(f"parts/demo/{slug}.html", f"{p['title']} (ประกาศตัวอย่าง) | {C['SITE_NAME']}", f"ประกาศตัวอย่างหมวด{cat}: {p['title']}", body, "../../", noindex=True)
+
+
 def pic_bg(c): return f"hsl({(c['id']*37) % 360} 22% 91%)"
 
 
@@ -579,7 +613,9 @@ def build():
     app_src = (SRC / "app.js").read_text(encoding="utf-8")
     kit = app_src[app_src.index("const MAX_PHOTOS=8;"):app_src.index("const AUTH=window.KT_AUTH")]
     kit = "\n".join(l for l in kit.split("\n") if not l.startswith("const sellPicker="))
-    (DIST / "assets/parts.js").write_text("(function(){\n" + kit + (SRC / "parts.js").read_text(encoding="utf-8") + "\n})();", encoding="utf-8")
+    demo_parts = json.loads((SRC / "demo_parts.json").read_text(encoding="utf-8"))
+    (DIST / "assets/parts.js").write_text("(function(){\nconst DEMO_PARTS=" + json.dumps(demo_parts, ensure_ascii=False) + ";\n" + kit + (SRC / "parts.js").read_text(encoding="utf-8") + "\n})();", encoding="utf-8")
+    build_demo_parts(page, crumbs, ad, demo_parts)
     bc_html, bc_ld = crumbs([("หน้าแรก", "index.html"), ("อะไหล่และของแต่ง", None)], "../")
     page("parts/index.html", f"อะไหล่รถยนต์มือสอง ล้อแม็ก เครื่องเสียง ชุดแต่ง ลงขายฟรี | {C['SITE_NAME']}",
          "ซื้อขายอะไหล่รถยนต์และของแต่งมือสอง ล้อแม็ก ยาง เครื่องเสียง จอแอนดรอยด์ ชุดแต่ง ไฟ จากเจ้าของและร้านทั่วไทย ค้นตามยี่ห้อและรุ่นรถ ลงขายฟรี ติดต่อผู้ขายโดยตรง",
