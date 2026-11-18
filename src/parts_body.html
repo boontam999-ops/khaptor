@@ -1,0 +1,69 @@
+<main class="wrap page partspage">
+  %%CRUMBS%%
+  <header class="parts-head">
+    <div>
+      <h1>อะไหล่และของแต่งรถมือสอง</h1>
+      <p class="lead">ซื้อขายล้อแม็ก ยาง เครื่องเสียง ชุดแต่ง ไฟ และอะไหล่รถ จากเจ้าของและร้านทั่วไทย ลงขายฟรี ติดต่อผู้ขายโดยตรง</p>
+    </div>
+    <a class="btn btn-amber" href="#sellPart">+ ลงขายอะไหล่ฟรี</a>
+  </header>
+
+  <div class="part-cats" id="partCats" role="tablist" aria-label="หมวดอะไหล่"></div>
+
+  <form class="parts-filter" id="pFilter" onsubmit="return false" role="search">
+    <div class="field grow"><label for="pQ">ค้นหา</label><input id="pQ" type="search" placeholder="เช่น ล้อแม็ก 17 นิ้ว, จอแอนดรอยด์, ไฟหน้า Vios" maxlength="80"></div>
+    <div class="field"><label for="pBrand">ใส่กับยี่ห้อ</label><select id="pBrand"></select></div>
+    <div class="field"><label for="pModel">รุ่นรถ</label><input id="pModel" placeholder="เช่น Vios" maxlength="40"></div>
+    <div class="field"><label for="pCond">สภาพ</label><select id="pCond"><option value="">ทุกสภาพ</option><option>ใหม่</option><option>มือสอง</option><option>ถอดจากรถ</option></select></div>
+    <div class="field"><label for="pMax">ราคาไม่เกิน</label><select id="pMax"><option value="">ไม่จำกัด</option><option value="1000">1,000 บาท</option><option value="3000">3,000 บาท</option><option value="5000">5,000 บาท</option><option value="10000">10,000 บาท</option><option value="20000">20,000 บาท</option><option value="50000">50,000 บาท</option></select></div>
+    <div class="field"><label for="pProv">จังหวัด</label><select id="pProv"></select></div>
+  </form>
+
+  <div class="parts-bar"><h2 id="pTitle">อะไหล่ทั้งหมด</h2><select id="pSort" aria-label="เรียงตาม"><option value="new">ลงประกาศล่าสุด</option><option value="pAsc">ราคาต่ำไปสูง</option><option value="pDesc">ราคาสูงไปต่ำ</option></select></div>
+  <div class="parts-grid" id="pGrid" aria-live="polite"><p class="muted">กำลังโหลดประกาศ...</p></div>
+
+  <section class="parts-sell" id="sellPart">
+    <div class="panel">
+      <h2>ลงขายอะไหล่ ฟรี</h2>
+      <div id="authBox" class="authbox">
+        <p id="authMsg">ล็อกอินด้วยบัญชี Google เพื่อลงประกาศ อีเมลจะไม่แสดงในประกาศ</p>
+        <div id="gBtn"></div>
+      </div>
+      <div id="userBar" class="userbar" hidden></div>
+      <form class="form-grid" id="partForm" novalidate>
+        <fieldset id="partFields" disabled>
+          <div class="field full"><label for="ptTitle">ชื่อสินค้า</label><input id="ptTitle" maxlength="80" placeholder="เช่น ล้อแม็ก Enkei 17 นิ้ว 4 วง พร้อมยาง"></div>
+          <div class="field"><label for="ptCat">หมวด</label><select id="ptCat"></select></div>
+          <div class="field"><label for="ptCond">สภาพ</label><select id="ptCond"><option value="">เลือกสภาพ</option><option>ใหม่</option><option>มือสอง</option><option>ถอดจากรถ</option></select></div>
+          <div class="field"><label for="ptPrice">ราคา (บาท)</label><input id="ptPrice" type="number" inputmode="numeric" min="50" placeholder="เช่น 8500"></div>
+          <div class="field"><label for="ptBrand">ใส่กับยี่ห้อ</label><select id="ptBrand"></select></div>
+          <div class="field"><label for="ptModel">ใส่กับรุ่น</label><input id="ptModel" maxlength="60" placeholder="เช่น Vios, Yaris"></div>
+          <div class="field"><label>ปีรถที่ใส่ได้</label><div class="yr-range"><input id="ptYf" type="number" inputmode="numeric" placeholder="ตั้งแต่" min="1970"><span>–</span><input id="ptYt" type="number" inputmode="numeric" placeholder="ถึง" min="1970"></div></div>
+          <div class="field"><label for="ptProv">จังหวัด</label><select id="ptProv"></select></div>
+          <div class="field"><label for="ptName">ชื่อผู้ขาย</label><input id="ptName" maxlength="50"></div>
+          <div class="field"><label for="ptTel">เบอร์โทร</label><input id="ptTel" inputmode="tel" maxlength="12" placeholder="08xxxxxxxx"></div>
+          <div class="field full"><label for="ptNote">รายละเอียด</label><textarea id="ptNote" maxlength="1000" placeholder="ขนาด รหัสอะไหล่ ตำหนิ สิ่งที่แถม รับเองหรือส่งพัสดุได้"></textarea></div>
+          <div class="field full"><label>รูปสินค้า (อย่างน้อย 1 รูป)</label><div class="ph-grid" id="ptPhotos"></div></div>
+          <label class="sell-consent full"><input type="checkbox" id="ptConsent"> ยินยอมให้แสดงชื่อและเบอร์โทรในประกาศ</label>
+          <label class="sell-consent full"><input type="checkbox" id="ptLegal"> ยืนยันว่าสินค้าเป็นของฉันโดยชอบด้วยกฎหมาย ไม่ใช่ของโจรกรรม และไม่ใช่สินค้าต้องห้ามตามกฎด้านล่าง</label>
+          <div class="full"><button class="btn btn-amber" id="ptBtn" type="submit">ลงประกาศ</button></div>
+        </fieldset>
+      </form>
+      <div id="ptOk" aria-live="polite"></div>
+      <div id="myParts"></div>
+    </div>
+    <div class="panel tips">
+      <h3>กฎการลงขายอะไหล่</h3>
+      <ol>
+        <li><b>ห้ามขายของโจรกรรม</b> หรือของที่ไม่แน่ใจที่มา ทีมงานลบประกาศและระงับบัญชีทันทีเมื่อมีผู้แจ้ง</li>
+        <li><b>ห้ามขายถุงลมนิรภัยมือสอง</b> ป้ายทะเบียน เล่มทะเบียน และเอกสารรถทุกชนิด</li>
+        <li><b>ใส่รูปจริงของสินค้า</b> เห็นสภาพและตำหนิชัดเจน ห้ามใช้รูปจากเว็บอื่น</li>
+        <li><b>บอกรุ่นและปีรถที่ใส่ได้</b> และรหัสอะไหล่ถ้ามี คนซื้อจะค้นเจอง่ายขึ้น</li>
+        <li><b>กด "ขายแล้ว"</b> เมื่อปิดการขาย</li>
+      </ol>
+      <h3>สำหรับผู้ซื้อ</h3>
+      <p>ขอดูสินค้าจริงหรือวิดีโอก่อนโอนเงิน เช็กรหัสอะไหล่ให้ตรงกับรถของคุณ และโอนเข้าบัญชีชื่อเดียวกับผู้ขายเท่านั้น</p>
+    </div>
+  </section>
+</main>
+<div class="toast" id="toast" role="status"></div>

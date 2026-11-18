@@ -1,5 +1,5 @@
 import { checkAuth, json } from "../../../lib/settings.js";
-import { listAll, getListing, saveListing, indexRemove, rebuildPublic, validateListing } from "../../../lib/listings.js";
+import { listAll, getListing, saveListing, indexRemove, rebuildPublic, validateListing, validatePart } from "../../../lib/listings.js";
 import { deletePhotos } from "../../../lib/photos.js";
 
 // POST /api/admin/listings  {action:"list"} | {action:"approve"|"reject"|"delete", id}  ต้องมี X-Admin-Password
@@ -21,7 +21,7 @@ export async function onRequestPost({ request, env }) {
     await indexRemove(env, l);
     await deletePhotos(env, l.photos);
   } else if (b.action === "update") {
-    const v = validateListing({ ...l, ...(b.fields || {}), consent: true });
+    const v = l.kind === "part" ? validatePart({ ...l, ...(b.fields || {}), consent: true, legal: true }) : validateListing({ ...l, ...(b.fields || {}), consent: true });
     if (typeof v === "string") return json({ ok: false, error: v }, 400);
     Object.assign(l, v, { edited_at: new Date().toISOString() });
     await saveListing(env, l);

@@ -361,6 +361,7 @@ async function api(path,opt){
 }
 const STATUS={pending:["รอตรวจ","warn"],approved:["เผยแพร่แล้ว","good"],rejected:["ถูกซ่อนโดยทีมงาน","bad"]};
 function renderMine(list){
+  list=(list||[]).filter(l=>l.kind!=="part");
   const box=$("myListings");
   if(!list||!list.length){box.innerHTML="";return}
   box.innerHTML=`<h4 class="mine-h">ประกาศของคุณ</h4>`+list.map(l=>{const st=STATUS[l.status]||["",""];
@@ -452,6 +453,7 @@ async function loadListings(){
   if(!AUTH)return;
   const j=await api("/api/listings");
   if(!j.ok||!j.listings)return;
+  j.listings=j.listings.filter(l=>l.kind!=="part");
   for(let i=CARS.length-1;i>=0;i--)if(CARS[i].user)CARS.splice(i,1);
   if(!j.listings.length){refreshModels();render();return}
   const now=Date.now();
@@ -576,7 +578,7 @@ function matchF(c,f){
   if(f.prov&&c.prov!==f.prov)return false;if(f.cert&&!c.cert)return false;
   return true;
 }
-const TOOL_HINTS=[[/ภาษี|ต่อทะเบียน|พ\.?ร\.?บ/,"tools/car-tax.html","คำนวณภาษีรถยนต์ประจำปี"],[/โอน|อากร/,"tools/transfer-fee.html","คำนวณค่าโอนรถ"],[/เงินเดือน|ผ่อน|งวด|ดาวน์|ไฟแนนซ์/,"tools/afford.html","เงินเดือนเท่าไหร่ผ่อนรถได้"],[/สัญญา/,"tools/contract.html","สัญญาซื้อขายรถยนต์"],[/ตรวจ|เช็ก|เช็ค|น้ำท่วม|ชน/,"tools/checklist.html","เช็กลิสต์ตรวจรถมือสอง"],[/ราคากลาง|ประเมิน|ควรขาย|ตั้งราคา/,"tools/price-estimate.html","ประเมินราคารถมือสอง"],[/น้ำมัน|ค่าไฟ|ev.*คุ้ม|คุ้ม.*ev/i,"tools/fuel-cost.html","ค่าน้ำมันเทียบรถไฟฟ้า"],[/ขาย|ลงประกาศ/,"#sell","ลงประกาศขายรถฟรี"]];
+const TOOL_HINTS=[[/อะไหล่|ล้อแม็ก|แม็ก|ยางรถ|เครื่องเสียง|จอแอนดรอยด์|ชุดแต่ง|สปอยเลอร์|ไฟหน้า|ไฟท้าย|กันชน|โช้ค|ของแต่ง/,"parts/","ดูอะไหล่และของแต่งมือสอง"],[/ภาษี|ต่อทะเบียน|พ\.?ร\.?บ/,"tools/car-tax.html","คำนวณภาษีรถยนต์ประจำปี"],[/โอน|อากร/,"tools/transfer-fee.html","คำนวณค่าโอนรถ"],[/เงินเดือน|ผ่อน|งวด|ดาวน์|ไฟแนนซ์/,"tools/afford.html","เงินเดือนเท่าไหร่ผ่อนรถได้"],[/สัญญา/,"tools/contract.html","สัญญาซื้อขายรถยนต์"],[/ตรวจ|เช็ก|เช็ค|น้ำท่วม|ชน/,"tools/checklist.html","เช็กลิสต์ตรวจรถมือสอง"],[/ราคากลาง|ประเมิน|ควรขาย|ตั้งราคา/,"tools/price-estimate.html","ประเมินราคารถมือสอง"],[/น้ำมัน|ค่าไฟ|ev.*คุ้ม|คุ้ม.*ev/i,"tools/fuel-cost.html","ค่าน้ำมันเทียบรถไฟฟ้า"],[/ขาย|ลงประกาศ/,"#sell","ลงประกาศขายรถฟรี"]];
 (function(){
   const box=document.createElement("div");box.className="kt-ai";box.innerHTML=`
 <button type="button" class="kt-ai-fab" id="aiFab" aria-expanded="false" aria-controls="aiPanel"><span aria-hidden="true">✨</span> ถาม AI หารถ</button>
@@ -602,6 +604,7 @@ const TOOL_HINTS=[[/ภาษี|ต่อทะเบียน|พ\.?ร\.?บ/
   async function ask(q){
     add(esc(q),"me");const wait=add('<span class="kt-dots"><i></i><i></i><i></i></span>',"bot");
     const tool=TOOL_HINTS.find(([r])=>r.test(q));
+    if(tool&&tool[1]==="parts/"){wait.remove();add(`หาอะไหล่และของแต่งได้ในหมวดอะไหล่ครับ <a class="kt-link" href="${BASE}parts/?q=${encodeURIComponent(q.replace(/อยากได้|หา|ขาย|ซื้อ|มือสอง/g," ").replace(/\s+/g," ").trim().slice(0,60))}">ดูอะไหล่ที่ตรงกับ "${esc(q.slice(0,40))}" →</a>`,"bot");track("ai_search",{via:"parts",search_term:q.slice(0,100),surface:"chat"});return}
     if(tool&&!hasAny(ruleParse(q))){wait.remove();add(`เรื่องนี้ใช้เครื่องมือฟรีของเราได้เลยครับ <a class="kt-link" href="${BASE}${tool[1]}">${tool[2]} →</a>`,"bot");track("ai_search",{via:"tool",search_term:q.slice(0,100),surface:"chat"});return}
     const {f,via}=await aiFilters(q);
     wait.remove();track("ai_search",{via,search_term:q.slice(0,100),surface:"chat"});

@@ -262,7 +262,7 @@ let POOL=[];
 async function initEstimate(){
   const base=document.body.dataset.base||"../";
   let demo=[];try{if(!(window.KT_SITE&&window.KT_SITE.show_demo===false))demo=await (await fetch(base+"assets/cars.json")).json()}catch(e){}
-  let user=[];try{const j=await (await fetch("/api/listings")).json();user=(j.listings||[]).map(l=>({brand:l.brand,model:l.model,sub:l.sub||"",year:+l.year,price:+l.price,km:+l.km,url:"/l/"+l.id,sold:!!l.sold}))}catch(e){}
+  let user=[];try{const j=await (await fetch("/api/listings")).json();user=(j.listings||[]).filter(l=>l.kind!=="part").map(l=>({brand:l.brand,model:l.model,sub:l.sub||"",year:+l.year,price:+l.price,km:+l.km,url:"/l/"+l.id,sold:!!l.sold}))}catch(e){}
   POOL=[...user,...demo].filter(c=>c.brand&&c.price>0);
   const brands=[...new Set(POOL.map(c=>c.brand))].sort();
   $("eBrand").innerHTML='<option value="">เลือกยี่ห้อ</option>'+brands.map(b=>`<option>${esc(b)}</option>`).join("");

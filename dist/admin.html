@@ -349,14 +349,14 @@ function renderL(){
   var c={live:0,sold:0,hidden:0};LST.forEach(function(l){c[lCat(l)]++});
   $("cLive").textContent=c.live;$("cSold").textContent=c.sold;$("cHidden").textContent=c.hidden;$("cAll").textContent=LST.length;
   var q=$("lSearch").value.trim().toLowerCase(),srt=$("lSort").value;
-  var rows=LST.filter(function(l){return (LF==="all"||lCat(l)===LF)&&(!q||[l.brand,l.model,l.sub,l.prov,l.name,l.tel,(l.owner||{}).email,l.id].join(" ").toLowerCase().indexOf(q)>=0)});
+  var rows=LST.filter(function(l){return (LF==="all"||lCat(l)===LF)&&(!q||[l.title,l.brand,l.model,l.sub,l.prov,l.name,l.tel,(l.owner||{}).email,l.id].join(" ").toLowerCase().indexOf(q)>=0)});
   rows.sort(function(a,b){return srt==="old"?Date.parse(a.created_at)-Date.parse(b.created_at):srt==="pDesc"?b.price-a.price:srt==="pAsc"?a.price-b.price:Date.parse(b.created_at)-Date.parse(a.created_at)});
   if(!rows.length){$("lList").innerHTML='<div class="empty">ไม่มีประกาศในหมวดนี้</div>';return}
   $("lList").innerHTML=rows.map(function(l){
     var o=l.owner||{},ph=l.photos||[],id=escH(l.id);
     return '<div class="li" id="row-'+id+'">'+(ph.length?'<img class="thumb" src="/p/'+escH(ph[0])+'-t.jpg" alt="">':'<div class="thumb">ไม่มีรูป</div>')+
-      '<div><h3><a href="/l/'+id+'" target="_blank" rel="noopener">'+escH(l.year+" "+l.brand+" "+l.model+" "+(l.sub||""))+'</a>'+statusPill(l)+'</h3>'+
-      '<div class="meta">฿'+fmt(l.price)+' · '+fmt(l.km)+' กม. · '+escH(l.gear+" · "+l.fuel+" · สี"+l.color+" · "+l.prov)+'</div>'+
+      '<div><h3><a href="/l/'+id+'" target="_blank" rel="noopener">'+(l.kind==="part"?'<span class="pill">อะไหล่</span> '+escH(l.title):escH(l.year+" "+l.brand+" "+l.model+" "+(l.sub||"")))+'</a>'+statusPill(l)+'</h3>'+
+      '<div class="meta">฿'+fmt(l.price)+' · '+(l.kind==="part"?escH((PCATS[l.cat]||"")+" · "+l.cond+" · ใส่กับ "+l.brand+" "+(l.model||"")+" · "+l.prov):fmt(l.km)+' กม. · '+escH(l.gear+" · "+l.fuel+" · สี"+l.color+" · "+l.prov))+'</div>'+
       '<div class="meta">ผู้ขาย '+escH(l.name)+' โทร '+escH(l.tel)+' · บัญชี '+escH(o.email||"-")+' · ลงเมื่อ '+dt(l.created_at)+(l.edited_at?' · แก้ไขโดยแอดมิน '+dt(l.edited_at):'')+'</div>'+
       (l.note?'<div class="meta" style="white-space:pre-line;margin-top:4px;color:var(--ink)">'+escH(l.note)+'</div>':'')+
       (ph.length>1?'<div class="aphs">'+ph.map(function(p){return '<span class="aph"><a href="/p/'+escH(p)+'.jpg" target="_blank" rel="noopener"><img src="/p/'+escH(p)+'-t.jpg" alt=""></a><button class="btn btn-bad btn-sm" data-a="remove_photo" data-id="'+id+'" data-photo="'+escH(p)+'">ลบรูป</button></span>'}).join("")+'</div>':
@@ -369,8 +369,23 @@ function renderL(){
       '<div id="edit-'+id+'"></div></div></div>';
   }).join("");
 }
+var PCATS={wheel:"ล้อและยาง",audio:"เครื่องเสียงและจอ",exterior:"ชุดแต่งภายนอก",light:"ไฟและโคม",interior:"ภายในห้องโดยสาร",engine:"เครื่องยนต์และช่วงล่าง",other:"อื่น ๆ"};
 function editForm(l){
   var opt=function(list,v,map){return list.map(function(x){var val=map?x[0]:x,lab=map?x[1]:x;return '<option value="'+escH(val)+'"'+(String(v)===String(val)?" selected":"")+'>'+escH(lab)+'</option>'}).join("")};
+  if(l.kind==="part")return '<form class="edit-grid" data-editform="'+escH(l.id)+'">'+
+    '<div class="full" style="grid-column:span 2"><label class="f">ชื่อสินค้า</label><input type="text" name="title" maxlength="80" value="'+escH(l.title)+'"></div>'+
+    '<div><label class="f">หมวด</label><select name="cat">'+opt(Object.keys(PCATS).map(function(k){return[k,PCATS[k]]}),l.cat,true)+'</select></div>'+
+    '<div><label class="f">สภาพ</label><select name="cond">'+opt(["ใหม่","มือสอง","ถอดจากรถ"],l.cond)+'</select></div>'+
+    '<div><label class="f">ราคา</label><input type="number" name="price" value="'+escH(l.price)+'"></div>'+
+    '<div><label class="f">ใส่กับยี่ห้อ</label><select name="brand">'+opt(["ทุกยี่ห้อ"].concat(BRANDS.filter(function(b){return b!=="อื่นๆ"})),l.brand)+'</select></div>'+
+    '<div><label class="f">ใส่กับรุ่น</label><input type="text" name="model" maxlength="60" value="'+escH(l.model||"")+'"></div>'+
+    '<div><label class="f">ปีตั้งแต่</label><input type="number" name="yearFrom" value="'+escH(l.yearFrom||"")+'"></div>'+
+    '<div><label class="f">ปีถึง</label><input type="number" name="yearTo" value="'+escH(l.yearTo||"")+'"></div>'+
+    '<div><label class="f">จังหวัด</label><select name="prov">'+opt(PROVS,l.prov)+'</select></div>'+
+    '<div><label class="f">ชื่อผู้ขาย</label><input type="text" name="name" maxlength="50" value="'+escH(l.name)+'"></div>'+
+    '<div><label class="f">เบอร์โทร</label><input type="text" name="tel" value="'+escH(l.tel)+'"></div>'+
+    '<div class="full"><label class="f">รายละเอียด</label><textarea name="note" maxlength="1000">'+escH(l.note||"")+'</textarea></div>'+
+    '<div class="full bar" style="margin-top:6px"><button class="btn btn-amber btn-sm" type="submit">บันทึกการแก้ไข</button><button class="btn btn-line btn-sm" type="button" data-cancel-edit>ยกเลิก</button></div></form>';
   return '<form class="edit-grid" data-editform="'+escH(l.id)+'">'+
     '<div><label class="f">ยี่ห้อ</label><select name="brand">'+opt(BRANDS,l.brand)+'</select></div>'+
     '<div><label class="f">รุ่น</label><input type="text" name="model" maxlength="40" value="'+escH(l.model)+'"></div>'+
@@ -385,7 +400,7 @@ function editForm(l){
     '<div><label class="f">สี</label><select name="color">'+opt(["ขาว","ดำ","เทา","เงิน","แดง","น้ำเงิน","น้ำตาล"],l.color)+'</select></div>'+
     '<div><label class="f">ชื่อผู้ขาย</label><input type="text" name="name" maxlength="50" value="'+escH(l.name)+'"></div>'+
     '<div><label class="f">เบอร์โทร</label><input type="text" name="tel" value="'+escH(l.tel)+'"></div>'+
-    '<div class="full"><label class="f">รายละเอียด</label><textarea name="note" maxlength="600">'+escH(l.note||"")+'</textarea></div>'+
+    '<div class="full"><label class="f">รายละเอียด</label><textarea name="note" maxlength="1000">'+escH(l.note||"")+'</textarea></div>'+
     '<div class="full bar" style="margin-top:6px"><button class="btn btn-amber btn-sm" type="submit">บันทึกการแก้ไข</button><button class="btn btn-line btn-sm" type="button" data-cancel-edit>ยกเลิก</button></div></form>';
 }
 $("lList").addEventListener("click",function(e){

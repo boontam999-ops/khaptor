@@ -4,7 +4,8 @@
 
 วิธีใช้:  แก้ค่าในส่วน CONFIG ด้านล่าง แล้วรัน  python3 build.py
 """
-import json, re, html, shutil, datetime
+import json
+import urllib.parse, re, html, shutil, datetime
 import markdown  # pip install markdown
 from pathlib import Path
 from tools import build_tools
@@ -36,7 +37,7 @@ C = CONFIG
 D = C["DOMAIN"].rstrip("/")
 E = html.escape
 import hashlib
-ASSET_V = hashlib.md5(b"".join((Path(__file__).parent / "src" / n).read_bytes() for n in ("style.css", "site.js", "app.js", "tools.js", "car-art.js"))).hexdigest()[:8]
+ASSET_V = hashlib.md5(b"".join((Path(__file__).parent / "src" / n).read_bytes() for n in ("style.css", "site.js", "app.js", "tools.js", "car-art.js", "parts.js"))).hexdigest()[:8]
 
 # ---------- data (read from app.js so there is one source of truth) ----------
 app_js = (SRC / "app.js").read_text(encoding="utf-8")
@@ -205,7 +206,7 @@ def header(base, is_index=False):
   <div class="wrap">
     <a class="logo" href="{base}index.html" aria-label="{C["SITE_NAME"]} หน้าแรก">{LOGO}<span>{C["SITE_NAME"]}<small>ตลาดรถมือสองทั่วไทย</small></span></a>
     <nav class="main" aria-label="เมนูหลัก">
-      <a href="{home}#buy">ซื้อรถ</a><a href="{home}#sell">ขายรถ</a><a href="{home}#dealers">ดีลเลอร์</a><a href="{base}tools/index.html">เครื่องมือฟรี</a><a href="{base}articles/index.html">บทความ</a>
+      <a href="{home}#buy">ซื้อรถ</a><a href="{home}#sell">ขายรถ</a><a href="{home}#dealers">ดีลเลอร์</a><a href="{base}parts/">อะไหล่</a><a href="{base}tools/index.html">เครื่องมือฟรี</a><a href="{base}articles/index.html">บทความ</a>
     </nav>
     <div class="top-actions"><button class="btn btn-ghost install-btn" type="button" data-install hidden>ติดตั้งแอป</button>{fav}<a class="btn btn-amber" href="{home}#sell">ลงขายรถฟรี</a></div>
   </div>
@@ -223,7 +224,7 @@ def footer(base):
   <div class="wrap">
     <div class="cols">
       <div><h4>{C["SITE_NAME"]}</h4><p style="margin:0;max-width:34ch">ตลาดซื้อขายรถมือสองสำหรับผู้ซื้อ เจ้าของรถ และเต็นท์รถทั่วประเทศไทย</p>
-        <ul style="margin-top:10px"><li><a href="{base}articles/index.html">บทความรถมือสอง</a></li><li><a href="{base}tools/index.html">เครื่องมือฟรี</a></li><li><a href="{base}tools/car-tax.html">คำนวณภาษีรถยนต์</a></li><li><a href="{base}tools/contract.html">สัญญาซื้อขายรถยนต์</a></li><li><a href="{base}about.html">เกี่ยวกับเรา / ติดต่อ</a></li><li><a href="{base}privacy.html">นโยบายความเป็นส่วนตัว</a></li><li><a href="#" data-consent-open>ตั้งค่าคุกกี้</a></li><li><a href="#" data-install-help>ติดตั้งแอปขับต่อ</a></li></ul></div>
+        <ul style="margin-top:10px"><li><a href="{base}articles/index.html">บทความรถมือสอง</a></li><li><a href="{base}parts/">อะไหล่และของแต่งมือสอง</a></li><li><a href="{base}tools/index.html">เครื่องมือฟรี</a></li><li><a href="{base}tools/car-tax.html">คำนวณภาษีรถยนต์</a></li><li><a href="{base}tools/contract.html">สัญญาซื้อขายรถยนต์</a></li><li><a href="{base}about.html">เกี่ยวกับเรา / ติดต่อ</a></li><li><a href="{base}privacy.html">นโยบายความเป็นส่วนตัว</a></li><li><a href="#" data-consent-open>ตั้งค่าคุกกี้</a></li><li><a href="#" data-install-help>ติดตั้งแอปขับต่อ</a></li></ul></div>
       <div data-demo><h4>ตามยี่ห้อ</h4><ul>{brand_links}</ul></div>
       <div data-demo><h4>ตามจังหวัด</h4><ul>{prov_links}</ul></div>
       <div><h4>ติดต่อ</h4><ul><li data-site="phone">{E(C["CONTACT_PHONE"])}</li><li data-site="email">{E(C["CONTACT_EMAIL"])}</li></ul></div>
@@ -489,6 +490,7 @@ def build():
     </div>
     <aside>{ad("article")}</aside>
   </div>
+  <a class="parts-link" href="{base}parts/?brand={urllib.parse.quote(c["brand"])}&amp;model={urllib.parse.quote(c["model"])}"><b>อะไหล่และของแต่งสำหรับ {E(c["brand"])} {E(c["model"])}</b><span>ล้อแม็ก เครื่องเสียง ชุดแต่ง และอะไหล่มือสอง →</span></a>
   <section class="related">
     <h2>รถที่คล้ายกัน</h2>
     <div class="grid">{"".join(static_card(x, base) for x in related)}</div>
@@ -573,6 +575,16 @@ def build():
     # ---- free tools ----
     tool_urls = build_tools(page, crumbs, ad, share_bar, E, C, D, TODAY.year)
 
+    # ---- อะไหล่และของแต่ง (/parts/) ----
+    app_src = (SRC / "app.js").read_text(encoding="utf-8")
+    kit = app_src[app_src.index("const MAX_PHOTOS=8;"):app_src.index("const AUTH=window.KT_AUTH")]
+    kit = "\n".join(l for l in kit.split("\n") if not l.startswith("const sellPicker="))
+    (DIST / "assets/parts.js").write_text("(function(){\n" + kit + (SRC / "parts.js").read_text(encoding="utf-8") + "\n})();", encoding="utf-8")
+    bc_html, bc_ld = crumbs([("หน้าแรก", "index.html"), ("อะไหล่และของแต่ง", None)], "../")
+    page("parts/index.html", f"อะไหล่รถยนต์มือสอง ล้อแม็ก เครื่องเสียง ชุดแต่ง ลงขายฟรี | {C['SITE_NAME']}",
+         "ซื้อขายอะไหล่รถยนต์และของแต่งมือสอง ล้อแม็ก ยาง เครื่องเสียง จอแอนดรอยด์ ชุดแต่ง ไฟ จากเจ้าของและร้านทั่วไทย ค้นตามยี่ห้อและรุ่นรถ ลงขายฟรี ติดต่อผู้ขายโดยตรง",
+         (SRC / "parts_body.html").read_text(encoding="utf-8").replace("%%CRUMBS%%", bc_html), "../", ld=[bc_ld], scripts=["assets/parts.js"])
+
     # ---- template for user listing pages (filled by functions/l/[id].js) ----
     page("l/_template.html", "%%TITLE%%", "%%DESC%%", "%%MAIN%%", "../", og_image="%%OGIMG%%", og_type="product")
 
@@ -613,6 +625,7 @@ def build():
         urls.append((f"{D}/articles/index.html", POSTS[0]["date"], "daily", "0.7"))
         urls += [(f"{D}/articles/{p['slug']}.html", p["date"], "monthly", "0.7") for p in POSTS]
     urls += [(u, TODAY, "monthly", "0.8") for u in tool_urls]
+    urls += [(f"{D}/parts/", TODAY, "daily", "0.8")]
     urls += [(f"{D}/cars/{car_slug(c)}.html", listed_date(c), "weekly", "0.6") for c in CARS]
     sm = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     sm += [f"  <url><loc>{u}</loc><lastmod>{d.isoformat()}</lastmod><changefreq>{f}</changefreq><priority>{p}</priority></url>" for u, d, f, p in urls]
